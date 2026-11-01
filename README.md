@@ -1,4 +1,4 @@
-# Mosvegas
+# MosVegas - Сборка
 
 Исходники модов проекта Mosvegas.
 
