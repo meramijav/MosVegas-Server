@@ -1,0 +1,115 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.fabricmc.net/' }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'net.fabricmc:fabric-loom:1.7.4'
+    }
+}
+
+apply plugin: 'fabric-loom'
+apply plugin: 'maven-publish'
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    // Only the migration test writes real SQLite bases; the release JAR reads old ones with its own SqliteReader.
+    testImplementation "org.xerial:sqlite-jdbc:3.46.1.0"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+    options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+    from('LICENSE') { rename { "${it}_${project.base.archivesName.get()}" } }
+}
+
+tasks.register('policyTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'ru.mosvegas.core.zone.ZonePolicyTest'
+}
+tasks.register('migrationTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'ru.mosvegas.core.data.DataStoreMigrationTest'
+}
+check.dependsOn policyTest, migrationTest
+
+// Isolated in-game regressions. These classes/resources are never included in the release JAR.
+sourceSets {
+    smoke {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+tasks.register('smokeJar', Jar) {
+    dependsOn smokeClasses
+    from sourceSets.smoke.output
+    archiveClassifier = 'smoke-dev'
+}
+tasks.register('remapSmokeJar', net.fabricmc.loom.task.RemapJarTask) {
+    dependsOn smokeJar
+    inputFile = tasks.smokeJar.archiveFile
+    archiveClassifier = 'smoke'
+    addNestedDependencies = false
+    classpath.from(sourceSets.smoke.compileClasspath)
+}
+if (project.hasProperty('smoke')) {
+    loom {
+        mods {
+            mosvegas_core { sourceSet sourceSets.main }
+            mosvegas_core_smoke { sourceSet sourceSets.smoke }
+        }
+        runs {
+            smokeServer {
+                server()
+                source sourceSets.smoke
+                runDir 'run-smoke'
+                programArg 'nogui'
+            }
+        }
+    }
+    tasks.named('runSmokeServer') {
+        doFirst { file('run-smoke/smoke-result.txt').delete() }
+        doLast {
+            def result = file('run-smoke/smoke-result.txt')
+            if (!result.exists() || !result.text.startsWith('ServerSmokeTest:')) {
+                throw new GradleException('Server smoke tests failed: ' + (result.exists() ? result.text : 'no result'))
+            }
+        }
+    }
+}
+loom {
+    runs {
+        client { runDir 'run-zone-dev' }
+    }
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "mosvegas_core",
+  "version": "${version}",
+  "name": "Mosvegas Core",
+  "description": "RP core: documents, licences, bank, economy, factions, quests and real estate.",
+  "authors": ["Mosvegas"],
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["ru.mosvegas.core.MosvegasCore"],
+    "client": ["ru.mosvegas.core.client.MosvegasCoreClient"]
+  },
+  "mixins": [
+    "mosvegas_core.mixins.json",
+    {
+      "config": "mosvegas_core.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "~1.20.4",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}

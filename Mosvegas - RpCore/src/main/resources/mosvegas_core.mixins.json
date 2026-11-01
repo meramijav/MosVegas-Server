@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "ru.mosvegas.core.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "BlockItemMixin", "BucketItemMixin", "ExplosionMixin", "WorldProtectionMixin",
+    "FireBlockMixin", "FlowableFluidMixin", "PistonBlockMixin", "DoorRedstoneMixin",
+    "PressurePlateMixin", "BowItemMixin", "CrossbowItemMixin", "TridentItemMixin",
+    "DecorationMixin", "ArmorStandMixin", "HopperMixin", "DoubleInventoryAccessor",
+    "FarmlandMixin", "EndermanPickupMixin", "EndermanPlaceMixin", "StatusEffectMixin",
+    "FallingBlockMixin", "FallingBlockEntityMixin", "TurtleEggMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}
