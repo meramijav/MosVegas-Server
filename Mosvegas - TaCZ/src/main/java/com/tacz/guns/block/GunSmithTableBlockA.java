@@ -1,0 +1,34 @@
+package com.tacz.guns.block;
+
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.state.BlockState;
+
+/**
+ * 单方块的枪械工作台
+ */
+public class GunSmithTableBlockA extends AbstractGunSmithTableBlock {
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return simpleCodec(properties -> new GunSmithTableBlockA());
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction direction = context.getHorizontalDirection().getOpposite();
+        return this.defaultBlockState().setValue(FACING, direction);
+    }
+
+    @Override
+    public boolean isRoot(BlockState blockState) {
+        return true;
+    }
+
+    @Override
+    public BlockPos getRootPos(BlockPos pos, BlockState blockState) {
+        return pos;
+    }
+}

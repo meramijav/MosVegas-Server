@@ -1,0 +1,317 @@
+plugins {
+    id 'fabric-loom' version '1.11-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = "${archives_base_name}-${minecraft_version}"
+}
+
+fabricApi {
+    configureDataGeneration {
+        client = true
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            exclude 'com/tacz/guns/compat/ar/ARCompatImpl.java'
+            exclude 'com/tacz/guns/compat/ar/AcceleratedBeamRenderer.java'
+            exclude 'com/tacz/guns/compat/controllable/ControllableInner.java'
+            exclude 'com/tacz/guns/compat/iris/legacy/**'
+            exclude 'com/tacz/guns/compat/iris/newly/**'
+            exclude 'com/tacz/guns/compat/kubejs/**'
+            exclude 'com/tacz/guns/compat/carryon/**'
+            // Shoulder Surfing Reloaded is now included as a compile dependency
+            exclude 'com/tacz/guns/mixin/client/ar/BedrockPartMixin.java'
+            exclude 'cn/sh1rocu/tacz/mixin/accessor/AbstractSliderButtonAccessor.java'
+            exclude 'cn/sh1rocu/tacz/mixin/compat/carryon/ConfigLoaderMixin.java'
+        }
+    }
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/tacz.accesswidener")
+    mixin {
+        defaultRefmapName = "tacz.refmap.json"
+    }
+    runs {
+        datagen {
+            property "fabric-api.datagen.modid", "tacz"
+        }
+    }
+}
+
+repositories {
+    maven {
+        // 阿里云镜像，方便国内开发
+        url = uri("https://maven.aliyun.com/repository/public/")
+        content {
+            includeGroup 'org.apache.commons'
+        }
+    }
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        // Patchouli
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+    }
+    // TODO port to 1.20.4: modmaven.k-4u.nl mirror unreachable from this machine (connection timeout) - disabled.
+    // It was only a fallback mirror for JEI; JEI's primary repo (maven.blamejared.com) above is reachable.
+    // maven {
+    //     name = "Mod Maven"
+    //     url = "https://modmaven.k-4u.nl"
+    // }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+    maven { url "https://maven.shedaniel.me/" } // cloth config api
+    maven { url "https://dvs1.progwml6.com/files/maven/" }
+    // TODO port to 1.20.4: modmaven.dev unreachable from this machine (connection timeout) - disabled.
+    // maven { url "https://modmaven.dev" }
+    maven {
+        name = 'tterrag maven'
+        url = 'https://maven.tterrag.com/'
+    }
+    maven {
+        // Shedaniel's maven (Architectury API)
+        url = "https://maven.architectury.dev"
+        content {
+            includeGroup "dev.architectury"
+        }
+    }
+    maven {
+        // latvian.dev Maven (KubeJS and Rhino)
+        url "https://maven.latvian.dev/releases"
+        content {
+            includeGroup "dev.latvian.mods"
+            includeGroup "dev.latvian.apps"
+        }
+    }
+    maven {
+        url 'https://jitpack.io'
+        content {
+            includeGroup "com.github.rtyley"
+            includeGroup "com.github.FiguraMC.luaj"
+        }
+    }
+    maven {
+        name "KosmX's maven"
+        url 'https://maven.kosmx.dev/'
+    }
+    maven {// CCA
+        name = "Ladysnake Mods"
+        url = 'https://maven.ladysnake.org/releases'
+    }
+    maven {// Forge Config API Port
+        name = "Fuzs Mod Resources"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
+    maven {// ModMenu
+        name = "Terraformers"
+        url = "https://maven.terraformersmc.com/"
+    }
+    maven {
+        name = 'ParchmentMC'
+        url = 'https://maven.parchmentmc.org'
+        content {
+            includeGroup 'org.parchmentmc.data'
+        }
+    }
+    maven {
+        name = "devOSSnapshots"
+        url = uri("https://mvn.devos.one/snapshots")
+    }
+    mavenCentral()
+    mavenLocal()
+    flatDir {
+        dir 'libs'
+    }
+}
+
+dependencies {
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    mappings loom.layered() {
+        officialMojangMappings()
+        // TODO port to 1.20.4: Parchment mappings layer disabled (modmaven.dev unreachable / version 2024.01.21 not resolvable for 1.20.4).
+        // Parchment only adds dev-time parameter names/javadocs and does not affect the built mod. Re-enable with a valid 1.20.4 parchment version when the repo is reachable.
+        // parchment("org.parchmentmc.data:parchment-${project.parchment_minecraft_version}:${project.parchment_mappings_version}@zip")
+    }
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modImplementation include("io.github.llamalad7:mixinextras-fabric:0.5.5")
+    annotationProcessor "io.github.llamalad7:mixinextras-fabric:0.5.5"
+
+    modCompileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    annotationProcessor 'com.google.code.findbugs:jsr305:3.0.2'
+
+    modImplementation(include("libs:simplebedrockmodel-fabric:2.3.0.1+mc1.20.1"))
+    implementation("com.maydaymemory:mae:1.1.1") {
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+        exclude group: 'it.unimi.dsi', module: 'fastutil'
+        exclude group: 'org.joml', module: 'joml'
+    }
+
+    // Apache Commons Math 库，用于进行一些插值运算
+    implementation(include('org.apache.commons:commons-math3:3.6.1'))
+
+    // LuaJ 库，将 lua 脚本语言引入用于控制枪械的逻辑和动画状态机
+    implementation(include('com.github.FiguraMC.luaj:luaj-core:3.0.8-figura')) {
+        exclude group: 'org.apache.commons', module: 'commons-lang3'
+    }
+    implementation(include('com.github.FiguraMC.luaj:luaj-jse:3.0.8-figura')) {
+        exclude group: 'org.apache.commons', module: 'commons-lang3'
+    }
+    implementation(include('org.apache.bcel:bcel:6.6.1')) {
+        exclude group: 'org.apache.commons', module: 'commons-lang3'
+    }
+
+    // compile against the JEI API but do not include it at runtime
+    modCompileOnly("mezz.jei:jei-1.20.4-common-api:${jei_version}")
+    // at runtime, use the full JEI jar for Fabric
+    modRuntimeOnly("mezz.jei:jei-1.20.4-fabric:${jei_version}")
+    // 性能分析工具模组
+    // TODO port to 1.20.4: spark file id pinned to 1.20.1
+    // modRuntimeOnly "curse.maven:spark-361579:4738953"
+    // 假人，测试近战伤害
+    // TODO port to 1.20.4: selene / mmmmmmmmmmmm file ids pinned to 1.20.1
+    // modRuntimeOnly "curse.maven:selene-499980:6902843"
+    // modRuntimeOnly "curse.maven:mmmmmmmmmmmm-225738:6826546"
+    // 手柄按键支持
+    // TODO port to 1.20.4: framework / controllable file ids pinned to 1.20.1
+    // modCompileOnly "curse.maven:framework-549225:6531429"
+    // modCompileOnly("curse.maven:controllable-317269:6171420")
+
+    // 越肩视角，用来兼容第三人称准星
+    // TODO port to 1.20.4: shoulder-surfing file id pinned to 1.20.1
+    // modImplementation "curse.maven:shoulder-surfing-reloaded-243190:6784146"
+
+    modImplementation "me.shedaniel.cloth:cloth-config-fabric:${cloth_config_fabric}"
+
+    // Optimization & utility mods (MC 1.20.4)
+    modRuntimeOnly "maven.modrinth:sodium:mc1.20.4-0.5.8"
+    modRuntimeOnly "maven.modrinth:indium:1.0.31+mc1.20.4"
+    modRuntimeOnly "maven.modrinth:lithium:mc1.20.4-0.12.1"
+    modRuntimeOnly "maven.modrinth:ferrite-core:6.0.3-fabric"
+    modRuntimeOnly "maven.modrinth:appleskin:2.5.1+mc1.20.3"
+    // modRuntimeOnly "maven.modrinth:zoomify:2.14.0+1.20.4"
+    modCompileOnly "maven.modrinth:shoulder-surfing-reloaded:YAq1a9vt"
+    modRuntimeOnly "maven.modrinth:shoulder-surfing-reloaded:YAq1a9vt"
+
+    // TODO port to 1.20.4: carry-on file id pinned to 1.20.1
+    // modCompileOnly "curse.maven:carry-on-274259:${carry_on_id}"
+
+    modImplementation "dev.kosmx.player-anim:player-animation-lib-fabric:${player_animation_lib}"
+
+    // kubejs开发环境引入
+    // TODO port to 1.20.4: KubeJS + Rhino have no clean Fabric 1.20.4 build
+    // modCompileOnly "dev.latvian.mods:kubejs-fabric:${kubejs_version}"
+    // modCompileOnly "dev.latvian.mods:rhino-fabric:${rhino_version}"
+    modCompileOnly "dev.architectury:architectury-fabric:${architectury_version}"
+
+    // CCA (1.20.4)
+    modImplementation(include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.4.0"))
+    modImplementation(include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.4.0"))
+
+    // TODO port to 1.20.4: nonconflictkeys file id pinned to 1.20.1
+    // modRuntimeOnly "curse.maven:nonconflictkeys-fabric-865546:4572953"
+
+    // Forge Config API Port embeds NightConfig 3.6.6 as jar-in-jar for production, but Loom's
+    // dev runtime does not load FCAP's nested jars, so NightConfig is added to both classpaths.
+    modApi "maven.modrinth:forge-config-api-port:v20.4.3-1.20.4-Fabric"
+    compileOnly "com.electronwill.night-config:core:3.6.6"
+    compileOnly "com.electronwill.night-config:toml:3.6.6"
+    runtimeOnly "com.electronwill.night-config:core:3.6.6"
+    runtimeOnly "com.electronwill.night-config:toml:3.6.6"
+
+    // ModMenu (1.20.4)
+    modImplementation("com.terraformersmc:modmenu:9.0.0")
+
+    // Zoomify
+    // TODO port to 1.20.4: zoomify version pinned to 1.20.1
+    // modCompileOnly "maven.modrinth:zoomify:2.14.5+1.20.1"
+
+    modImplementation "maven.modrinth:immediatelyfast:1.5.1+1.20.4-fabric"
+
+    // 1.20.1-only runtime test mods, the tweakeroo compat now runs through ItemStackMixin and doesn't need them
+    // modRuntimeOnly "maven.modrinth:tweakeroo:0.17.1"
+    // modRuntimeOnly "maven.modrinth:malilib:0.16.3"
+
+    // REI
+    modRuntimeOnly "me.shedaniel:RoughlyEnoughItems-fabric:$rei_version"
+    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:$rei_version"
+    modCompileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin-fabric:$rei_version"
+
+    // 加速渲染
+    // TODO port to 1.20.4: accelerated rendering refabricated is 1.20.1 only
+    // modImplementation "maven.modrinth:accrelatedrendering-refabricated:1.0.8-1.20.1-alpha-fabric.1"
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "loader_version", project.loader_version
+    filteringCharset "UTF-8"
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version,
+                "minecraft_version": project.minecraft_version,
+                "loader_version": project.loader_version
+    }
+}
+
+def targetJavaVersion = 17
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        it.options.release.set(targetJavaVersion)
+    }
+}
+
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+    withSourcesJar()
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+remapJar {
+    archiveFileName = "MosVegas - tacz.jar"
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = "${project.archives_base_name}-${project.minecraft_version}"
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            url "file:///D:/github_maven/Sh1roCu_MCRepo/repository"
+        }
+    }
+}
