@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "slimvehicle",
+  "version": "${version}",
+  "name": "Slim Vehicle",
+  "description": "Транспорт на ядре SlimCore: машины из JSON-паков с физикой, столкновениями, повреждениями, местами, дверями, звуками и анимациями.",
+  "authors": ["Telegram: @merami19", "Merami Studio — Telegram: @merami_studio"],
+  "contact": {"homepage": "https://t.me/merami_studio"},
+  "license": "All Rights Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["studio.merami.sliminterfacefabric.SlimVehicle"],
+    "client": ["studio.merami.sliminterfacefabric.client.SlimVehicleClient"],
+    "dynamiclights": ["studio.merami.sliminterfacefabric.client.light.DynamicLightsCompat"]
+  },
+  "mixins": ["slimvehicle.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": "~1.20.4",
+    "java": ">=17",
+    "fabric-api": "*"
+  },
+  "suggests": {"tacz": "*", "iris": "*", "lambdynlights": "*", "mosvegas_core": ">=0.0.3"}
+}

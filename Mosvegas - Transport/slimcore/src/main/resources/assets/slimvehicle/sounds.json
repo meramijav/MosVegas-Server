@@ -1,0 +1,253 @@
+{
+  "engine_loop": {
+    "sounds": [
+      "slimvehicle:engine_loop"
+    ]
+  },
+  "engine_start": {
+    "sounds": [
+      "slimvehicle:engine_start"
+    ]
+  },
+  "horn": {
+    "sounds": [
+      "slimvehicle:horn"
+    ]
+  },
+  "bell": {
+    "sounds": [
+      "slimvehicle:bell"
+    ]
+  },
+  "siren": {
+    "sounds": [
+      "slimvehicle:siren"
+    ]
+  },
+  "tyre_squeal": {
+    "sounds": [
+      "slimvehicle:tyre_squeal"
+    ]
+  },
+  "radio": {
+    "sounds": [
+      {
+        "name": "slimvehicle:radio",
+        "stream": true
+      }
+    ]
+  },
+  "radio_station": {
+    "sounds": [
+      {
+        "name": "slimvehicle:radio",
+        "stream": true
+      }
+    ]
+  },
+  "engine_low": {
+    "sounds": [
+      "slimvehicle:engine_low"
+    ]
+  },
+  "engine_mid": {
+    "sounds": [
+      "slimvehicle:engine_mid"
+    ]
+  },
+  "engine_high": {
+    "sounds": [
+      "slimvehicle:engine_high"
+    ]
+  },
+  "engine_stop": {
+    "sounds": [
+      "slimvehicle:engine_stop"
+    ]
+  },
+  "exhaust_pop": {
+    "sounds": [
+      "slimvehicle:exhaust_pop"
+    ]
+  },
+  "door_open": {
+    "sounds": [
+      "slimvehicle:door_open"
+    ]
+  },
+  "door_close": {
+    "sounds": [
+      "slimvehicle:door_close"
+    ]
+  },
+  "hood_open": {
+    "sounds": [
+      "slimvehicle:hood_open"
+    ]
+  },
+  "hood_close": {
+    "sounds": [
+      "slimvehicle:hood_close"
+    ]
+  },
+  "hatch_open": {
+    "sounds": [
+      "slimvehicle:hatch_open"
+    ]
+  },
+  "hatch_close": {
+    "sounds": [
+      "slimvehicle:hatch_close"
+    ]
+  },
+  "gear_shift": {
+    "sounds": [
+      "slimvehicle:gear_shift"
+    ]
+  },
+  "handbrake_on": {
+    "sounds": [
+      "slimvehicle:handbrake_on"
+    ]
+  },
+  "handbrake_off": {
+    "sounds": [
+      "slimvehicle:handbrake_off"
+    ]
+  },
+  "lock": {
+    "sounds": [
+      "slimvehicle:lock"
+    ]
+  },
+  "suspension_bump": {
+    "sounds": [
+      "slimvehicle:suspension_bump"
+    ]
+  },
+  "collision": {
+    "sounds": [
+      "slimvehicle:collision"
+    ]
+  },
+  "road_roll": {
+    "sounds": [
+      "slimvehicle:road_roll"
+    ]
+  },
+  "tyre_blowout": {
+    "sounds": [
+      "slimvehicle:tyre_blowout"
+    ]
+  },
+  "v8_idle": {
+    "sounds": [
+      "slimvehicle:v8_idle"
+    ]
+  },
+  "v8_low": {
+    "sounds": [
+      "slimvehicle:v8_low"
+    ]
+  },
+  "v8_mid": {
+    "sounds": [
+      "slimvehicle:v8_mid"
+    ]
+  },
+  "v8_high": {
+    "sounds": [
+      "slimvehicle:v8_high"
+    ]
+  },
+  "v8_start": {
+    "sounds": [
+      "slimvehicle:v8_start"
+    ]
+  },
+  "g63_door_open": {
+    "sounds": [
+      "slimvehicle:g63_door_open"
+    ]
+  },
+  "g63_door_close": {
+    "sounds": [
+      "slimvehicle:g63_door_close"
+    ]
+  },
+  "g63_trunk_close": {
+    "sounds": [
+      "slimvehicle:g63_trunk_close"
+    ]
+  },
+  "g63_hood_open": {
+    "sounds": [
+      "slimvehicle:g63_hood_open"
+    ]
+  },
+  "g63_hood_close": {
+    "sounds": [
+      "slimvehicle:g63_hood_close"
+    ]
+  },
+  "g63_hatch_open": {
+    "sounds": [
+      "slimvehicle:g63_hatch_open"
+    ]
+  },
+  "g63_hatch_close": {
+    "sounds": [
+      "slimvehicle:g63_hatch_close"
+    ]
+  },
+  "g63_shift_up": {
+    "sounds": [
+      "slimvehicle:g63_shift_up"
+    ]
+  },
+  "g63_shift_down": {
+    "sounds": [
+      "slimvehicle:g63_shift_down"
+    ]
+  },
+  "g63_handbrake_on": {
+    "sounds": [
+      "slimvehicle:g63_handbrake_on"
+    ]
+  },
+  "g63_handbrake_off": {
+    "sounds": [
+      "slimvehicle:g63_handbrake_off"
+    ]
+  },
+  "g63_lock": {
+    "sounds": [
+      "slimvehicle:g63_lock"
+    ]
+  },
+  "v8_idle_inside": {
+    "sounds": [
+      "slimvehicle:v8_idle_inside"
+    ]
+  },
+  "v8_low_inside": {
+    "sounds": [
+      "slimvehicle:v8_low_inside"
+    ]
+  },
+  "v8_mid_inside": {
+    "sounds": [
+      "slimvehicle:v8_mid_inside"
+    ]
+  },
+  "v8_high_inside": {
+    "sounds": [
+      "slimvehicle:v8_high_inside"
+    ]
+  },
+  "v8_start_inside": {
+    "sounds": [
+      "slimvehicle:v8_start_inside"
+    ]
+  }
+}

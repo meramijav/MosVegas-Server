@@ -1,0 +1,39 @@
+{
+  "model": "scooter",
+  "texture": "volga3102",
+  "scale": 1,
+  "size": {"half_width": 0.27, "half_length": 0.65, "height": 1.25},
+  "mass": 168,
+  "max_step": 0,
+  "body_pivot": 0.3125,
+  "board_on_click": true,
+  "tyre_marks": false,
+  "vibration": false,
+  "physics": {
+    "max_speed_kmh": 15.84,
+    "acceleration": 0.006,
+    "brake": 0.009,
+    "grip": 0.4,
+    "wheelbase": 0.85
+  },
+  "transmission": {
+    "speeds_kmh": [3.6432, 6.8112, 10.1376, 12.9888, 15.84],
+    "reverse_kmh": 2.8512,
+    "ratios": [3.5, 2.2, 1.45, 1.0, 0.82],
+    "reverse_ratio": 3.4
+  },
+  "fuel": {"tank": 10, "per_tick": 0.0001},
+  "sounds": {"engine_volume": 0.12, "horn": "bell"},
+  "wheel": {"radius": 0.1875, "roll_radius": 0.14, "contact": 0.19, "solid": false},
+  "wheels": [
+    {"bone": "fl", "pos": [0, 0.1875, 0.5], "steer": true},
+    {"bone": "rl", "pos": [0, 0.1875, -0.5]}
+  ],
+  "rider": {"scale": 1},
+  "seats": [
+    {"pos": [0, 0.25, -0.1], "stand": true, "label": "seat.slimvehicle.driver",
+     "click": {"center": [0, 0.7, 0], "half": [0.32, 0.19, 0.37]}}
+  ],
+  "hull": {"boxes": [{"center": [0, 0.55, 0], "half": [0.27, 0.55, 0.65]}]},
+  "render": {"chassis": "chassis", "shadow": [0.45, 0.9], "speedometer": 40}
+}

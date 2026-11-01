@@ -1,0 +1,141 @@
+plugins {
+    id 'fabric-loom' version '1.11-SNAPSHOT'
+}
+
+if (project.hasProperty('slimBuildDir')) layout.buildDirectory = file(project.property('slimBuildDir'))
+
+version = project.mod_version
+group = project.maven_group
+base { archivesName = 'slimvehicle-1.20.4' }
+
+def zoneTests = project.hasProperty('zoneTests')
+def gameTests = zoneTests ? ['studio.merami.sliminterfacefabric.gametest.ZoneGameTests'] : [
+    'studio.merami.sliminterfacefabric.gametest.DrivingGameTests',
+    'studio.merami.sliminterfacefabric.gametest.CollisionGameTests',
+    'studio.merami.sliminterfacefabric.gametest.DamageGameTests',
+    'studio.merami.sliminterfacefabric.gametest.InteractionGameTests',
+    'studio.merami.sliminterfacefabric.gametest.PackGameTests'
+]
+
+repositories {
+    maven { url = 'https://api.modrinth.com/maven' }
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['slimcore/src/main/java', 'sliminterfacefabric/src/main/java']
+        resources.srcDirs = ['slimcore/src/main/resources', 'sliminterfacefabric/src/main/resources']
+    }
+    test {
+        java.srcDirs = ['slimcore/src/test/java']
+        resources.srcDirs = []
+    }
+}
+if (project.hasProperty('vehicleTests')) sourceSets.main.java.srcDir 'sliminterfacefabric/src/gametest/java'
+
+def taczJar = file('libs/compat/tacz.jar')
+def taczLibs = layout.buildDirectory.dir('tacz-libs').get().asFile
+def withTacz = !project.hasProperty('vehicleTests')
+if (withTacz && (!taczLibs.directory || taczLibs.lastModified() < taczJar.lastModified())) {
+    delete taczLibs
+    def outer = [taczJar]
+    while (!outer.isEmpty()) {
+        def before = taczLibs.directory ? taczLibs.listFiles() as Set : [] as Set
+        copy {
+            outer.each { jar -> from(zipTree(jar)) { include 'META-INF/jars/*.jar' } }
+            into taczLibs
+            eachFile { path = name }
+            includeEmptyDirs = false
+        }
+        outer = (taczLibs.listFiles() as Set) - before
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.layered { officialMojangMappings() }
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modCompileOnly files('libs/compat/tacz.jar')
+    modCompileOnly files('libs/compat/mosvegas-core.jar')
+    if (zoneTests) modLocalRuntime files('libs/compat/mosvegas-core.jar')
+    modCompileOnly "maven.modrinth:lambdynamiclights:2.3.4+1.20.4"
+    modLocalRuntime "maven.modrinth:sodium:mc1.20.4-0.5.8"
+    if (withTacz) {
+        modLocalRuntime files(taczJar)
+        modLocalRuntime fileTree(taczLibs) { include '*.jar' }
+        modLocalRuntime "maven.modrinth:forge-config-api-port:v20.4.3-1.20.4-Fabric"
+        localRuntime "com.electronwill.night-config:core:3.6.6"
+        localRuntime "com.electronwill.night-config:toml:3.6.6"
+    }
+    testImplementation platform('org.junit:junit-bom:5.10.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+loom {
+    runs {
+        client {
+            runDir 'run'
+            vmArg '-Xmx3G'
+            programArgs '--username', 'TransportTester'
+        }
+        gametest {
+            server()
+            runDir 'build/gametest'
+            vmArg '-Dfabric-api.gametest'
+            vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get()}/gametest-results.xml"
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'vehicleTests', project.hasProperty('vehicleTests')
+    inputs.property 'zoneTests', zoneTests
+    filesMatching('fabric.mod.json') { expand version: project.version }
+    doLast {
+        if (project.hasProperty('vehicleTests')) {
+            def metadata = file("${destinationDir}/fabric.mod.json")
+            def data = new groovy.json.JsonSlurper().parse(metadata)
+            data.entrypoints['fabric-gametest'] = gameTests
+            metadata.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(data))
+        }
+    }
+}
+
+tasks.register('checkCoreBoundary', JavaCompile) {
+    def sources = fileTree('slimcore/src/main/java')
+    source = sources
+    classpath = configurations.compileClasspath.filter { it.name ==~ /(gson|joml|slf4j-api)-[0-9.]+\.jar/ }
+    destinationDirectory = layout.buildDirectory.dir('core-boundary')
+    options.compilerArgs << '-proc:none'
+    doFirst {
+        def forbidden = ~/(net\.minecraft|com\.mojang|net\.fabricmc|software\.bernie|org\.spongepowered|studio\.merami\.sliminterfacefabric)\./
+        def offenders = sources.files.findAll { forbidden.matcher(it.getText('UTF-8')).find() }
+        if (!offenders.isEmpty()) throw new GradleException('slimcore must not use Minecraft, Fabric, GeckoLib, Mixin or sliminterfacefabric: ' + offenders*.name.join(', '))
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+tasks.named('compileJava') { dependsOn 'checkCoreBoundary' }
+def unitTestCopy = new File(System.getProperty('java.io.tmpdir'), 'slimvehicle-unit-tests')
+tasks.register('unitTestClasses', Sync) {
+    from(sourceSets.main.output.classesDirs) { into 'main' }
+    from(sourceSets.test.output.classesDirs) { into 'test' }
+    into unitTestCopy
+}
+tasks.named('test') {
+    dependsOn 'unitTestClasses'
+    useJUnitPlatform()
+    workingDir = projectDir
+    testClassesDirs = files(new File(unitTestCopy, 'test'))
+    classpath = files(new File(unitTestCopy, 'test'), new File(unitTestCopy, 'main')) + configurations.testRuntimeClasspath.filter { it.name ==~ /(gson|joml|slf4j-api|junit-.*|opentest4j|apiguardian-api)-[0-9].*\.jar/ }
+    testLogging { events 'failed'; exceptionFormat 'full' }
+}
+java { withSourcesJar() }
+tasks.named('jar') { exclude 'studio/merami/sliminterfacefabric/gametest/**' }

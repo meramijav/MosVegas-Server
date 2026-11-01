@@ -1,0 +1,6 @@
+{
+  "parent": "volga",
+  "emergency": true,
+  "physics": {"acceleration": 0.013, "brake": 0.019, "grip": 0.3},
+  "fuel": {"per_tick": 0.00075}
+}

@@ -1,0 +1,30 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.g63.mirrors_fold": {
+      "animation_length": 0.6,
+      "bones": {
+        "mirror_fl": {"rotation": {"0.0": [0, 0, 0], "0.6": {"vector": [0, -65, 0], "easing": "easeInOutSine"}}},
+        "mirror_fr": {"rotation": {"0.0": [0, 0, 0], "0.6": {"vector": [0, 65, 0], "easing": "easeInOutSine"}}}
+      }
+    },
+    "animation.g63.mirrors_unfold": {
+      "animation_length": 0.6,
+      "bones": {
+        "mirror_fl": {"rotation": {"0.0": [0, -65, 0], "0.6": {"vector": [0, 0, 0], "easing": "easeInOutSine"}}},
+        "mirror_fr": {"rotation": {"0.0": [0, 65, 0], "0.6": {"vector": [0, 0, 0], "easing": "easeInOutSine"}}}
+      }
+    },
+    "animation.g63.wrecked": {
+      "animation_length": 0.8,
+      "bones": {
+        "mirror_fl": {"rotation": {"0.0": [0, 0, 0], "0.5": {"vector": [0, -15, 40], "easing": "easeOutBounce"}}},
+        "mirror_fr": {"rotation": {"0.0": [0, 0, 0], "0.5": {"vector": [0, 15, -40], "easing": "easeOutBounce"}}},
+        "spare_wheel": {
+          "rotation": {"0.0": [0, 0, 0], "0.8": {"vector": [-8, 0, 12], "easing": "easeOutBounce"}},
+          "position": {"0.0": [0, 0, 0], "0.8": {"vector": [0, -0.8, 0], "easing": "easeOutBounce"}}
+        }
+      }
+    }
+  }
+}

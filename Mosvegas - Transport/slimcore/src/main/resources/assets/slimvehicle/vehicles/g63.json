@@ -1,0 +1,192 @@
+{
+  "model": "g63",
+  "texture": "g63",
+  "animation": "g63",
+  "animations": [
+    {"name": "animation.g63.mirrors_fold", "when": "locked", "loop": false},
+    {"name": "animation.g63.mirrors_unfold", "when": "!locked", "loop": false},
+    {"name": "animation.g63.wrecked", "when": "wrecked", "loop": false, "transition": 6}
+  ],
+  "scale": 1,
+  "size": {"half_width": 1.2, "half_length": 3.0, "height": 2.45},
+  "mass": 2560,
+  "max_step": 0.7,
+  "body_pivot": 0.7,
+  "window_drop": 0.68,
+  "physics": {
+    "max_speed_kmh": 240,
+    "brake": 0.027,
+    "grip": 0.32,
+    "steer_lock": 0.65,
+    "steer_falloff": 1.4,
+    "drive": "all"
+  },
+  "transmission": {
+    "gears": 9,
+    "automatic": true,
+    "reverse_kmh": 35
+  },
+  "fuel": {"tank": 100, "per_tick": 0.0014},
+  "engine": {
+    "pos": [0, 1.0, 1.875],
+    "spread": [0.35, 0, 0.4],
+    "bone": "engine",
+    "power_kw": 430,
+    "idle_rpm": 650,
+    "limit_rpm": 5800,
+    "max_rpm": 7000,
+    "rev_rpm": 600,
+    "redline_rpm": 6500,
+    "keep_running": 120
+  },
+  "sounds": {
+    "engine_volume": 0.75,
+    "engine": [
+      {"sound": "v8_idle", "inside": "v8_idle_inside", "fade_out": [1100, 2300], "pitch_rpm": 1280, "pitch_follow": 0.5},
+      {"sound": "v8_low", "inside": "v8_low_inside", "fade_in": [1100, 2300], "fade_out": [3000, 4200], "pitch_rpm": 2230, "pitch_follow": 1},
+      {"sound": "v8_mid", "inside": "v8_mid_inside", "fade_in": [3000, 4200], "fade_out": [4800, 5800], "pitch_rpm": 4267, "pitch_follow": 1},
+      {"sound": "v8_high", "inside": "v8_high_inside", "fade_in": [4800, 5800], "pitch_rpm": 5818, "pitch_follow": 1}
+    ],
+    "start": "v8_start",
+    "start_inside": "v8_start_inside",
+    "start_catch": 0.3,
+    "start_settle": 1.9,
+    "stop": "",
+    "spin_down": 0.7,
+    "horn": "horn",
+    "exhaust_pop": "exhaust_pop",
+    "door_open": "g63_door_open",
+    "door_close": "g63_door_close",
+    "trunk_open": "g63_door_open",
+    "trunk_close": "g63_trunk_close",
+    "hood_open": "g63_hood_open",
+    "hood_close": "g63_hood_close",
+    "hatch_open": "g63_hatch_open",
+    "hatch_close": "g63_hatch_close",
+    "gear_shift": "g63_shift_up",
+    "gear_shift_down": "g63_shift_down",
+    "handbrake_on": "g63_handbrake_on",
+    "handbrake_off": "g63_handbrake_off",
+    "lock": "g63_lock"
+  },
+  "wheel": {"radius": 0.5, "half_width": 0.1875, "roll_radius": 0.5, "contact": 0.51},
+  "wheels": [
+    {"bone": "fl", "pos": [1.06875, 0.5125, 1.8], "steer": true},
+    {"bone": "fr", "pos": [-1.06875, 0.5125, 1.8], "steer": true},
+    {"bone": "rl", "pos": [1.06875, 0.5125, -1.80625]},
+    {"bone": "rr", "pos": [-1.06875, 0.5125, -1.80625]}
+  ],
+  "rider": {"scale": 0.85},
+  "seats": [
+    {"pos": [0.6, 1.04, -0.06], "door": "door_fl", "label": "seat.slimvehicle.driver",
+     "click": {"center": [0.6, 1.25, 0.0], "half": [0.32, 0.22, 0.4]}},
+    {"pos": [-0.6, 1.04, -0.06], "door": "door_fr", "label": "seat.slimvehicle.front_passenger",
+     "click": {"center": [-0.6, 1.25, 0.0], "half": [0.32, 0.22, 0.4]}},
+    {"pos": [0.625, 1.04, -1.06], "door": "door_rl", "label": "seat.slimvehicle.rear_passenger",
+     "click": {"center": [0.625, 1.25, -0.98], "half": [0.3, 0.22, 0.4]}},
+    {"pos": [0, 1.06, -1.06], "door": "door_rl", "label": "seat.slimvehicle.rear_middle",
+     "click": {"center": [0, 1.25, -0.98], "half": [0.2, 0.22, 0.4]}},
+    {"pos": [-0.625, 1.04, -1.06], "door": "door_rr", "label": "seat.slimvehicle.rear_passenger",
+     "click": {"center": [-0.625, 1.25, -0.98], "half": [0.3, 0.22, 0.4]}}
+  ],
+  "openings": {
+    "door_fl": {"type": "door", "rotate": [0, -1.2, 0], "buckle": 0.06},
+    "door_fr": {"type": "door", "rotate": [0, 1.2, 0], "buckle": 0.06},
+    "door_rl": {"type": "door", "rotate": [0, -1.2, 0], "buckle": 0.06},
+    "door_rr": {"type": "door", "rotate": [0, 1.2, 0], "buckle": 0.06},
+    "bonnet": {"type": "bonnet", "rotate": [0.95, 0, 0], "buckle": 0.07},
+    "trunk": {"type": "trunk", "rotate": [0, -1.55, 0], "buckle": 0.05,
+      "storage": {"center": [0, 0.9, -2.0], "half": [0.88, 0.06, 0.55], "rows": 4}},
+    "fuel": {"type": "fuel", "bone": "fuel_flap", "rotate": [0, 1.4, 0], "solid": false},
+    "glovebox": {"type": "glovebox", "rotate": [1.0, 0, 0], "solid": false,
+      "storage": {"center": [-0.625, 1.03, 0.875], "half": [0.3, 0.1, 0.08], "rows": 1, "seats": [0, 1]}}
+  },
+  "glass": [
+    {"bone": "glass_fl", "window": 0},
+    {"bone": "glass_fr", "window": 1},
+    {"bone": "glass_rl", "window": 2},
+    {"bone": "glass_rr", "window": 4},
+    {"bone": "glass_windshield"},
+    {"bone": "glass_rear"},
+    {"bone": "glass_quarter_left"},
+    {"bone": "glass_quarter_right"},
+    {"bone": "glass_roof"}
+  ],
+  "hull": {
+    "boxes": [
+      {"center": [0, 0.5675, 0.035], "half": [1.12, 0.0925, 2.865]},
+      {"center": [0, 0.975, 1.95], "half": [1.14, 0.5, 0.95]},
+      {"center": [0, 0.67375, -2.1025], "half": [1.14, 0.20125, 0.7275]},
+      {"center": [0, 1.23125, -1.9625], "half": [1.14, 0.35625, 0.5875]},
+      {"center": [0.9685, 1.6025, -2.6315], "half": [0.1715, 0.7275, 0.0815]},
+      {"center": [-0.92, 1.6025, -2.6315], "half": [0.22, 0.7275, 0.0815]},
+      {"center": [0, 1.95875, -1.96], "half": [0.9, 0.37125, 0.58]},
+      {"center": [0, 2.385, -1.4895], "half": [0.95, 0.055, 1.1205]},
+      {"center": [0, 2.385, 0.458], "half": [0.95, 0.055, 0.252]},
+      {"center": [0.7405, 2.385, -0.0815], "half": [0.2095, 0.055, 0.2875]},
+      {"center": [-0.7405, 2.385, -0.0815], "half": [0.2095, 0.055, 0.2875]}
+    ]
+  },
+  "underbody": [[1.0, 0.40, 2.88], [-1.0, 0.40, 2.88], [0, 0.40, 2.9], [1.0, 0.47, -2.8], [-1.0, 0.47, -2.8], [0, 0.47, -2.82]],
+  "lamps": {
+    "headlight": [0.78, 1.144, 2.6],
+    "headlight_type": "led",
+    "taillight": [0.919, 0.969, -2.7],
+    "front_indicator": [0.931, 1.4, 2.42],
+    "rear_indicator": [0.86, 0.94, -2.71],
+    "reverse": [0.8, 0.9, -2.71],
+    "headlight_bone": {"bone": "headlights", "cubes": [
+      "left", "right",
+      "left", "left", "left", "left", "left", "left", "left", "left",
+      "right", "right", "right", "right", "right", "right", "right", "right"]},
+    "taillight_bone": {"bone": "taillights", "cubes": ["left", "right"]},
+    "glow": [{"bone": "brakelight", "when": "brake"}, {"bone": "tail_strips", "when": "tail"}]
+  },
+  "light_occluder": {"center": [0, 1.42, 0.04], "half": [1.14, 1.0, 2.88]},
+  "exhaust": [1.186, 0.4125, -0.836],
+  "exhaust_pipes": [[1.102, 0.4125, -0.92]],
+  "exhaust_direction": [0.8, 0, -0.6],
+  "exhaust_mirror": true,
+  "exhaust_effects": {"smoke": 1.3, "start_smoke": 1.4, "start_seconds": 3.0, "shift": true},
+  "fire": [
+    {"pos": [0, 1.2, 1.9], "spread": [0.7, 0.05, 0.6]},
+    {"pos": [0, 1.4, -0.4], "spread": [0.7, 0.15, 0.9]},
+    {"pos": [0, 1.2, -2.2], "spread": [0.7, 0.05, 0.45]},
+    {"pos": [1.05, 0.6, 1.8], "spread": [0.08, 0.1, 0.3]},
+    {"pos": [-1.05, 0.6, -1.8], "spread": [0.08, 0.1, 0.3]}
+  ],
+  "driver": {
+    "steering": {"hub": [0.6, 1.5625, 0.3875], "tilt": 70, "offset": [0, 0], "radius": 0.228, "ratio": 8,
+                 "bone": "steering_spin", "axis": [0, 0, 1]},
+    "gear_lever": {"pos": [0.02, 1.1, 0.36]}
+  },
+  "wipers": {"bones": ["wiper_left", "wiper_right"], "glass_angle": 28.2, "sweep": 1.45, "cycle": 26},
+  "damage": {
+    "half_width": 1.14,
+    "half_length": 2.9,
+    "roof": 2.25,
+    "fuel_tank": [0, 0.5, -1.9],
+    "zones": [
+      {"id": "front", "side": "front", "engine": 1.0, "jam": "bonnet", "jam_at": 12, "glass": "glass_windshield", "glass_at": 20},
+      {"id": "wing_fl", "side": "left", "from": 0.99, "engine": 0.5, "pull": 1},
+      {"id": "door_fl", "side": "left", "from": -0.31, "to": 0.99, "engine": 0.15, "jam": "door_fl", "jam_at": 8, "glass": "glass_fl", "glass_at": 12},
+      {"id": "door_rl", "side": "left", "from": -1.375, "to": -0.31, "engine": 0.15, "jam": "door_rl", "jam_at": 8, "glass": "glass_rl", "glass_at": 12},
+      {"id": "quarter_rl", "side": "left", "to": -1.375, "engine": 0.15, "glass": "glass_quarter_left", "glass_at": 12},
+      {"id": "wing_fr", "side": "right", "from": 0.99, "engine": 0.5, "pull": -1},
+      {"id": "door_fr", "side": "right", "from": -0.31, "to": 0.99, "engine": 0.15, "jam": "door_fr", "jam_at": 8, "glass": "glass_fr", "glass_at": 12},
+      {"id": "door_rr", "side": "right", "from": -1.375, "to": -0.31, "engine": 0.15, "jam": "door_rr", "jam_at": 8, "glass": "glass_rr", "glass_at": 12},
+      {"id": "quarter_rr", "side": "right", "to": -1.375, "engine": 0.15, "glass": "glass_quarter_right", "glass_at": 12, "leak": true},
+      {"id": "rear", "side": "rear", "engine": 0.1, "jam": "trunk", "jam_at": 12, "glass": "glass_rear", "glass_at": 16},
+      {"id": "roof", "side": "top", "engine": 0.05, "glass": "glass_roof", "glass_at": 15}
+    ]
+  },
+  "render": {
+    "chassis": "chassis",
+    "paint": ["body", "door_fl", "door_fr", "door_rl", "door_rr", "bonnet", "trunk", "fuel_flap", "tail_strips"],
+    "dent": ["body", "door_fl", "door_fr", "door_rl", "door_rr", "bonnet", "trunk", "fuel_flap", "headlights", "taillights", "tail_strips",
+             "indicator_front_left", "indicator_front_right"],
+    "interior": ["interior", "engine"],
+    "shadow": [1.25, 3.0],
+    "speedometer": 280
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.scooter",
+        "texture_width": 512,
+        "texture_height": 512,
+        "visible_bounds_width": 3,
+        "visible_bounds_height": 3,
+        "visible_bounds_offset": [
+          0,
+          1,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "Volga",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "chassis",
+          "parent": "Volga",
+          "pivot": [
+            0,
+            5,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -3,
+                3,
+                -9
+              ],
+              "size": [
+                6,
+                2,
+                17
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            },
+            {
+              "origin": [
+                -1,
+                4,
+                -6
+              ],
+              "size": [
+                2,
+                1,
+                10
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "steer_fl",
+          "parent": "Volga",
+          "pivot": [
+            0,
+            3,
+            -8
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1,
+                3,
+                -9
+              ],
+              "size": [
+                2,
+                20,
+                2
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            },
+            {
+              "origin": [
+                -7,
+                22,
+                -9
+              ],
+              "size": [
+                14,
+                2,
+                2
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "roll_fl",
+          "parent": "steer_fl",
+          "pivot": [
+            0,
+            3,
+            -8
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.5,
+                0,
+                -11
+              ],
+              "size": [
+                3,
+                6,
+                6
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "roll_rl",
+          "parent": "Volga",
+          "pivot": [
+            0,
+            3,
+            8
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.5,
+                0,
+                5
+              ],
+              "size": [
+                3,
+                6,
+                6
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

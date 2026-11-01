@@ -1,0 +1,372 @@
+[
+  {
+    "sha256": "c55ee47537bf38dc4aaddcb1fc4ed20242967200e3eadcba94face5bebfa33bc",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/engineamci4_running.ogg",
+    "event": "engine_loop",
+    "upstreamGitBlob": "b0a6b4779f0e56cede02df009dc9282b46ddec57",
+    "durationSeconds": 1.719
+  },
+  {
+    "sha256": "447f1317ec96d1a376b3c8088f2e218a616dc538977ed33cc00dca12873378e3",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/engineamci4_low.ogg",
+    "event": "engine_low",
+    "upstreamGitBlob": "5cf58e2f53859947a79da371aee368a749261807",
+    "durationSeconds": 2.128
+  },
+  {
+    "sha256": "ef51df6391cfe13cc23852aa4c5917ace361fc93040892b2aa37d3799a53dcdf",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/engineamci4_mid.ogg",
+    "event": "engine_mid",
+    "upstreamGitBlob": "b50a5964bc17a8609e25e0c5fa0630250c7191a2",
+    "durationSeconds": 2.133
+  },
+  {
+    "sha256": "2958ab901f4e0a6e1f259b50c7fad2fa35e384462ae2e746e85fd97ee5490c2b",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/engineamci4_high.ogg",
+    "event": "engine_high",
+    "upstreamGitBlob": "4253d634bf3f425e342bf49e0ca1a665a83e0850",
+    "durationSeconds": 2.166
+  },
+  {
+    "sha256": "11ae189b7777e23b6dec44fe86559d57dee3379107cb1e81a09110612b0ebbee",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/engineamci4_starting.ogg",
+    "event": "engine_start",
+    "upstreamGitBlob": "65bbaa6918e4396477c4e3138af88a70e9b14ca3",
+    "durationSeconds": 1.027
+  },
+  {
+    "sha256": "008979cfcb151828eb894379700e61c5124bedec619472fdfafc89a5e8f89298",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/engineamci4_stopping.ogg",
+    "event": "engine_stop",
+    "upstreamGitBlob": "52bcd104de8d77570297be72795369c49e4b5bba",
+    "durationSeconds": 0.447
+  },
+  {
+    "sha256": "2b552712e85bce22442c1a2c1db9a19bcd7ab530523ba0d9d43c3b3b2644180d",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/engineamci4_sputter.ogg",
+    "event": "exhaust_pop",
+    "upstreamGitBlob": "9ec861c540b1148b0b56f1fbf7727f75f0332ff5",
+    "originalSha256": "088a31002bf63c005ba17e99a258bc66567d437c2a9d3a9356bba7f80ff92b77",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.827
+  },
+  {
+    "sha256": "52f90ba85b6d6568322b506db570162022ebd5109a961432d18f8dc77afb6d1d",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/doorcaropen.ogg",
+    "event": "door_open",
+    "upstreamGitBlob": "8e39da0725e35312262fed2fbe2c35ecd85a3d7f",
+    "durationSeconds": 0.457
+  },
+  {
+    "sha256": "69bc2c6dfbd3997dfb1e3f11cebe203dad4aeec4a7bebed9d2f510809088cd0e",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/doorcarclose.ogg",
+    "event": "door_close",
+    "upstreamGitBlob": "adb51745f8b513fbc4995d5511f77ee04c997833",
+    "durationSeconds": 0.52
+  },
+  {
+    "sha256": "0669a6b5ec48e092e58d56fc5eb552263efde9cd540000b08af1a9688952542a",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/hoodcaropen.ogg",
+    "event": "hood_open",
+    "upstreamGitBlob": "224e2d8026a3f692505224095bcc9b64f00f406f",
+    "originalSha256": "d10276b1a5644089b559b8c3db2c1884ea34dc9ec990063010cdfd31e977b3b5",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.544
+  },
+  {
+    "sha256": "6fde25961d5ef5ad413ffa860139e1da0211c4cc1b8a5e9b6d2b77e30c2ccac8",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/hoodcarclose.ogg",
+    "event": "hood_close",
+    "upstreamGitBlob": "b0f2aa38c98b4cc9032c159a27f27b6f985dd075",
+    "originalSha256": "3654dce4618806966136424edc17baa7f941934298806af0e171ae0633de2350",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.498
+  },
+  {
+    "sha256": "30424c2af3f699bf0f5c87079a6f6a47dfd9bdee50a500e9141d25224e4733b4",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/glovebox_open0.ogg",
+    "event": "hatch_open",
+    "upstreamGitBlob": "11143a0406ad6678c9a33847ad2edf0b6a512566",
+    "originalSha256": "94f55f62ac927e8018ae52dd2ab6e2b6b5997fb98aea18971ea5401a651a2dc1",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.81
+  },
+  {
+    "sha256": "7c36e84fb0af30e224109b9dc01bb99bdd587ff455acf75a878ab63fc3008756",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/glovebox_close0.ogg",
+    "event": "hatch_close",
+    "upstreamGitBlob": "269bb8cc32bf31a9e13783df56ab690ddd8ab4ee",
+    "durationSeconds": 0.608
+  },
+  {
+    "sha256": "8843f0fa18fdd3b5cce5add28b19302603c39f0598edf8842cf23efa6ef8b0cd",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/gearshiftup.ogg",
+    "event": "gear_shift",
+    "upstreamGitBlob": "5fc6f85cc79e6f90ca090d946ada9e98c6a905dc",
+    "originalSha256": "f17551b8d1160c4f221f8a3352750454982f6a85625eac7d3704b107fc89a274",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.668
+  },
+  {
+    "sha256": "a2039d08101e1b2a0a7df50858961572db85327542d5252f1867a12e4126a3b8",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/carhandbrakeup.ogg",
+    "event": "handbrake_on",
+    "upstreamGitBlob": "e15df11cc3ae84baf3480bc185e8a71c41a2cf51",
+    "durationSeconds": 0.441
+  },
+  {
+    "sha256": "42c09bd1e5d48d3005deb7a7504cc219ea1710a134f52c34e523e45385404bb0",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/carhandbrakedown.ogg",
+    "event": "handbrake_off",
+    "upstreamGitBlob": "7310b4946086339af3cf9f01cb81f36f94a9a960",
+    "durationSeconds": 0.743
+  },
+  {
+    "sha256": "aa6d3fb02e29bdc6abeb9361ebc896f17f4e6bc5327c761c02a0ba2889cfa7c4",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/switch_off.ogg",
+    "event": "lock",
+    "upstreamGitBlob": "a0ca7f870bb9bc7983f9a791895d46ceb9c966e5",
+    "durationSeconds": 0.17
+  },
+  {
+    "sha256": "671064e98a07e5d7ba4a90364f6ab6fccff03275bc8f342b65348b75cd4455cb",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/siren.ogg",
+    "event": "siren",
+    "upstreamGitBlob": "963fab37ba11e0b283d4778b34248f93308c3a9e",
+    "originalSha256": "af1dc1595f2015b7603e3838a9b34f3e360bf654d305274f96c9c2c19eedd4d8",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 13.15
+  },
+  {
+    "sha256": "1fa176a975f92f3d2559afda09d9ff51f420f2bcef2460318d8bd86bfd4f5f6f",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/wheelimpact_low0.ogg",
+    "event": "suspension_bump",
+    "upstreamGitBlob": "724a8b0517ccb5575b04ec016a4b9c4c8f395090",
+    "originalSha256": "58769b0bfd8efadb4db5621f18f8fcf0e1168cff80dc55792d0f783058aba8f2",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.45
+  },
+  {
+    "sha256": "be1f634105df4df2db9f90f1e120b30e3d09f417ec250d792993dd40c2bec09b",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/wheelimpact_hard0.ogg",
+    "event": "collision",
+    "upstreamGitBlob": "7a4d05a74eab1d3c34907195947d1e682035bbfc",
+    "originalSha256": "d1f3c977df6cc33daaedccf73618d043016581da0ae913a7a4624a531b6e959a",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 1.556
+  },
+  {
+    "sha256": "654de735505d9d2910ed1de19588ea0f205438b8512c06f8ed4443ad9bea68a1",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/wheel_skidding.ogg",
+    "event": "tyre_squeal",
+    "upstreamGitBlob": "933d43eaeb99db81a5bc97ec258b742532ff3555",
+    "durationSeconds": 3.571
+  },
+  {
+    "sha256": "63f7419d79cf3cf182bc34d7c0fda1eeb3e4273ac254849729465fcff5167226",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/wheel_roll.ogg",
+    "event": "road_roll",
+    "upstreamGitBlob": "d6b060890c613eeabb199a5b7329c73f2ee49be2",
+    "originalSha256": "f27e42c5731bc334379352a4c2dee41352167bf387db04e7bdfa6d874c8d7113",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 20.544
+  },
+  {
+    "sha256": "2766e84b040f8296cf26ba5228a3ab84fb5987fa91fc24f027c4273804f758fc",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_idle.ogg",
+    "event": "v8_idle",
+    "upstreamGitBlob": "9f1a25f474d4703702dc53b5f4b3e9a224fadb97",
+    "originalSha256": "9468e54d1ff6ddee677ffb5e9594a31b8154569f0640d14eb89f2b0ce5cd82c4",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 3.816
+  },
+  {
+    "sha256": "d1c3de5b56a4c1af4584388f0313966aca07ce07ff1bfab3dc40a7af8ac92378",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_low.ogg",
+    "event": "v8_low",
+    "upstreamGitBlob": "49096a2575652ecd15debd5c97837d40344ef327",
+    "originalSha256": "eca503773639e93d021fbb2fd35d775e88edcb5dec68d9e6fc2ff6e62f830dc4",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 10.213
+  },
+  {
+    "sha256": "d09d2616a89b9b7851d8c5595f0557ba17e9ccdcfff21a410aab0e6fb786a4c1",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_mediumwell.ogg",
+    "event": "v8_mid",
+    "upstreamGitBlob": "370585ad295dafb0c6321996819970067be804aa",
+    "originalSha256": "4f9d821bdd1cbeb132ffc9012c29f4dd3ae4f6e3ad358ea1a338601b76f54d72",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 3.829
+  },
+  {
+    "sha256": "b40eefd22c9d2af8c737a0d32b2b7ddd8c00bebbe1446593ffff705d65c4f35d",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_high.ogg",
+    "event": "v8_high",
+    "upstreamGitBlob": "83966ac3099d48764b5bac2d278cb3f49f48922f",
+    "originalSha256": "6fa0e2ce4d58c81a1bd7d334b4111940c1a8d88ea070f1c842fc42797ad16093",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 9.32
+  },
+  {
+    "sha256": "146285a451a9d8044df1b5e84f6e1296f2999aa96543640465e9da704323405d",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_starting.ogg",
+    "event": "v8_start",
+    "upstreamGitBlob": "bd97e0a5079234b402ebd7ca68bb4620c1491aa4",
+    "originalSha256": "616715f9528b5a4edbc2d53cdb9b645d3a5ddcf39d9671e10b8a33d207173cf2",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 2.247
+  },
+  {
+    "sha256": "59edbff140927d3cc062c02bc0bd6260714467bdf288c107d2b8f92ff7b67cb6",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_idle_inside.ogg",
+    "event": "v8_idle_inside",
+    "upstreamGitBlob": "d8e1d4090e91066882536fc48dc1568b0fe6db2e",
+    "originalSha256": "f3e845b7802180ee3cb6bcee9481b3cd650e72611c4f9ac954fcdeee78c3d001",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 20.218
+  },
+  {
+    "sha256": "5971720e89a79031369b3e69a6a4ce59f009c676da578e22673842b71796a4df",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_low_inside.ogg",
+    "event": "v8_low_inside",
+    "upstreamGitBlob": "65574d1bb7faa931772ac155b6d5f856a1980f55",
+    "originalSha256": "1d67f62ba7a6f9116ffe4ce410bda2d8bb6a538513c7d90955647ced2c6641fc",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 10.208
+  },
+  {
+    "sha256": "04cf52a80a4f5ffddba04948860c737c2c9434013257c5b201453829c6cb430b",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_mediumwell_inside.ogg",
+    "event": "v8_mid_inside",
+    "upstreamGitBlob": "e0100db6f4d72694576483c8eccfb765845343fa",
+    "originalSha256": "7107ca9541c4e89322e46ba55a3ea77b8eaa1547b1b4dace50190bb6847594b7",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 3.803
+  },
+  {
+    "sha256": "fb555ff3a74d42150863d00652681dc86839b0cd8a52118f5b6867e6adb469d4",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_high_inside.ogg",
+    "event": "v8_high_inside",
+    "upstreamGitBlob": "ad5600080131c5ada7765defa60af9c59bf725fe",
+    "originalSha256": "5feca926955e2c1a3a28e9be8369e0763e9c4205ae3dc03df9141dc1a866fe0c",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 9.307
+  },
+  {
+    "sha256": "8b31fcdc41059432c4a1a745b7e2fc72ba61c1e584e8187a08022fd966a0367b",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/enginefordfe428_starting_inside.ogg",
+    "event": "v8_start_inside",
+    "upstreamGitBlob": "48ec401f0ae57d98b5bed7bfdb620a8c87a706a2",
+    "originalSha256": "317ff883c6b6f668ba0e7c6bfbe9ea726adfd33b9ed327f9b108ec056f28da74",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 2.243
+  },
+  {
+    "sha256": "745bbab03cb5ef937444f66c640cc0a4cdfbf3e270c7de411a04472eb78e4580",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/doorcaropen2.ogg",
+    "event": "g63_door_open",
+    "upstreamGitBlob": "0b221acd2fd35d76a58f828ce6157835adf36aed",
+    "originalSha256": "19358469a3a3c85da9ec6ec95bcdbfe32c6492f0f35982e8363c0e0dbbc76696",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.715
+  },
+  {
+    "sha256": "d0b3316905c14906e73ad08d354b5901bc57f91d5bde50d4a354053b414ca6de",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/doorcarclose2alt.ogg",
+    "event": "g63_door_close",
+    "upstreamGitBlob": "4c57974bd4ed02572175bfcb07207cb987a66c05",
+    "originalSha256": "f9bc1abacdda9afee3dafb5bb1321d1e4dcb1d0198ee64a6c2caac23617b308c",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.644
+  },
+  {
+    "sha256": "eadd1d67d8e15705aeccd6915c951e28048f98eed6b7a1ac6680007369cd783e",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/doorcarclose2.ogg",
+    "event": "g63_trunk_close",
+    "upstreamGitBlob": "f3f10329420e5ace045cd86e29b7a755132a2d94",
+    "originalSha256": "192c6c623d18a9a85462c3a738ce335f54d3c91c3a282d04299230768cfb40b2",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.448
+  },
+  {
+    "sha256": "da6a0c231210891b8f699713279e236f66339d4baaca6306f521437df1b7a045",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/hoodcaropen1.ogg",
+    "event": "g63_hood_open",
+    "upstreamGitBlob": "a3908df3664a9eab6dacbb323dd85916c62021a8",
+    "originalSha256": "f239c9a7e077c9b2235ac0cdac356efa7ab32e60042787569fd3c1bf2dcc97fc",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 1.007
+  },
+  {
+    "sha256": "892905420047184171f6c67ee862191ab196816737d7f5c4f7f80bffe1675bc2",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/hoodcarclose4.ogg",
+    "event": "g63_hood_close",
+    "upstreamGitBlob": "4155fc9cf90b0c606fa7329f6b22902113ee3325",
+    "originalSha256": "92c2ac93c3d4b63be4dd4ab53c3dede1715292e2168bd4abe0cdb170a325805c",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.831
+  },
+  {
+    "sha256": "a65f544a2a4f7c0c2a96cf039e4e944744b1526dd1060a77739bcf0c7e2edbf0",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/glovebox_skyhawk_open.ogg",
+    "event": "g63_hatch_open",
+    "upstreamGitBlob": "f0a35ee2c2550f574673a98592173594432de3ca",
+    "durationSeconds": 0.549
+  },
+  {
+    "sha256": "eff486f8bef985c17855bb116bd7cf58b06e66865e845827ee479a9c7f5dbb73",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/glovebox_skyhawk_close.ogg",
+    "event": "g63_hatch_close",
+    "upstreamGitBlob": "5feecd0907b70e5e0946f5634a25fea0de96dbcb",
+    "durationSeconds": 0.409
+  },
+  {
+    "sha256": "88764169cea96a8c523462f3924c2256838cdc88a4df68cac6890ceb7b5d03a3",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/gearshiftup2.ogg",
+    "event": "g63_shift_up",
+    "upstreamGitBlob": "d506f7c79c84a2ad39fc81fc08ed4398cacd8cc5",
+    "originalSha256": "ec699094a33456e069e71c1f71b9569160fb29734e8556ecb19cb3c168919eb6",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.691
+  },
+  {
+    "sha256": "1fc6d24cb5134f8d570f3de4e4988384821b836d7f2c98189cb835469f03b396",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/gearshiftdown3.ogg",
+    "event": "g63_shift_down",
+    "upstreamGitBlob": "398a1253689cc4cc2b23363efdf27e4043d2c47f",
+    "originalSha256": "56b4241ebe0809a1732cf357c111d40cae189ceaf9e17103d5c70e52a053b27e",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.619
+  },
+  {
+    "sha256": "a5247efba72a0bd5c76df8c578a62429ed824607351ef6a42d22b216ab275915",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/buttonpush.ogg",
+    "event": "g63_handbrake_on",
+    "upstreamGitBlob": "00aa09d71a9b129430529fe746c79f4a65fc522f",
+    "durationSeconds": 0.178
+  },
+  {
+    "sha256": "ff5d47316390571fef3fd2e29c8d4475f14c86ee50bb8742f33584a71adf4945",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/buttonrelease.ogg",
+    "event": "g63_handbrake_off",
+    "upstreamGitBlob": "f49202d43f3af0e6a6f985b9945d7d5f0bec7aad",
+    "durationSeconds": 0.203
+  },
+  {
+    "sha256": "6172b97320d00e7bc539f691ad1fd26203218c5685fa1c7447478b8cfafc31d9",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/bwwp.ogg",
+    "event": "g63_lock",
+    "upstreamGitBlob": "e6ccfc32c50a76965a2349684a99a39544b8f4e3",
+    "originalSha256": "c9ba374c059cfb056a0275f84c26f31975673179ba9cac948bcb35aff15e3c99",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 0.317
+  },
+  {
+    "sha256": "9b700b56c122cc5e5b251280695d75fffd9b132097c18ded442ca4602de869dc",
+    "source": "https://raw.githubusercontent.com/DonBruce64/MinecraftTransportSimulator/5c840cf70b5d93b0003eab7088a0db3613400208/mccore/src/main/resources/assets/mts/sounds/wheel_blowout.ogg",
+    "event": "tyre_blowout",
+    "originalSha256": "eaf69be1f94a4f3494836d0f960aab1d012eeea36537a5f2fb9c96300efb4a71",
+    "processing": "Stereo downmixed to mono for positional playback",
+    "durationSeconds": 1.16
+  }
+]

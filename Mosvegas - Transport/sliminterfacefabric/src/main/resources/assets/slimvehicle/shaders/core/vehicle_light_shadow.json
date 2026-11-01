@@ -1,0 +1,15 @@
+{
+    "vertex": "slimvehicle:vehicle_light",
+    "fragment": "slimvehicle:vehicle_light_shadow",
+    "attributes": ["Position"],
+    "samplers": [
+        {"name": "Lamps"},
+        {"name": "Volume"}
+    ],
+    "uniforms": [
+        {"name": "VolumeOrigin", "type": "float", "count": 3, "values": [0.0, 0.0, 0.0]},
+        {"name": "VolumeReady", "type": "int", "count": 1, "values": [0]},
+        {"name": "ShadowCount", "type": "int", "count": 1, "values": [0]},
+        {"name": "OccluderCount", "type": "int", "count": 1, "values": [0]}
+    ]
+}
