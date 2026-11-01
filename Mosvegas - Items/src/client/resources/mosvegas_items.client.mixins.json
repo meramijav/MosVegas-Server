@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "ru.mosvegas.items.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": ["ResourcePackMixin", "FirstPersonConsumableMixin", "ThirdPersonConsumableMixin", "ConsumptionArmMixin", "CreativeGroupsMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

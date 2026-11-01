@@ -1,0 +1,15 @@
+{
+  "id": "pizza_pineapple",
+  "group": "pizza",
+  "order": 103,
+  "category": "food",
+  "texture": "item/food/pizza_pineapple",
+  "use_time": 32,
+  "hunger": 4,
+  "saturation": 0.5,
+  "uses": 4,
+  "stack_size": 4,
+  "always_edible": true,
+  "consume_in_creative": true,
+  "finish_sound": "minecraft:entity.player.burp"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "latte",
+  "group": "hot_drinks",
+  "order": 231,
+  "category": "drink",
+  "texture": "item/food/latte",
+  "use_time": 24,
+  "hunger": 2,
+  "saturation": 0.2,
+  "uses": 3,
+  "stack_size": 16,
+  "consume_in_creative": true,
+  "sound": "mosvegas_items:item.drink",
+  "sound_interval": 12,
+  "sound_volume": 0.75,
+  "cooldown": 40,
+  "effects": [
+    {
+      "id": "minecraft:speed",
+      "duration": 600,
+      "amplifier": 0,
+      "chance": 1.0
+    }
+  ]
+}

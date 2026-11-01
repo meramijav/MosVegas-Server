@@ -1,0 +1,15 @@
+{
+  "id": "cheeseburger_double",
+  "group": "burgers",
+  "order": 112,
+  "category": "food",
+  "texture": "item/food/cheeseburger",
+  "use_time": 32,
+  "hunger": 6,
+  "saturation": 0.7,
+  "uses": 3,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true,
+  "finish_sound": "minecraft:entity.player.burp"
+}

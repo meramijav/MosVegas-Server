@@ -1,0 +1,14 @@
+{
+  "id": "cigarette", "name": "item.mosvegas_items.cigarette", "description": "item.mosvegas_items.cigarette.description",
+  "category": "tobacco", "use_action": "smoke",
+  "model": "geo/cigarette.geo.json", "texture": "textures/item/cigarette.png",
+  "animation_file": "animations/consumable.animation.json", "use_animation": "animation.cigarette.use",
+  "use_time": 48, "uses": 5, "stack_size": 16, "cooldown": 40,
+  "consume_in_creative": true,
+  "sound": "minecraft:block.fire.ambient", "sound_volume": 0.15, "sound_interval": 24,
+  "particles": {"id": "mosvegas_items:exhaled_smoke", "count": 3, "interval": 2, "spread": 0.04, "speed": 0.08},
+  "effects": [
+    {"id": "minecraft:slowness", "duration": 120, "amplifier": 0, "chance": 1},
+    {"id": "minecraft:nausea", "duration": 100, "amplifier": 0, "chance": 0.15}
+  ]
+}

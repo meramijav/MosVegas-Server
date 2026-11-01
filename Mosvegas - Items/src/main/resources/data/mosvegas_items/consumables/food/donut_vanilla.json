@@ -1,0 +1,14 @@
+{
+  "id": "donut_vanilla",
+  "group": "donuts",
+  "order": 152,
+  "category": "food",
+  "texture": "item/food/donut_vanilla",
+  "use_time": 24,
+  "hunger": 3,
+  "saturation": 0.3,
+  "uses": 1,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true
+}

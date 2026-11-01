@@ -1,0 +1,15 @@
+{
+  "id": "steak",
+  "group": "meat",
+  "order": 130,
+  "category": "food",
+  "texture": "item/food/steak_steak",
+  "use_time": 32,
+  "hunger": 5,
+  "saturation": 0.8,
+  "uses": 2,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true,
+  "finish_sound": "minecraft:entity.player.burp"
+}

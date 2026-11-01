@@ -1,0 +1,14 @@
+{
+  "id": "cookie",
+  "group": "bakery",
+  "order": 143,
+  "category": "food",
+  "texture": "item/food/cookie",
+  "use_time": 16,
+  "hunger": 2,
+  "saturation": 0.1,
+  "uses": 1,
+  "stack_size": 64,
+  "always_edible": true,
+  "consume_in_creative": true
+}

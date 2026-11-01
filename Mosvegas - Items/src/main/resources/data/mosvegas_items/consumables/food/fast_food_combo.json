@@ -1,0 +1,15 @@
+{
+  "id": "fast_food_combo",
+  "group": "fast_food",
+  "order": 125,
+  "category": "food",
+  "texture": "item/food/fast_food_combo_combo",
+  "use_time": 32,
+  "hunger": 4,
+  "saturation": 0.6,
+  "uses": 6,
+  "stack_size": 4,
+  "always_edible": true,
+  "consume_in_creative": true,
+  "finish_sound": "minecraft:entity.player.burp"
+}

@@ -1,0 +1,10 @@
+{
+  "parent": "mosvegas_items:item/consumable",
+  "display": {
+    "gui": { "rotation": [0, 0, -35], "translation": [0, -2, 0], "scale": [1.35, 1.35, 1.35] },
+    "thirdperson_righthand": { "translation": [0, -0.072, 0], "scale": [0.45, 0.45, 0.45] },
+    "thirdperson_lefthand": { "translation": [0, -0.072, 0], "scale": [0.45, 0.45, 0.45] },
+    "firstperson_righthand": { "translation": [0, -0.088, 0], "scale": [0.55, 0.55, 0.55] },
+    "firstperson_lefthand": { "translation": [0, -0.088, 0], "scale": [0.55, 0.55, 0.55] }
+  }
+}

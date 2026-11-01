@@ -1,0 +1,16 @@
+{
+  "item.can.open": {
+    "subtitle": "subtitles.mosvegas_items.can_open",
+    "sounds": [
+      {"name": "mosvegas_items:can_open", "volume": 0.9, "attenuation_distance": 12}
+    ]
+  },
+  "item.drink": {
+    "subtitle": "subtitles.mosvegas_items.drink",
+    "sounds": [
+      {"name": "mosvegas_items:drink_1", "volume": 0.72, "attenuation_distance": 8},
+      {"name": "mosvegas_items:drink_2", "volume": 0.72, "attenuation_distance": 8},
+      {"name": "mosvegas_items:drink_3", "volume": 0.72, "attenuation_distance": 8}
+    ]
+  }
+}

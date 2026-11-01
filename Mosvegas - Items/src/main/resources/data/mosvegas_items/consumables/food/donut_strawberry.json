@@ -1,0 +1,14 @@
+{
+  "id": "donut_strawberry",
+  "group": "donuts",
+  "order": 151,
+  "category": "food",
+  "texture": "item/food/donut_strawberry",
+  "use_time": 24,
+  "hunger": 3,
+  "saturation": 0.3,
+  "uses": 1,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true
+}

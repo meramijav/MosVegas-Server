@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "mosvegas_items",
+  "version": "${version}",
+  "name": "MosVegas Items",
+  "description": "Data-driven food, drinks, alcohol and tobacco consumables.",
+  "authors": [{"name": "Автор: telegram @merami19", "contact": {"homepage": "https://t.me/merami19"}}],
+  "contributors": [{"name": "Создатели: telegram @merami_studio", "contact": {"homepage": "https://t.me/merami_studio"}}],
+  "contact": {
+    "sources": "https://t.me/merami_studio",
+    "issues": "https://t.me/merami19"
+  },
+  "license": "All Rights Reserved",
+  "icon": "assets/mosvegas_items/icon.png",
+  "environment": "*",
+  "mixins": ["mosvegas_items.mixins.json", {"config": "mosvegas_items.client.mixins.json", "environment": "client"}],
+  "entrypoints": {
+    "main": ["ru.mosvegas.items.MosVegasItems"],
+    "client": ["ru.mosvegas.items.MosVegasItemsClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": ">=0.97.0+1.20.4",
+    "minecraft": "1.20.4",
+    "java": ">=17",
+    "geckolib": "~4.4.4"
+  }
+}

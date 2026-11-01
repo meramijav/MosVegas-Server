@@ -1,0 +1,15 @@
+{
+  "id": "roast_chicken",
+  "group": "meat",
+  "order": 131,
+  "category": "food",
+  "texture": "item/food/roast_chicken_chicken",
+  "use_time": 32,
+  "hunger": 5,
+  "saturation": 0.6,
+  "uses": 6,
+  "stack_size": 4,
+  "always_edible": true,
+  "consume_in_creative": true,
+  "finish_sound": "minecraft:entity.player.burp"
+}

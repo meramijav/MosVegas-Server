@@ -1,0 +1,14 @@
+{
+  "id": "cinnamon_roll",
+  "group": "bakery",
+  "order": 142,
+  "category": "food",
+  "texture": "item/food/cinnamon_roll",
+  "use_time": 32,
+  "hunger": 4,
+  "saturation": 0.4,
+  "uses": 1,
+  "stack_size": 32,
+  "always_edible": true,
+  "consume_in_creative": true
+}

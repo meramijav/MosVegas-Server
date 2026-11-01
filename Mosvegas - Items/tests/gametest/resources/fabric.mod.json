@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "mosvegas_verification",
+  "version": "1.0.0",
+  "name": "MosVegas development checks",
+  "environment": "server",
+  "entrypoints": {
+    "main": ["ru.mosvegas.items.ConsumableGameTests"],
+    "fabric-gametest": ["ru.mosvegas.items.ConsumableGameTests", "ru.mosvegas.items.ConfigurationGameTests"]
+  },
+  "depends": {
+    "mosvegas_items": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

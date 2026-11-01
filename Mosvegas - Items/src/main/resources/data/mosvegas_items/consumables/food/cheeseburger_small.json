@@ -1,0 +1,14 @@
+{
+  "id": "cheeseburger_small",
+  "group": "burgers",
+  "order": 111,
+  "category": "food",
+  "texture": "item/food/cheeseburger_small",
+  "use_time": 32,
+  "hunger": 5,
+  "saturation": 0.5,
+  "uses": 1,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true
+}

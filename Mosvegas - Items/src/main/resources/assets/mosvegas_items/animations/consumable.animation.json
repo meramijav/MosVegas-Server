@@ -1,0 +1,13 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.beer.use": {
+      "loop": true, "animation_length": 0.8,
+      "bones": {"group2": {"rotation": {"0.0": [0,0,0], "0.4": [-2,0,0], "0.8": [0,0,0]}}}
+    },
+    "animation.cigarette.use": {
+      "loop": true, "animation_length": 1.2,
+      "bones": {"root": {"scale": {"0.0": [1,1,1], "0.6": [0.98,1,0.98], "1.2": [1,1,1]}}}
+    }
+  }
+}

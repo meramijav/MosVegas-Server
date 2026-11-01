@@ -1,0 +1,15 @@
+{
+  "id": "beer", "name": "item.mosvegas_items.beer", "description": "item.mosvegas_items.beer.description",
+  "category": "alcohol", "use_action": "drink", "group": "beer",
+  "model": "geo/beer.geo.json", "texture": "textures/item/beer.png",
+  "animation_file": "animations/consumable.animation.json", "use_animation": "animation.beer.use",
+  "start_sound": "mosvegas_items:item.can.open", "sound": "mosvegas_items:item.drink", "finish_sound": "",
+  "sound_interval": 12, "sound_volume": 0.75,
+  "use_time": 32, "hunger": 1, "saturation": 0.1, "uses": 4, "stack_size": 16, "cooldown": 20,
+  "consume_in_creative": true,
+  "particles": false,
+  "effects": [
+    { "id": "minecraft:strength", "duration": 300, "amplifier": 0, "chance": 0.35 },
+    { "id": "minecraft:nausea", "duration": 160, "amplifier": 0, "chance": 0.18 }
+  ]
+}

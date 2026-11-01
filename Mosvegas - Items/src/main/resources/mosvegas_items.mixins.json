@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "ru.mosvegas.items.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": ["ConsumptionEffectsMixin", "ThrowEmptyMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

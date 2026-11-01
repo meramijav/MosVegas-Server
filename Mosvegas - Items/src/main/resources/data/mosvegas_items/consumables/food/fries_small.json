@@ -1,0 +1,14 @@
+{
+  "id": "fries_small",
+  "group": "fast_food",
+  "order": 124,
+  "category": "food",
+  "texture": "item/food/fries",
+  "use_time": 32,
+  "hunger": 2,
+  "saturation": 0.3,
+  "uses": 2,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true
+}

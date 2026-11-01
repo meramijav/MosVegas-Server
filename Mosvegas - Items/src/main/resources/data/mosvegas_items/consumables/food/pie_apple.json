@@ -1,0 +1,14 @@
+{
+  "id": "pie_apple",
+  "group": "pies",
+  "order": 180,
+  "category": "food",
+  "texture": "item/food/pie_apple",
+  "use_time": 32,
+  "hunger": 4,
+  "saturation": 0.3,
+  "uses": 4,
+  "stack_size": 4,
+  "always_edible": true,
+  "consume_in_creative": true
+}

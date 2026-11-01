@@ -1,0 +1,14 @@
+{
+  "id": "watermelon",
+  "group": "fruit",
+  "order": 191,
+  "category": "food",
+  "texture": "item/food/watermelon",
+  "use_time": 32,
+  "hunger": 2,
+  "saturation": 0.3,
+  "uses": 6,
+  "stack_size": 4,
+  "always_edible": true,
+  "consume_in_creative": true
+}

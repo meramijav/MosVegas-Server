@@ -1,0 +1,14 @@
+{
+  "id": "cupcake_vanilla",
+  "group": "cupcakes",
+  "order": 162,
+  "category": "food",
+  "texture": "item/food/cupcake_vanilla",
+  "use_time": 24,
+  "hunger": 3,
+  "saturation": 0.3,
+  "uses": 1,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "fried_chicken_bucket",
+  "group": "meat",
+  "order": 132,
+  "category": "food",
+  "texture": "item/food/fried_chicken_bucket",
+  "use_time": 32,
+  "hunger": 4,
+  "saturation": 0.5,
+  "uses": 6,
+  "stack_size": 4,
+  "always_edible": true,
+  "consume_in_creative": true,
+  "finish_sound": "minecraft:entity.player.burp"
+}

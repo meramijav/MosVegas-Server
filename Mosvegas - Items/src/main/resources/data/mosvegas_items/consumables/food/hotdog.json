@@ -1,0 +1,14 @@
+{
+  "id": "hotdog",
+  "group": "fast_food",
+  "order": 120,
+  "category": "food",
+  "texture": "item/food/hotdog",
+  "use_time": 32,
+  "hunger": 4,
+  "saturation": 0.5,
+  "uses": 2,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true
+}

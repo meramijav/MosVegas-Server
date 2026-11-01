@@ -1,0 +1,16 @@
+{
+  "id": "juice_glass_grape",
+  "group": "juice",
+  "order": 213,
+  "category": "drink",
+  "texture": "item/food/juice_glass_grape",
+  "use_time": 24,
+  "hunger": 2,
+  "saturation": 0.3,
+  "uses": 2,
+  "stack_size": 16,
+  "consume_in_creative": true,
+  "sound": "mosvegas_items:item.drink",
+  "sound_interval": 12,
+  "sound_volume": 0.75
+}

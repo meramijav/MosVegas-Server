@@ -1,0 +1,32 @@
+{
+  "id": "wine_bottle",
+  "group": "wine",
+  "order": 250,
+  "category": "alcohol",
+  "texture": "item/food/wine_bottle",
+  "use_time": 32,
+  "hunger": 1,
+  "saturation": 0.1,
+  "uses": 5,
+  "stack_size": 16,
+  "consume_in_creative": true,
+  "sound": "mosvegas_items:item.drink",
+  "sound_interval": 12,
+  "sound_volume": 0.75,
+  "cooldown": 20,
+  "remainder": "minecraft:glass_bottle",
+  "effects": [
+    {
+      "id": "minecraft:regeneration",
+      "duration": 100,
+      "amplifier": 0,
+      "chance": 0.2
+    },
+    {
+      "id": "minecraft:nausea",
+      "duration": 200,
+      "amplifier": 0,
+      "chance": 0.25
+    }
+  ]
+}

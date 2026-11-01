@@ -1,0 +1,14 @@
+{
+  "id": "muffin_chocolate",
+  "group": "muffins",
+  "order": 170,
+  "category": "food",
+  "texture": "item/food/muffin_chocolate",
+  "use_time": 24,
+  "hunger": 3,
+  "saturation": 0.4,
+  "uses": 1,
+  "stack_size": 16,
+  "always_edible": true,
+  "consume_in_creative": true
+}

@@ -1,0 +1,14 @@
+{
+  "id": "bread_loaf",
+  "group": "bakery",
+  "order": 140,
+  "category": "food",
+  "texture": "item/food/bread_loaf",
+  "use_time": 32,
+  "hunger": 3,
+  "saturation": 0.6,
+  "uses": 2,
+  "stack_size": 32,
+  "always_edible": true,
+  "consume_in_creative": true
+}

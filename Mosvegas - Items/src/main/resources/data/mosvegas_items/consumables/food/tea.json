@@ -1,0 +1,24 @@
+{
+  "id": "tea",
+  "group": "hot_drinks",
+  "order": 232,
+  "category": "drink",
+  "texture": "item/food/tea",
+  "use_time": 24,
+  "hunger": 1,
+  "saturation": 0.1,
+  "uses": 3,
+  "stack_size": 16,
+  "consume_in_creative": true,
+  "sound": "mosvegas_items:item.drink",
+  "sound_interval": 12,
+  "sound_volume": 0.75,
+  "effects": [
+    {
+      "id": "minecraft:regeneration",
+      "duration": 100,
+      "amplifier": 0,
+      "chance": 0.3
+    }
+  ]
+}

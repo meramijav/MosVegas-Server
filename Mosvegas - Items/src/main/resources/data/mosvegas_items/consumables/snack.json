@@ -1,0 +1,7 @@
+{
+  "id": "snack", "name": "item.mosvegas_items.snack", "description": "item.mosvegas_items.snack.description",
+  "category": "food", "texture": "minecraft:item/bread", "use_time": 32,
+  "hunger": 6, "saturation": 0.6, "uses": 1, "stack_size": 32, "always_edible": false,
+  "finish_sound": "minecraft:entity.player.burp", "particles": false,
+  "effects": [{"id": "minecraft:regeneration", "duration": 100, "amplifier": 0, "chance": 0.25}]
+}

@@ -1,0 +1,233 @@
+plugins {
+    id 'fabric-loom' version '1.11.8'
+}
+
+version = project.mod_version
+group = project.maven_group
+def releaseVersion = project.version.toString()
+def licenseName = "LICENSE_${project.archives_base_name}"
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { name = 'GeckoLib'; url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        'mosvegas_items' {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+configurations {
+    distributionLibraries { transitive = false }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "software.bernie.geckolib:geckolib-fabric-1.20.4:${project.geckolib_version}"
+    distributionLibraries "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    distributionLibraries "software.bernie.geckolib:geckolib-fabric-1.20.4:${project.geckolib_version}"
+}
+
+processResources {
+    inputs.property 'version', releaseVersion
+    from('README.md') { rename { 'mosvegas-guide.md' } }
+    filesMatching('fabric.mod.json') {
+        expand 'version': releaseVersion
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = 17
+}
+
+// Java supports argument files natively. Avoid Gradle's manifest classpath jar on
+// Windows: Fabric otherwise discovers its manifest dependencies twice.
+tasks.register('launchClient', JavaExec) {
+    dependsOn 'configureClientLaunch', 'classes', 'clientClasses'
+    doFirst {
+        def original = tasks.named('runClient').get()
+        def argumentFile = layout.buildDirectory.file("${name}-classpath.args").get().asFile
+        argumentFile.parentFile.mkdirs()
+        // Native Windows launcher reads @files using the active system code page.
+        def nativeEncoding = System.getProperty('native.encoding', 'UTF-8')
+        argumentFile.setText('-classpath\n"' + original.classpath.asPath.replace('\\', '/') + '"\n', nativeEncoding)
+        mainClass = original.mainClass
+        // The test client keeps its configuration, saves and logs in run/client. runClient only
+        // sets its own working directory when it executes, so read the run configuration.
+        workingDir = file(loom.runs.client.runDir)
+        workingDir.mkdirs()
+        args original.args
+        jvmArgs original.jvmArgs
+        systemProperties original.systemProperties
+        jvmArgs '@' + argumentFile.absolutePath
+    }
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+    from('AUDIO_CREDITS.md')
+    from('LICENSE') {
+        rename { licenseName }
+    }
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+sourceSets {
+    verification {
+        java.srcDirs = ['tests/verification']
+        compileClasspath += sourceSets.main.output + sourceSets.client.output + sourceSets.client.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.client.output + sourceSets.client.runtimeClasspath
+    }
+    gametest {
+        java.srcDirs = ['tests/gametest/java']
+        resources.srcDirs = ['tests/gametest/resources']
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+loom {
+    mods {
+        'mosvegas_verification' { sourceSet sourceSets.gametest }
+    }
+    runs {
+        client { runDir 'run/client' }
+        server { runDir 'run/server' }
+        verificationServer {
+            server()
+            source sourceSets.gametest
+            runDir 'build/verification-server'
+            vmArg '-Dfabric-api.gametest'
+            vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.file('reports/gametest.xml').get().asFile}"
+        }
+    }
+}
+
+tasks.register('verifyServer', JavaExec) {
+    group = 'verification'
+    description = 'Checks actual consumption behavior on an isolated headless Minecraft server.'
+    dependsOn 'configureLaunch', 'classes', 'gametestClasses'
+    doFirst {
+        def original = tasks.named('runVerificationServer').get()
+        def argumentFile = layout.buildDirectory.file("${name}-classpath.args").get().asFile
+        argumentFile.parentFile.mkdirs()
+        argumentFile.setText('-classpath\n"' + original.classpath.asPath.replace('\\', '/') + '"\n',
+                System.getProperty('native.encoding', 'UTF-8'))
+        mainClass = original.mainClass
+        def serverDirectory = layout.buildDirectory.dir('verification-server').get().asFile
+        serverDirectory.mkdirs()
+        workingDir = serverDirectory
+        args original.args
+        jvmArgs original.jvmArgs
+        systemProperties original.systemProperties
+        jvmArgs '@' + argumentFile.absolutePath
+        layout.buildDirectory.dir('reports').get().asFile.mkdirs()
+    }
+}
+
+['verifyGeometry': 'GripGeometryCheck', 'verifyConsumables': 'ConsumableChecks'].each { taskName, entrypoint ->
+    tasks.register(taskName, JavaExec) {
+        group = 'verification'
+        dependsOn 'verificationClasses'
+        mainClass = entrypoint
+        // Minecraft's logger writes logs/ into the working directory; keep it out of the project root.
+        def checkDirectory = layout.buildDirectory.dir('verification-checks').get().asFile
+        workingDir = checkDirectory
+        systemProperty 'mosvegas.projectDir', projectDir.absolutePath
+        doFirst {
+            checkDirectory.mkdirs()
+            def argumentFile = layout.buildDirectory.file("${name}-classpath.args").get().asFile
+            argumentFile.parentFile.mkdirs()
+            argumentFile.setText('-classpath\n"' + sourceSets.verification.runtimeClasspath.asPath.replace('\\', '/') + '"\n',
+                    System.getProperty('native.encoding', 'UTF-8'))
+            jvmArgs '@' + argumentFile.absolutePath
+        }
+    }
+}
+
+// Dev runs use named mappings, so a mixin missing from its config's refmap only fails in a real launcher.
+tasks.register('verifyRefmaps') {
+    group = 'verification'
+    def jarFile = tasks.named('remapJar').flatMap { it.archiveFile }
+    inputs.file(jarFile)
+    doLast {
+        def jar = new java.util.zip.ZipFile(jarFile.get().asFile)
+        try {
+            def read = { String name ->
+                def entry = jar.getEntry(name)
+                if (entry == null) throw new GradleException("${name} is missing from ${jarFile.get().asFile.name}")
+                new groovy.json.JsonSlurper().parse(jar.getInputStream(entry), 'UTF-8')
+            }
+            read('fabric.mod.json').mixins.collect { it instanceof Map ? it.config : it }.each { String configName ->
+                def config = read(configName)
+                if (!config.refmap) throw new GradleException("${configName} has no refmap")
+                def mapped = read(config.refmap).mappings.keySet()
+                def prefix = config.package.replace('.', '/') + '/'
+                def missing = ((config.mixins ?: []) + (config.client ?: []) + (config.server ?: []))
+                        .findAll { !mapped.contains(prefix + it.replace('.', '/')) }
+                if (missing) throw new GradleException("${configName}: ${config.refmap} has no mappings for ${missing.join(', ')}")
+            }
+        } finally {
+            jar.close()
+        }
+    }
+}
+
+tasks.named('check') { dependsOn 'verifyGeometry', 'verifyConsumables', 'verifyRefmaps' }
+
+tasks.register('sourceZip', Zip) {
+    group = 'distribution'
+    description = 'Packages source, resources and build tools without Minecraft data or caches.'
+    destinationDirectory = layout.projectDirectory.dir('dist')
+    archiveFileName = "MosVegas-Items-${project.version}-Sources.zip"
+    // Ant's default excludes omit .gitignore, even when it is listed explicitly.
+    def ignoreSource = layout.projectDirectory.file('.gitignore')
+    def packagedIgnore = layout.buildDirectory.file('distribution/gitignore')
+    inputs.file(ignoreSource)
+    doFirst {
+        def target = packagedIgnore.get().asFile
+        target.parentFile.mkdirs()
+        target.setText(ignoreSource.asFile.getText('UTF-8'), 'UTF-8')
+    }
+    from(packagedIgnore) { rename { '.gitignore' } }
+    from('src') { into 'src' }
+    from('tests') { into 'tests' }
+    from('tools') { into 'tools' }
+    from('gradle') { into 'gradle' }
+    from('build.gradle', 'settings.gradle', 'gradle.properties', 'gradlew', 'gradlew.bat',
+            'launcher-java.ps1', 'test-client.bat', 'LICENSE', 'README.md',
+            'CHANGELOG.md', 'AUDIO_CREDITS.md', 'ИНСТРУКЦИЯ_ДОБАВЛЕНИЕ_ПРЕДМЕТА.md')
+}
+
+tasks.register('releaseZip', Zip) {
+    group = 'distribution'
+    description = 'Packages the mod and its two required libraries for installation.'
+    dependsOn 'build', 'verifyServer', 'sourceZip'
+    destinationDirectory = layout.projectDirectory.dir('dist')
+    archiveFileName = "MosVegas-Items-${project.version}-Fabric-${project.minecraft_version}.zip"
+    from(tasks.named('remapJar').flatMap { it.archiveFile }) { into 'mods' }
+    from(configurations.distributionLibraries) { into 'mods' }
+    from('README.md', 'CHANGELOG.md', 'AUDIO_CREDITS.md', 'ИНСТРУКЦИЯ_ДОБАВЛЕНИЕ_ПРЕДМЕТА.md')
+}

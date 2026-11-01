@@ -1,0 +1,8 @@
+{
+  "id": "energy_drink", "name": "item.mosvegas_items.energy_drink", "description": "item.mosvegas_items.energy_drink.description",
+  "category": "drink", "texture": "minecraft:item/honey_bottle", "use_time": 24,
+  "hunger": 2, "saturation": 0.2, "uses": 3, "stack_size": 16, "cooldown": 40,
+  "sound": "mosvegas_items:item.drink", "sound_interval": 12, "consume_in_creative": true,
+  "remainder": "minecraft:glass_bottle", "particles": false,
+  "effects": [{"id": "minecraft:speed", "duration": 400, "amplifier": 0, "chance": 1.0}]
+}
