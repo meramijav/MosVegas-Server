@@ -10,9 +10,5 @@ run-zone-dev/
 *.iml
 .tools/
 
-run-multi-server/
-run-multi-op/
-run-multi-player/
-
 logs/
 release/
