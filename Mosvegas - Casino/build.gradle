@@ -1,0 +1,118 @@
+plugins {
+    id 'fabric-loom' version '1.11-SNAPSHOT'
+}
+
+version = project.mod_version
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+
+repositories {
+    mavenCentral()
+}
+
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        mosvegas_casino {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+    runs {
+        client {
+            runDir 'run'
+            vmArg '-Xmx3G'
+            programArgs '--username', 'CasinoTester'
+        }
+        server {
+            runDir 'run-server'
+        }
+        // Builds the demo casino hall (all table styles) in run-server/world and stops.
+        showcaseServer {
+            server()
+            runDir 'run-server'
+            vmArg '-Dmosvegas.casino.showcase=true'
+            vmArg '-Dmosvegas.casino.autostop=400'
+            programArg 'nogui'
+        }
+        // Plays a scripted round and saves screenshots to run-autotest/screenshots/casino_*.png
+        // (own folder and world copy, so it can run while the demo client in run/ is open).
+        autotestClient {
+            client()
+            runDir 'run-autotest'
+            vmArg '-Xmx3G'
+            vmArg '-Dmosvegas.casino.showcase=true'
+            vmArg '-Dmosvegas.casino.autotest=true'
+            programArgs '--username', 'CasinoTester', '--quickPlaySingleplayer', 'CasinoTest'
+        }
+        // Demo casino server for testing with several players: localhost:25599, offline mode, all tables staffed.
+        casinoServer {
+            server()
+            runDir 'run-server'
+            vmArg '-Xmx2G'
+            vmArg '-Dmosvegas.casino.showcase=true'
+            programArg 'nogui'
+        }
+        // Two clients joining the casino server, each with its own folder and name.
+        player1 {
+            client()
+            runDir 'run'
+            vmArg '-Xmx2G'
+            programArgs '--username', 'Player1', '--quickPlayMultiplayer', 'localhost:25599'
+        }
+        player2 {
+            client()
+            runDir 'run-client2'
+            vmArg '-Xmx2G'
+            programArgs '--username', 'Player2', '--quickPlayMultiplayer', 'localhost:25599'
+        }
+        // Opens the demo casino world for manual play.
+        showcaseClient {
+            client()
+            runDir 'run'
+            vmArg '-Xmx3G'
+            vmArg '-Dmosvegas.casino.showcase=true'
+            programArgs '--username', 'Player', '--quickPlaySingleplayer', 'CasinoTest'
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation files('libs/geckolib-fabric-1.20.4-4.4.4.jar')
+    modImplementation files('libs/mclib-20.jar')
+    // RpCore (Mosvegas Core) is an optional server-side economy provider.
+    modCompileOnly files('libs/mosvegas-core-0.0.4.jar')
+    if (!project.hasProperty('noCore')) {
+        modLocalRuntime files('libs/mosvegas-core-0.0.4.jar')
+        // nested in the core release jar; needed when the core runs from a plain dev classpath
+        localRuntime 'org.xerial:sqlite-jdbc:3.46.1.0'
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+// Pure-Java rule checks (blackjack / roulette / slots maths) from src/test, no Minecraft runtime required.
+tasks.register('rulesTest', JavaExec) {
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'ru.mosvegas.casino.test.RulesSelfTest'
+}
+check.dependsOn rulesTest

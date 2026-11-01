@@ -1,0 +1,1 @@
+{ "parent": "minecraft:item/generated", "textures": { "layer0": "mosvegas_casino:item/blackjack_table" } }

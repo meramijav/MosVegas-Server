@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [ { "type": "minecraft:item", "name": "mosvegas_casino:blackjack_table" } ],
+      "functions": [
+        { "function": "minecraft:copy_nbt", "source": "block_entity", "ops": [ { "source": "style", "target": "BlockEntityTag.style", "op": "replace" } ] },
+        { "function": "minecraft:set_nbt", "tag": "{casino_size:\"large\"}", "conditions": [ { "condition": "minecraft:block_state_property", "block": "mosvegas_casino:blackjack_table", "properties": { "size": "large" } } ] },
+        { "function": "minecraft:set_nbt", "tag": "{casino_size:\"medium\"}", "conditions": [ { "condition": "minecraft:block_state_property", "block": "mosvegas_casino:blackjack_table", "properties": { "size": "medium" } } ] }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "card_deal": { "subtitle": "subtitles.mosvegas_casino.card_deal", "sounds": [ { "name": "minecraft:item.book.page_turn", "type": "event", "volume": 0.7, "pitch": 1.25 } ] },
+  "card_flip": { "subtitle": "subtitles.mosvegas_casino.card_flip", "sounds": [ { "name": "minecraft:item.book.put", "type": "event", "volume": 0.8, "pitch": 1.3 } ] },
+  "chip_place": { "subtitle": "subtitles.mosvegas_casino.chip_place", "sounds": [ { "name": "minecraft:block.stone_button.click_on", "type": "event", "volume": 0.6, "pitch": 1.8 } ] },
+  "chip_stack": { "subtitle": "subtitles.mosvegas_casino.chip_stack", "sounds": [ { "name": "minecraft:block.chain.place", "type": "event", "volume": 0.7, "pitch": 1.6 } ] },
+  "shuffle": { "subtitle": "subtitles.mosvegas_casino.shuffle", "sounds": [ { "name": "minecraft:item.book.page_turn", "type": "event", "volume": 0.9, "pitch": 0.8 } ] },
+  "knock": { "subtitle": "subtitles.mosvegas_casino.knock", "sounds": [ { "name": "minecraft:block.wood.hit", "type": "event", "volume": 0.6, "pitch": 1.2 } ] },
+  "cards_collect": { "subtitle": "subtitles.mosvegas_casino.cards_collect", "sounds": [ { "name": "minecraft:item.book.page_turn", "type": "event", "volume": 0.6, "pitch": 0.9 } ] },
+  "win": { "subtitle": "subtitles.mosvegas_casino.win", "sounds": [ { "name": "minecraft:entity.experience_orb.pickup", "type": "event", "volume": 0.6, "pitch": 1.0 } ] },
+  "blackjack": { "subtitle": "subtitles.mosvegas_casino.blackjack", "sounds": [ { "name": "minecraft:entity.player.levelup", "type": "event", "volume": 0.5, "pitch": 1.2 } ] },
+  "dealer_bell": { "subtitle": "subtitles.mosvegas_casino.dealer_bell", "sounds": [ { "name": "minecraft:block.note_block.bell", "type": "event", "volume": 0.6, "pitch": 1.0 } ] },
+  "voice": { "subtitle": "subtitles.mosvegas_casino.voice", "sounds": [ { "name": "fabric-sound-api-v1:empty", "stream": true, "attenuation_distance": 16 } ] }
+}

@@ -1,0 +1,54 @@
+# Voice lines of the dealers, spoken by Windows TTS (tools/VoiceGen.ps1) into
+# src/main/resources/assets/mosvegas_casino/voice/<set>/<key>.wav
+#
+#   key|text                     both sets (female, male)
+#   female:key|text              only one set
+#   key_{n}[a..b]|... {n} ...    one line per number a..b ({lo} = n - 10)
+#   key_{id}[names]|... {name}   one line per built-in dealer
+#
+# Keys are the phrase keys of the config; the server asks for key_<value> first (dealer_total_19), then key.
+# Replace any file by a real recording (.wav or .ogg with the same name) in a resource pack.
+
+betting_open|Делайте ваши ставки!
+betting_last|Последние ставки!
+bets_closed|Ставки сделаны. Ставок больше нет.
+waiting_players|Ждём ещё игроков за стол.
+player_blackjack|Блэк-джек! Поздравляю!
+common_blackjack|Блэк-джек! Поздравляю!
+player_bust|Перебор.
+player_bust_{n}[22..30]|Перебор, {n}.
+player_charlie|Шесть карт! Автоматическая победа!
+player_split|Делим карты.
+player_surrender|Сдаётесь. Половина ставки возвращается.
+your_turn|Ваше решение?
+your_turn_{n}[4..21]|Ваше решение? У вас {n}.
+your_turn_{lo}_{n}[12..21]|Ваше решение? У вас {lo} или {n}.
+decide_all|Ваши решения, пожалуйста.
+insurance_offer|У дилера туз. Желаете страховку?
+insurance_closed|Страховка закрыта.
+dealer_blackjack|У дилера блэк-джек.
+dealer_no_blackjack|У дилера нет блэк-джека. Продолжаем.
+dealer_bust|У дилера перебор!
+dealer_bust_{n}[22..26]|У дилера перебор! {n}.
+dealer_total_{n}[2..21]|У дилера {n}.
+side_win|Побочная ставка выиграла!
+big_win|Поздравляю с выигрышем!
+shuffle|Перемешиваю колоду. Одну минуту.
+greeting|Добрый вечер! Сегодня я ваш крупье.
+female:greeting_anna|Добрый вечер! Меня зовут Анна, сегодня я ваш крупье.
+female:greeting_maria|Добрый вечер! Меня зовут Мария, сегодня я ваш крупье.
+female:greeting_elena|Добрый вечер! Меня зовут Елена, сегодня я ваш крупье.
+male:greeting_maxim|Добрый вечер! Меня зовут Максим, сегодня я ваш крупье.
+male:greeting_artem|Добрый вечер! Меня зовут Артём, сегодня я ваш крупье.
+male:greeting_david|Добрый вечер! Меня зовут Давид, сегодня я ваш крупье.
+welcome|Добро пожаловать за стол!
+welcome_behind|Ваша ставка за спиной принята.
+goodbye_player|Спасибо за игру!
+farewell|Спасибо за игру! Хорошего вечера.
+handover|Меня сменяет коллега. Удачи за столом!
+handover_{id}[names]|Меня сменяет {name}. Удачи за столом!
+break|Ухожу на перерыв. Стол скоро продолжит работу.
+idle_leave|Пока никого нет, отлучусь ненадолго.
+dealer_left|Раунд отменён, ставки возвращены.
+table_closed|Стол закрывается, ставки возвращены.
+round_aborted_all|Раунд прерван, все ставки возвращены.

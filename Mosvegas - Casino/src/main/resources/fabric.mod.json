@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "mosvegas_casino",
+  "version": "${version}",
+  "name": "MosVegas Casino",
+  "description": "Live casino: blackjack tables (Classic, Speed, Infinite, Free Bet, Salon Prive) with animated male and female croupiers on shifts; roulette and slots ready to plug in. Money through Mosvegas Core.",
+  "authors": ["MosVegas"],
+  "license": "All-Rights-Reserved",
+  "icon": "assets/mosvegas_casino/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["ru.mosvegas.casino.MosVegasCasino"],
+    "client": ["ru.mosvegas.casino.client.MosVegasCasinoClient"]
+  },
+  "mixins": [
+    { "config": "mosvegas_casino.client.mixins.json", "environment": "client" }
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.6",
+    "minecraft": "~1.20.4",
+    "java": ">=21",
+    "fabric-api": "*",
+    "geckolib": ">=4.4"
+  },
+  "suggests": {
+    "mosvegas_core": "*"
+  }
+}
