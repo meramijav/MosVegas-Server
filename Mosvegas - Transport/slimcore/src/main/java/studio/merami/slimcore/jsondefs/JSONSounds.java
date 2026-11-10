@@ -37,6 +37,7 @@ public class JSONSounds {
     public String trunkClose;
     public String hatchOpen = "slimvehicle:hatch_open";
     public String hatchClose = "slimvehicle:hatch_close";
+    public String refuel = "minecraft:item.bottle.empty";
 
     public static class EngineLayer {
         public String sound;
@@ -131,5 +132,6 @@ public class JSONSounds {
         trunkClose = trunkClose == null ? hoodClose : name(qualify, trunkClose);
         hatchOpen = name(qualify, hatchOpen);
         hatchClose = name(qualify, hatchClose);
+        refuel = name(qualify, refuel);
     }
 }

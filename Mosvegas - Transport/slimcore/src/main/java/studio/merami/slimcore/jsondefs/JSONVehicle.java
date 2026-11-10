@@ -114,6 +114,7 @@ public class JSONVehicle extends AJSONMultipart {
         public double revRpm = 600;
         public double redlineRpm = 6000;
         public double keepRunning = 120;
+        public boolean electric;
     }
 
     public static class Lamps {
@@ -243,7 +244,8 @@ public class JSONVehicle extends AJSONMultipart {
         }
         tune = new DrivePhysics.Tune(physics.maxSpeedKmh / 72, acceleration(), physics.brake, physics.grip,
                 (Double.isNaN(physics.wheelbase) ? axleSpan : physics.wheelbase) * scale, fuel.perTick, gearbox(),
-                new DrivePhysics.Revs(engine.idleRpm, engine.limitRpm, engine.maxRpm, engine.revRpm), massRatio, DRIVE_ALL.equals(physics.drive), transmission.automatic);
+                new DrivePhysics.Revs(engine.idleRpm, engine.limitRpm, engine.maxRpm, engine.revRpm), massRatio, DRIVE_ALL.equals(physics.drive), transmission.automatic,
+                engine.electric);
     }
 
     private void bakeCabin() {

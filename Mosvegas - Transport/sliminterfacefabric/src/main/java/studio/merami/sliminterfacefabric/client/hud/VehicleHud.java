@@ -368,7 +368,7 @@ public final class VehicleHud {
         JSONVehicle definition = vehicle.definition();
         framed(gui, x, y, x + MODULE_WIDTH, y + MODULE_HEIGHT, PANEL, RIM);
         int gear = vehicle.gear();
-        String gearText = gear < 0 ? "R" : gear == 0 ? "N" : definition.transmission.automatic ? "D" + gear : Integer.toString(gear);
+        String gearText = gear < 0 ? "R" : gear == 0 ? "N" : !definition.transmission.automatic ? Integer.toString(gear) : definition.gears() == 1 ? "D" : "D" + gear;
         int boxX = x + (MODULE_WIDTH - 44) / 2;
         int boxY = y + 19;
         framed(gui, boxX, boxY, boxX + 44, boxY + 34, INSET, INSET_RIM);
@@ -381,7 +381,9 @@ public final class VehicleHud {
         float fuel = Mth.clamp(shownFuel, 0, 1);
         int fuelColor = fuel < .1f ? (blink ? RED : DARK_RED) : fuel < .25f ? AMBER : GREEN;
         bar(gui, x + 16, y + 62, fuel, fuelColor);
-        gui.drawString(font, I18n.get("hud.slimvehicle.litres", String.format(Locale.ROOT, "%.0f", vehicle.fuel())), x + 16 + SEGMENTS * (SEGMENT + 1) + 3, y + 61, DIM, false);
+        String energy = definition.engine.electric ? Math.round(vehicle.fuel() / definition.fuel.tank * 100) + "%"
+                : I18n.get("hud.slimvehicle.litres", String.format(Locale.ROOT, "%.0f", vehicle.fuel()));
+        gui.drawString(font, energy, x + 16 + SEGMENTS * (SEGMENT + 1) + 3, y + 61, DIM, false);
         float health = Mth.clamp(vehicle.health() / DamageModel.FULL, 0, 1);
         bar(gui, x + 16, y + 76, health, health > .6f ? GREEN : health > .3f ? AMBER : RED);
         String condition = vehicle.wrecked() ? "0%" : Math.round(health * 100) + "%";
@@ -430,7 +432,7 @@ public final class VehicleHud {
     private static List<Segment> hint(EntityVehicleF_Physics vehicle) {
         if (vehicle.wrecked()) return text("hud.slimvehicle.hint.wrecked");
         if (vehicle.engineHealth() <= 0) return text("hud.slimvehicle.hint.engine_dead");
-        if (vehicle.fuel() <= 0) return text("hud.slimvehicle.hint.tank_empty");
+        if (vehicle.fuel() <= 0) return text(vehicle.definition().engine.electric ? "hud.slimvehicle.hint.tank_empty.electric" : "hud.slimvehicle.hint.tank_empty");
         if (!vehicle.flag(EntityVehicleF_Physics.ENGINE)) {
             if (!VehicleControls.holdsKey(vehicle)) return text("hud.slimvehicle.hint.no_key");
             return List.of(new Segment(List.of(VehicleControls.keyName(VehicleAction.ENGINE)), I18n.get("hud.slimvehicle.hint.start")));

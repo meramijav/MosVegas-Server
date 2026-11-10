@@ -61,6 +61,30 @@ class VehicleDefinitionTest {
     }
 
     @Test
+    void l9IsAnElectricSixSeater() {
+        JSONVehicle l9 = TestPacks.vehicle("l9");
+        assertTrue(l9.engine.electric && l9.tune.electric() && l9.gears() == 1 && l9.transmission.automatic, "One-speed electric drive with an R-N-D selector");
+        assertTrue(l9.tailpipes.isEmpty(), "No exhaust");
+        assertEquals(6, l9.seats.size());
+        assertEquals(10, l9.glass.size());
+        assertEquals("part.slimvehicle.charge_port", l9.opening("fuel").label);
+        assertEquals("slimvehicle:l9_charge", l9.sounds.refuel);
+        assertEquals("minecraft:item.bottle.empty", TestPacks.vehicle("volga").sounds.refuel, "Petrol cars still pour fuel");
+        ModelGeometry model = ModelGeometry.load(l9.modelLocation);
+        for (String bone : List.of("chassis", "steering_spin", "wiper_left", "wiper_right", "headlights", "indicator_front_left", "indicator_front_right",
+                "tail_bar", "tail_corners", "mirror_fl", "mirror_fr", "fuel_flap", "glovebox")) {
+            assertNotNull(model.bone(bone), "The model has " + bone);
+        }
+        for (AJSONMultipart.Glass pane : l9.glass) assertNotNull(model.bone(pane.bone), "The model has the pane " + pane.bone);
+        for (AJSONMultipart.Opening opening : l9.openingList) assertNotNull(model.bone(opening.bone), "The model has the opening " + opening.bone);
+        for (String side : List.of("fl", "fr", "rl", "rr")) {
+            for (String part : List.of("steer_", "roll_", "tyre_")) assertNotNull(model.bone(part + side), "The model has " + part + side);
+        }
+        assertEquals(l9.lamps.headlightBone.cubes.size(), model.bone("headlights").cubes.size(), "Every headlight cube has its side");
+        assertEquals("trunk", model.bone("tail_bar").parent.name, "The tail light bar swings with the tailgate");
+    }
+
+    @Test
     void wrongGlowIsRefused() {
         JsonObject json = TestPacks.builtIn("g63");
         JsonObject glow = new JsonObject();

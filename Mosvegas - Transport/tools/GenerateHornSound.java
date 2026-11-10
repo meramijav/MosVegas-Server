@@ -23,10 +23,15 @@ public class GenerateHornSound {
 
     public static void main(String[] args) throws Throwable {
         if (args.length < 2) {
-            System.err.println("usage: GenerateHornSound <libsndfile.dll> <out.ogg>");
+            System.err.println("usage: GenerateHornSound <libsndfile.dll> <out.ogg> [low Hz] [high Hz]");
             System.exit(2);
         }
-        float[] samples = horn();
+        double low = args.length > 3 ? Double.parseDouble(args[2]) : LOW;
+        double high = args.length > 3 ? Double.parseDouble(args[3]) : HIGH;
+        for (double tone : new double[]{low, high}) {
+            if (Math.abs(tone * LOOP - Math.rint(tone * LOOP)) > 1e-9) throw new IllegalArgumentException(tone + " Hz does not fit a whole number of cycles in the loop");
+        }
+        float[] samples = horn(low, high);
         try (Arena library = Arena.ofShared()) {
             SymbolLookup lib = SymbolLookup.libraryLookup(Path.of(args[0]), library);
             encode(lib, Path.of(args[1]), samples);
@@ -34,13 +39,13 @@ public class GenerateHornSound {
         System.out.println("Horn loop: " + samples.length + " samples at " + RATE + " Hz");
     }
 
-    static float[] horn() {
+    static float[] horn(double low, double high) {
         int length = (int) Math.round(RATE * LOOP);
         double[] mix = new double[length];
         double peak = 0;
         for (int i = 0; i < length; i++) {
             double t = i / (double) RATE;
-            double x = .55 * tone(LOW, t, 11) + .45 * tone(HIGH, t, 29);
+            double x = .55 * tone(low, t, 11) + .45 * tone(high, t, 29);
             x = Math.tanh(1.8 * x);
             mix[i] = x;
             peak = Math.max(peak, Math.abs(x));

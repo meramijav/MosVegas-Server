@@ -147,7 +147,7 @@ public class PackGameTests implements FabricGameTest {
     @GameTest(template = EMPTY_STRUCTURE)
     public void panesBreakAndOpeningsAnswerFromOutside(GameTestHelper h) {
         for (int x = 1; x < 9; x++) for (int z = 0; z < 9; z++) h.setBlock(x, 0, z, Blocks.STONE);
-        for (String id : new String[]{"volga", "g63"}) {
+        for (String id : new String[]{"volga", "g63", "l9"}) {
             EntityVehicleF_Physics car = createAt(h, new Vec3(4, 1.02, 4));
             car.setDefinition(id);
             spawn(h, car);
@@ -172,8 +172,12 @@ public class PackGameTests implements FabricGameTest {
             }
             Player player = h.makeMockPlayer();
             List<Hull.Box> panes = car.hull().boxes().stream().filter(b -> b.glass >= 0).toList();
-            h.assertTrue(panes.size() == car.definition().glass.size(), id + ": every pane is in the hull");
+            h.assertTrue(panes.stream().map(pane -> pane.glass).distinct().count() == car.definition().glass.size(), id + ": every pane is in the hull");
             for (Hull.Box pane : panes) {
+                if (car.brokenGlass(pane.glass)) {
+                    car.repair();
+                    car.refreshHull();
+                }
                 Point3D eye = pane.center.add(outward(car, pane).scale(1.5));
                 place(player, eye.subtract(0, player.getEyeHeight(), 0));
                 lookAt(player, pane.center);

@@ -26,7 +26,7 @@ public final class DrivePhysics {
     public record Revs(double idle, double atLimit, double max, double free) {}
 
     public record Tune(double maxSpeed, double acceleration, double brake, double grip, double wheelbase, double fuelPerTick,
-                       Gearbox gearbox, Revs revs, double mass, boolean allWheel, boolean automatic) {}
+                       Gearbox gearbox, Revs revs, double mass, boolean allWheel, boolean automatic, boolean electric) {}
 
     public record Input(double throttle, double brake, double steer, boolean handbrake) {}
 
@@ -59,6 +59,8 @@ public final class DrivePhysics {
     private static final double CLUTCH_REVS = .3;
     private static final double REV_RISE = 260;
     private static final double REV_FALL = 380;
+    private static final double BASE_SPEED = .35;
+    private static final double REGEN = .2;
 
     private DrivePhysics() {}
 
@@ -93,9 +95,15 @@ public final class DrivePhysics {
         return Math.max(0, 1 - (revs - 1) / .2);
     }
 
+    public static double motorTorque(double revs) {
+        if (revs < 1) return 1 / Math.max(revs, BASE_SPEED);
+        return Math.max(0, 1 - (revs - 1) / .2);
+    }
+
     public static double engineForce(Tune tune, int gear, double speed) {
         double top = Math.max(.01, speedLimit(tune, gear));
         double revs = Math.abs(speed) / top;
+        if (tune.electric()) return SPECIFIC_POWER * tune.acceleration() * motorTorque(revs) / top;
         double boost = tune.automatic() ? 1 + CONVERTER * Math.max(0, 1 - revs / STALL) : 1;
         return SPECIFIC_POWER * tune.acceleration() * torque(Math.max(revs, LAUNCH)) * boost / top;
     }
@@ -156,7 +164,7 @@ public final class DrivePhysics {
         double braking = brake * Math.max(0, Math.min(1, input.brake())) + (input.handbrake() ? brake * .22 : 0);
         if (input.brake() > .05) drive *= 1 - Math.min(1, input.brake());
         double engineBraking = live && gear != 0 && throttle < .05
-                ? (t.automatic() ? CONVERTER_BRAKE : ENGINE_BRAKE) * engineForce(t, gear, speed) * Math.min(1, speed / Math.max(.01, speedLimit(t, gear)) / LAUNCH) : 0;
+                ? (t.electric() ? REGEN : t.automatic() ? CONVERTER_BRAKE : ENGINE_BRAKE) * engineForce(t, gear, speed) * Math.min(1, speed / Math.max(.01, speedLimit(t, gear)) / LAUNCH) : 0;
         double resistance = ROLLING + drag(t) * forward * forward + engineBraking + punctures * (.0012 + speed * .013);
         if (Math.signum(forward) == Math.signum(gear)) {
             drive = Math.copySign(Math.min(Math.abs(drive), Math.max(0, (limit - speed) * .45 + resistance)), drive);
@@ -182,6 +190,7 @@ public final class DrivePhysics {
     public static double engineRpm(Tune t, int gear, double speed, double throttle, boolean live) {
         if (!live) return 0;
         Revs revs = t.revs();
+        if (t.electric()) return gear == 0 ? 0 : Math.min(revs.max(), Math.abs(speed) / Math.max(.01, speedLimit(t, Math.max(1, gear))) * revs.atLimit());
         throttle = Math.max(0, Math.min(1, throttle));
         double rpm;
         if (gear == 0) {

@@ -1,5 +1,5 @@
 {
   "name": "Slim Vehicle",
-  "description": "Built-in vehicles: GAZ-3102 Volga, police, ambulance, a scooter and the Mercedes-AMG G 63.",
-  "vehicles": ["volga", "police", "ambulance", "scooter", "g63"]
+  "description": "Built-in vehicles: GAZ-3102 Volga, police, ambulance, a scooter, the Mercedes-AMG G 63 and the electric Lixiang L9.",
+  "vehicles": ["volga", "police", "ambulance", "scooter", "g63", "l9"]
 }

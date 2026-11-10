@@ -249,5 +249,105 @@
     "sounds": [
       "slimvehicle:v8_start_inside"
     ]
+  },
+  "l9_motor_hum": {
+    "sounds": [
+      "slimvehicle:l9_motor_hum"
+    ]
+  },
+  "l9_motor_low": {
+    "sounds": [
+      "slimvehicle:l9_motor_low"
+    ]
+  },
+  "l9_motor_high": {
+    "sounds": [
+      "slimvehicle:l9_motor_high"
+    ]
+  },
+  "l9_start": {
+    "sounds": [
+      "slimvehicle:l9_start"
+    ]
+  },
+  "l9_stop": {
+    "sounds": [
+      "slimvehicle:l9_stop"
+    ]
+  },
+  "l9_horn": {
+    "sounds": [
+      "slimvehicle:l9_horn"
+    ]
+  },
+  "l9_charge": {
+    "sounds": [
+      "slimvehicle:l9_charge"
+    ]
+  },
+  "l9_door_open": {
+    "sounds": [
+      "slimvehicle:l9_door_open"
+    ]
+  },
+  "l9_door_close": {
+    "sounds": [
+      "slimvehicle:l9_door_close"
+    ]
+  },
+  "l9_hood_open": {
+    "sounds": [
+      "slimvehicle:l9_hood_open"
+    ]
+  },
+  "l9_hood_close": {
+    "sounds": [
+      "slimvehicle:l9_hood_close"
+    ]
+  },
+  "l9_trunk_open": {
+    "sounds": [
+      "slimvehicle:l9_trunk_open"
+    ]
+  },
+  "l9_trunk_close": {
+    "sounds": [
+      "slimvehicle:l9_trunk_close"
+    ]
+  },
+  "l9_hatch_open": {
+    "sounds": [
+      "slimvehicle:l9_hatch_open"
+    ]
+  },
+  "l9_hatch_close": {
+    "sounds": [
+      "slimvehicle:l9_hatch_close"
+    ]
+  },
+  "l9_shift_up": {
+    "sounds": [
+      "slimvehicle:l9_shift_up"
+    ]
+  },
+  "l9_shift_down": {
+    "sounds": [
+      "slimvehicle:l9_shift_down"
+    ]
+  },
+  "l9_handbrake_on": {
+    "sounds": [
+      "slimvehicle:l9_handbrake_on"
+    ]
+  },
+  "l9_handbrake_off": {
+    "sounds": [
+      "slimvehicle:l9_handbrake_off"
+    ]
+  },
+  "l9_lock": {
+    "sounds": [
+      "slimvehicle:l9_lock"
+    ]
   }
 }

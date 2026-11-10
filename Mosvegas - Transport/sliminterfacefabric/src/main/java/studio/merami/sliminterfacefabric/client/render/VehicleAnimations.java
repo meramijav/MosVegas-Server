@@ -23,7 +23,7 @@ final class VehicleAnimations {
         float roll = Mth.lerp(partial, vehicle.oldWheelRoll, vehicle.wheelRoll);
         boolean vibrate = ClientConfig.vibrations && definition.vibration;
         float age = vehicle.ticks() + partial;
-        float engineShake = vibrate && vehicle.flag(EntityVehicleF_Physics.ENGINE) ? (float) Math.sin(age * (1.6 + vehicle.rpm() / 5000)) * .018f : 0;
+        float engineShake = vibrate && !definition.engine.electric && vehicle.flag(EntityVehicleF_Physics.ENGINE) ?(float) Math.sin(age * (1.6 + vehicle.rpm() / 5000)) * .018f : 0;
         float roadShake = vibrate ? (float) (Math.sin(age * 2.1) * Math.min(.025, Math.abs(vehicle.speed()) * .024)) : 0;
         int chassis = pose.bone(definition.render.chassis);
         pose.set(chassis, ROTATION, -Mth.lerp(partial, vehicle.oldBodyPitch, vehicle.bodyPitch));

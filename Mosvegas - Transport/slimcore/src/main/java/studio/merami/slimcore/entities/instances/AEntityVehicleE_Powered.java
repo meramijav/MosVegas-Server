@@ -42,7 +42,6 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
     private static final String EXPLODE_SOUND = "minecraft:entity.generic.explode";
     private static final String EXTINGUISH_SOUND = "minecraft:block.fire.extinguish";
     private static final String ANVIL_SOUND = "minecraft:block.anvil.use";
-    private static final String POUR_SOUND = "minecraft:item.bottle.empty";
     private static final int FRESH_START = 10;
     private static final int OVERRUN_PAUSE = 35;
     private static final int SHIFT_POP_PAUSE = 12;
@@ -189,8 +188,17 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
     protected void warnLowFuel() {
         IWrapperPlayer player = controllingPlayer();
         if (ticks() % 40 == 0 && flag(ENGINE) && fuel() < 3 && player != null) {
-            message(player, "message.slimvehicle.low_fuel", String.format(Locale.ROOT, "%.1f", fuel()));
+            message(player, energyKey("message.slimvehicle.low_fuel"), energy());
         }
+    }
+
+    private String energyKey(String key) {
+        return definition().engine.electric ? key + ".electric" : key;
+    }
+
+    private String energy() {
+        JSONVehicle definition = definition();
+        return definition.engine.electric ? String.format(Locale.ROOT, "%.0f", fuel() / definition.fuel.tank * 100) : String.format(Locale.ROOT, "%.1f", fuel());
     }
 
     private void stall() {
@@ -199,7 +207,7 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
         engineSound(definition().sounds.stop);
         IWrapperPlayer player = controllingPlayer();
         if (player != null && !wrecked()) {
-            message(player, engineHealth() <= 0 ? "message.slimvehicle.engine_dead" : "message.slimvehicle.stalled");
+            message(player, energyKey(engineHealth() <= 0 ? "message.slimvehicle.engine_dead" : "message.slimvehicle.stalled"));
         }
     }
 
@@ -263,24 +271,24 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
     protected boolean useItemOnPart(IWrapperPlayer player, PartOpening part) {
         if (part.kind() != AJSONMultipart.OpeningType.FUEL || player.mainHand().item() != SlimItems.FUEL_CAN) return false;
         if (!part.isOpen()) {
-            message(player, "message.slimvehicle.open_fuel_flap");
+            message(player, energyKey("message.slimvehicle.open_fuel_flap"));
             return true;
         }
         if (flag(ENGINE)) {
-            message(player, "message.slimvehicle.stop_engine_to_refuel");
+            message(player, energyKey("message.slimvehicle.stop_engine_to_refuel"));
             return true;
         }
         IWrapperItemStack can = player.mainHand();
         int litres = can.dataOrCreate().has("Litres") ? can.data().getInt("Litres") : 20;
         float amount = Math.min(litres, (float) definition().fuel.tank - fuel());
         if (amount <= 0) {
-            message(player, litres <= 0 ? "message.slimvehicle.can_empty" : "message.slimvehicle.tank_full");
+            message(player, litres <= 0 ? "message.slimvehicle.can_empty" : energyKey("message.slimvehicle.tank_full"));
             return true;
         }
         data.set(FUEL, fuel() + amount);
         if (!player.instabuild()) can.dataOrCreate().setInt("Litres", Math.max(0, litres - (int) Math.ceil(amount)));
-        emitSound(POUR_SOUND, 1);
-        message(player, "message.slimvehicle.fuel", String.format(Locale.ROOT, "%.1f", fuel()));
+        emitSound(definition().sounds.refuel, 1);
+        message(player, energyKey("message.slimvehicle.fuel"), energy());
         return true;
     }
 
@@ -430,12 +438,12 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
         } else if (wrecked()) {
             message(player, "message.slimvehicle.wrecked");
         } else if (engineHealth() <= 0) {
-            message(player, "message.slimvehicle.engine_dead_repair");
+            message(player, energyKey("message.slimvehicle.engine_dead_repair"));
         } else if (fuel() > 0) {
             setFlag(ENGINE, true);
             data.set(START_TICK, (int) world().gameTime());
         } else {
-            message(player, "message.slimvehicle.tank_empty");
+            message(player, energyKey("message.slimvehicle.tank_empty"));
         }
     }
 

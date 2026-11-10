@@ -19,7 +19,10 @@ $selection=[ordered]@{
  v8_high_inside='enginefordfe428_high_inside'; v8_start_inside='enginefordfe428_starting_inside';
  g63_door_open='doorcaropen2'; g63_door_close='doorcarclose2alt'; g63_trunk_close='doorcarclose2';
  g63_hood_open='hoodcaropen1'; g63_hood_close='hoodcarclose4'; g63_hatch_open='glovebox_skyhawk_open'; g63_hatch_close='glovebox_skyhawk_close';
- g63_shift_up='gearshiftup2'; g63_shift_down='gearshiftdown3'; g63_handbrake_on='buttonpush'; g63_handbrake_off='buttonrelease'; g63_lock='bwwp'
+ g63_shift_up='gearshiftup2'; g63_shift_down='gearshiftdown3'; g63_handbrake_on='buttonpush'; g63_handbrake_off='buttonrelease'; g63_lock='bwwp';
+ l9_door_open='doorplaneopen2'; l9_door_close='hoodcarclose2'; l9_hood_open='doorplaneopen'; l9_hood_close='hoodcarclose3';
+ l9_trunk_open='gearhydraulics_start'; l9_trunk_close='gearhydraulics_end'; l9_hatch_open='interact_hatchopen'; l9_hatch_close='interact_hatchclose';
+ l9_shift_up='switch_on'; l9_shift_down='triggerclick'; l9_handbrake_on='planebrakepush1'; l9_handbrake_off='planebrakerelease1'; l9_lock='beep'
 }
 $destination=Join-Path $project 'slimcore/src/main/resources/assets/slimvehicle/sounds'
 $manifest=Join-Path $project 'slimcore/src/main/resources/immersive-sound-sources.json'

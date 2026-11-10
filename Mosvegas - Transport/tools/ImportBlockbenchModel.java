@@ -30,6 +30,10 @@ public class ImportBlockbenchModel {
     static final double PANE_DEPTH = 2.5;
     static final double PANE_STEP = .25;
     static final double PANE_OVERHANG = 4;
+    static final int GROW = 128;
+    static final double DRAWN = .25;
+    static final double SEEN_MARGIN = 1;
+    static final int SPECK = 6;
 
     record Group(String name, double[] origin, double[] rotation, Group parent, List<Object> children) {}
 
@@ -41,6 +45,8 @@ public class ImportBlockbenchModel {
         double[] pivot = {0, 0, 0};
         double[] rotation = {0, 0, 0};
         boolean glass;
+        boolean seen;
+        final List<String> frame = new ArrayList<>();
         final List<Cube> cubes = new ArrayList<>();
     }
 
@@ -49,6 +55,7 @@ public class ImportBlockbenchModel {
     static int textureWidth;
     static int textureHeight;
     static BufferedImage texture;
+    static double depth = PANE_DEPTH;
 
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
@@ -160,6 +167,8 @@ public class ImportBlockbenchModel {
             if (o.has("pivot")) bone.pivot = vector(o, "pivot");
             if (o.has("rotation")) bone.rotation = vector(o, "rotation");
             bone.glass = o.has("glass") && o.get("glass").getAsBoolean();
+            bone.seen = o.has("seen") && o.get("seen").getAsBoolean();
+            if (o.has("frame")) for (JsonElement f : o.getAsJsonArray("frame")) bone.frame.add(f.getAsString());
             if (o.has("groups")) {
                 for (JsonElement g : o.getAsJsonArray("groups")) {
                     String name = group(g.getAsString()).name();
@@ -305,20 +314,95 @@ public class ImportBlockbenchModel {
             JsonObject faces = cube.element().getAsJsonObject("faces");
             for (String key : FACES) if (textured(faces, key)) take(taken, width, height, uv(faces.getAsJsonObject(key)), scale);
         }
+        depth = glass.has("depth") ? glass.get("depth").getAsDouble() : PANE_DEPTH;
+        double[] eye = glass.has("eye") ? vector(glass, "eye") : null;
+        List<Frame> walls = eye == null ? List.of() : frames(outside(bones, glass), null, null);
+        Map<Cube, boolean[][]> masks = new IdentityHashMap<>();
+        for (Bone bone : bones) {
+            if (!bone.glass) continue;
+            List<Cube> frame = bone.frame.isEmpty() ? solid : under(bones, bone.frame, true);
+            for (Cube cube : bone.cubes) {
+                JsonObject faces = cube.element().getAsJsonObject("faces");
+                String key = paneFace(vector(cube.element(), "from"), vector(cube.element(), "to"), faces);
+                if (!textured(faces, key)) continue;
+                double[] u = uv(faces.getAsJsonObject(key));
+                int w = Math.max(1, (int) Math.round(Math.abs(u[2] - u[0]) * scale));
+                int h = Math.max(1, (int) Math.round(Math.abs(u[3] - u[1]) * scale));
+                boolean[][] mask = drawnMask(faces.getAsJsonObject(key), w, h, scale);
+                if (mask == null) {
+                    List<Cube> seams = new ArrayList<>();
+                    for (Cube other : bone.cubes) if (other != cube) seams.add(other);
+                    mask = paneMask(cube, key, w, h, frame, seams);
+                    if (eye != null && bone.seen) mask = seen(cube, key, mask, eye, walls);
+                    mask = clean(mask);
+                }
+                masks.put(cube, mask);
+            }
+        }
         Map<Cube, double[]> uvs = new IdentityHashMap<>();
         for (Cube cube : panes) {
-            JsonObject faces = cube.element().getAsJsonObject("faces");
-            String key = paneFace(vector(cube.element(), "from"), vector(cube.element(), "to"), faces);
-            if (!textured(faces, key)) continue;
-            double[] u = uv(faces.getAsJsonObject(key));
-            int w = Math.max(1, (int) Math.round(Math.abs(u[2] - u[0]) * scale));
-            int h = Math.max(1, (int) Math.round(Math.abs(u[3] - u[1]) * scale));
+            boolean[][] mask = masks.get(cube);
+            if (mask == null) continue;
+            int w = mask[0].length;
+            int h = mask.length;
             int[] spot = free(taken, width, height, w + 2, h + 2);
-            boolean[][] mask = paneMask(cube, key, w, h, solid);
+            if (spot == null) {
+                int rows = Math.max(GROW, h + 2);
+                taken = grow(taken, width, height, rows, scale);
+                height += rows;
+                spot = free(taken, width, height, w + 2, h + 2);
+            }
             for (int j = 0; j < h; j++) for (int i = 0; i < w; i++) texture.setRGB(spot[0] + 1 + i, spot[1] + 1 + j, mask[j][i] ? 0xff000000 | rgb : 0);
             uvs.put(cube, new double[]{(spot[0] + 1) / scale, (spot[1] + 1) / scale, (spot[0] + 1 + w) / scale, (spot[1] + 1 + h) / scale});
         }
         return uvs;
+    }
+
+    static boolean[][] clean(boolean[][] mask) {
+        int h = mask.length;
+        int w = mask[0].length;
+        boolean[][] seen = new boolean[h][w];
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < w; i++) {
+                if (seen[j][i]) continue;
+                boolean value = mask[j][i];
+                List<int[]> island = new ArrayList<>();
+                List<int[]> queue = new ArrayList<>();
+                queue.add(new int[]{i, j});
+                seen[j][i] = true;
+                while (!queue.isEmpty()) {
+                    int[] p = queue.remove(queue.size() - 1);
+                    island.add(p);
+                    for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                        int x = p[0] + d[0];
+                        int y = p[1] + d[1];
+                        if (x < 0 || y < 0 || x >= w || y >= h || seen[y][x] || mask[y][x] != value) continue;
+                        seen[y][x] = true;
+                        queue.add(new int[]{x, y});
+                    }
+                }
+                if (island.size() <= SPECK && island.size() < w * h / 2) for (int[] p : island) mask[p[1]][p[0]] = !value;
+            }
+        }
+        return mask;
+    }
+
+    static boolean[][] drawnMask(JsonObject face, int w, int h, double scale) {
+        if (face.has("rotation") && face.get("rotation").getAsDouble() != 0) return null;
+        double[] u = uv(face);
+        boolean[][] mask = new boolean[h][w];
+        int drawn = 0;
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < w; i++) {
+                int x = (int) Math.floor((u[0] + (u[2] - u[0]) * (i + .5) / w) * scale);
+                int y = (int) Math.floor((u[1] + (u[3] - u[1]) * (j + .5) / h) * scale);
+                x = Math.max(0, Math.min(texture.getWidth() - 1, x));
+                y = Math.max(0, Math.min(texture.getHeight() - 1, y));
+                mask[j][i] = (texture.getRGB(x, y) >>> 24) >= 128;
+                if (mask[j][i]) drawn++;
+            }
+        }
+        return drawn >= DRAWN * w * h ? mask : null;
     }
 
     static double[] uv(JsonObject face) {
@@ -349,10 +433,20 @@ public class ImportBlockbenchModel {
                 return new int[]{x, y};
             }
         }
-        throw new IllegalStateException("No free " + w + "x" + h + " area left in the texture for a pane");
+        return null;
     }
 
-    static boolean[][] paneMask(Cube pane, String key, int w, int h, List<Cube> solid) {
+    static boolean[] grow(boolean[] taken, int width, int height, int rows, double scale) {
+        BufferedImage larger = new BufferedImage(width, height + rows, BufferedImage.TYPE_INT_ARGB);
+        larger.setRGB(0, 0, width, height, texture.getRGB(0, 0, width, height, null, 0, width), 0, width);
+        texture = larger;
+        textureHeight += (int) Math.round(rows / scale);
+        boolean[] more = new boolean[width * (height + rows)];
+        System.arraycopy(taken, 0, more, 0, taken.length);
+        return more;
+    }
+
+    static boolean[][] paneMask(Cube pane, String key, int w, int h, List<Cube> solid, List<Cube> seams) {
         double[] from = vector(pane.element(), "from");
         double[] to = vector(pane.element(), "to");
         double[] matrix = cubeMatrix(pane);
@@ -361,8 +455,94 @@ public class ImportBlockbenchModel {
         double[] lo = {Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE};
         double[] hi = {-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
         bounds(matrix, from, to, lo, hi);
+        for (Cube seam : seams) bounds(cubeMatrix(seam), vector(seam.element(), "from"), vector(seam.element(), "to"), lo, hi);
+        List<Frame> glass = frames(seams, lo, hi);
+        List<Frame> frames = frames(solid, lo, hi);
+        double lengthS = length(axes[1]);
+        double lengthT = length(axes[2]);
+        boolean[][] mask = new boolean[h][w];
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < w; i++) {
+                double s = (i + .5) / w;
+                double t = (j + .5) / h;
+                mask[j][i] = framed(matrix, axes, normal, frames, glass, s, t, 1 / lengthS, 0, (1 - s) * lengthS)
+                        && framed(matrix, axes, normal, frames, glass, s, t, -1 / lengthS, 0, s * lengthS)
+                        && framed(matrix, axes, normal, frames, glass, s, t, 0, 1 / lengthT, (1 - t) * lengthT)
+                        && framed(matrix, axes, normal, frames, glass, s, t, 0, -1 / lengthT, t * lengthT);
+            }
+        }
+        return mask;
+    }
+
+    static List<Cube> outside(List<Bone> bones, JsonObject glass) {
+        List<String> inside = new ArrayList<>();
+        if (glass.has("inside")) for (JsonElement e : glass.getAsJsonArray("inside")) inside.add(e.getAsString());
+        return under(bones, inside, false);
+    }
+
+    static List<Cube> under(List<Bone> bones, List<String> roots, boolean wanted) {
+        Map<String, Bone> byName = new HashMap<>();
+        for (Bone bone : bones) byName.put(bone.name, bone);
+        List<Cube> cubes = new ArrayList<>();
+        for (Bone bone : bones) {
+            if (bone.glass) continue;
+            boolean in = false;
+            for (Bone b = bone; b != null && !in; b = b.parent == null ? null : byName.get(b.parent)) in = roots.contains(b.name);
+            if (in == wanted) cubes.addAll(bone.cubes);
+        }
+        return cubes;
+    }
+
+    static boolean[][] seen(Cube pane, String key, boolean[][] mask, double[] eye, List<Frame> walls) {
+        double[] from = vector(pane.element(), "from");
+        double[] to = vector(pane.element(), "to");
+        double[] matrix = cubeMatrix(pane);
+        double[][] axes = faceAxes(from, to, key);
+        int h = mask.length;
+        int w = mask[0].length;
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < w; i++) {
+                if (!mask[j][i]) continue;
+                double s = (i + .5) / w;
+                double t = (j + .5) / h;
+                double[] local = new double[3];
+                for (int k = 0; k < 3; k++) local[k] = axes[0][k] + axes[1][k] * s + axes[2][k] * t;
+                double[] point = transform(matrix, local, 1);
+                double[] ray = new double[3];
+                for (int k = 0; k < 3; k++) ray[k] = point[k] - eye[k];
+                double reach = 1 - SEEN_MARGIN / Math.max(SEEN_MARGIN, length(ray));
+                for (Frame wall : walls) {
+                    if (!hits(wall, eye, ray, reach)) continue;
+                    mask[j][i] = false;
+                    break;
+                }
+            }
+        }
+        return mask;
+    }
+
+    static boolean hits(Frame frame, double[] start, double[] ray, double reach) {
+        double[] o = transform(frame.inverse(), start, 1);
+        double[] d = transform(frame.inverse(), ray, 0);
+        double enter = 0;
+        double leave = reach;
+        for (int k = 0; k < 3; k++) {
+            if (Math.abs(d[k]) < 1e-12) {
+                if (o[k] < frame.from()[k] || o[k] > frame.to()[k]) return false;
+                continue;
+            }
+            double a = (frame.from()[k] - o[k]) / d[k];
+            double b = (frame.to()[k] - o[k]) / d[k];
+            enter = Math.max(enter, Math.min(a, b));
+            leave = Math.min(leave, Math.max(a, b));
+            if (enter > leave) return false;
+        }
+        return true;
+    }
+
+    static List<Frame> frames(List<Cube> cubes, double[] lo, double[] hi) {
         List<Frame> frames = new ArrayList<>();
-        for (Cube cube : solid) {
+        for (Cube cube : cubes) {
             double inflate = cube.element().has("inflate") ? cube.element().get("inflate").getAsDouble() : 0;
             double[] f = vector(cube.element(), "from");
             double[] t = vector(cube.element(), "to");
@@ -375,31 +555,25 @@ public class ImportBlockbenchModel {
             double[] chi = {-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
             bounds(m, f, t, clo, chi);
             boolean near = true;
-            for (int i = 0; i < 3; i++) near &= chi[i] > lo[i] - PANE_REACH && clo[i] < hi[i] + PANE_REACH;
+            for (int i = 0; lo != null && i < 3; i++) near &= chi[i] > lo[i] - PANE_REACH && clo[i] < hi[i] + PANE_REACH;
             if (near) frames.add(new Frame(rigidInverse(m), f, t));
         }
-        double lengthS = length(axes[1]);
-        double lengthT = length(axes[2]);
-        boolean[][] mask = new boolean[h][w];
-        for (int j = 0; j < h; j++) {
-            for (int i = 0; i < w; i++) {
-                double s = (i + .5) / w;
-                double t = (j + .5) / h;
-                mask[j][i] = framed(matrix, axes, normal, frames, s, t, 1 / lengthS, 0, (1 - s) * lengthS)
-                        && framed(matrix, axes, normal, frames, s, t, -1 / lengthS, 0, s * lengthS)
-                        && framed(matrix, axes, normal, frames, s, t, 0, 1 / lengthT, (1 - t) * lengthT)
-                        && framed(matrix, axes, normal, frames, s, t, 0, -1 / lengthT, t * lengthT);
-            }
-        }
-        return mask;
+        return frames;
     }
 
-    static boolean framed(double[] matrix, double[][] axes, double[] normal, List<Frame> frames, double s, double t, double ds, double dt, double toEdge) {
-        for (double d = 0; d <= toEdge + PANE_OVERHANG; d += PANE_STEP) {
+    static boolean framed(double[] matrix, double[][] axes, double[] normal, List<Frame> frames, List<Frame> glass, double s, double t, double ds, double dt, double toEdge) {
+        double limit = toEdge + PANE_OVERHANG;
+        for (double d = 0; d <= limit; d += PANE_STEP) {
             double[] local = new double[3];
             for (int k = 0; k < 3; k++) local[k] = axes[0][k] + axes[1][k] * (s + ds * d) + axes[2][k] * (t + dt * d);
             double[] point = transform(matrix, local, 1);
             for (Frame frame : frames) if (crosses(frame, point, normal)) return true;
+            if (d < toEdge) continue;
+            for (Frame pane : glass) {
+                if (!crosses(pane, point, normal)) continue;
+                limit = d + PANE_OVERHANG;
+                break;
+            }
         }
         return false;
     }
@@ -407,8 +581,8 @@ public class ImportBlockbenchModel {
     static boolean crosses(Frame frame, double[] point, double[] normal) {
         double[] o = transform(frame.inverse(), point, 1);
         double[] d = transform(frame.inverse(), normal, 0);
-        double enter = -PANE_DEPTH;
-        double leave = PANE_DEPTH;
+        double enter = -depth;
+        double leave = depth;
         for (int k = 0; k < 3; k++) {
             if (Math.abs(d[k]) < 1e-9) {
                 if (o[k] < frame.from()[k] || o[k] > frame.to()[k]) return false;
