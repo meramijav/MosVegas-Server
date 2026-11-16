@@ -58,6 +58,7 @@ public final class MosVegasItems implements ModInitializer {
                                         : ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS)))
                         .build());
 
+        ru.mosvegas.items.rp.RpItems.register();
         LOGGER.info("Loaded {} MosVegas consumables", ITEMS.size());
         ServerLifecycleEvents.SERVER_STARTING.register(server -> ITEMS.values().forEach(MosVegasConsumableItem::resolveRegistryReferences));
     }

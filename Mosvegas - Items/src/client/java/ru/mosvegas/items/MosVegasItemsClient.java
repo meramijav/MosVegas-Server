@@ -27,6 +27,7 @@ public final class MosVegasItemsClient implements ClientModInitializer {
         MosVegasConsumableItem.isBeingUsed = MosVegasItemsClient::isBeingUsed;
         ParticleFactoryRegistry.getInstance().register(MosVegasParticles.CIGARETTE_SMOKE, sprites -> new SmokeParticle.Factory(sprites, false));
         ParticleFactoryRegistry.getInstance().register(MosVegasParticles.EXHALED_SMOKE, sprites -> new SmokeParticle.Factory(sprites, true));
+        ru.mosvegas.items.rp.RpClient.register();
         EntityRendererRegistry.register(MosVegasItems.LITTER, LitterEntityRenderer::new);
         ClientTickEvents.END_WORLD_TICK.register(SmokeEmitter::tick);
         // 3D models for vanilla food; players can switch it off under Resource Packs.
