@@ -1,0 +1,110 @@
+plugins {
+    id 'fabric-loom' version '1.11-SNAPSHOT'
+}
+
+version = project.mod_version
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+
+repositories {
+    mavenCentral()
+}
+
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        mosvegas_character {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+    runs {
+        client {
+            runDir 'run'
+            vmArg '-Xmx3G'
+            programArgs '--username', 'Tester'
+        }
+        server {
+            runDir 'run-server'
+            programArg 'nogui'
+        }
+        player1 {
+            client()
+            runDir 'run'
+            vmArg '-Xmx2G'
+            programArgs '--username', 'Player1', '--quickPlayMultiplayer', 'localhost:25565'
+        }
+        autotest {
+            client()
+            runDir 'run'
+            vmArg '-Xmx2G'
+            vmArg '-Dmosvegas.character.autotest=true'
+            programArgs '--username', 'Player1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1600', '--height', '900'
+        }
+        autotestStep {
+            client()
+            runDir 'run'
+            vmArg '-Xmx2G'
+            vmArg '-Dmosvegas.character.autotest=true'
+            vmArg '-Dmosvegas.character.onlyStep=true'
+            vmArg "-Dmosvegas.character.step=${project.findProperty('step') ?: 0}"
+            vmArg "-Dmosvegas.character.stepGender=${project.findProperty('stepGender') ?: -1}"
+            programArgs '--username', 'Player1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1600', '--height', '900'
+        }
+        gallery {
+            client()
+            runDir 'run'
+            vmArg '-Xmx2G'
+            vmArg '-Dmosvegas.character.autotest=true'
+            vmArg "-Dmosvegas.character.gallery=${project.findProperty('page') ?: 4}"
+            vmArg "-Dmosvegas.character.hair=${project.findProperty('hair') ?: 0}"
+            vmArg "-Dmosvegas.character.hairGender=${project.findProperty('hairGender') ?: 0}"
+            vmArg "-Dmosvegas.character.beard=${project.findProperty('beard') ?: 0}"
+            programArgs '--username', 'Player1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1600', '--height', '900'
+        }
+        player2 {
+            client()
+            runDir 'run-client2'
+            vmArg '-Xmx2G'
+            programArgs '--username', 'Player2', '--quickPlayMultiplayer', 'localhost:25565'
+        }
+        duo1 {
+            client()
+            runDir 'run'
+            vmArg '-Xmx2G'
+            vmArg '-Dmosvegas.character.autotest=true'
+            vmArg '-Dmosvegas.character.duo=1'
+            programArgs '--username', 'Player1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
+        }
+        duo2 {
+            client()
+            runDir 'run-client2'
+            vmArg '-Xmx2G'
+            vmArg '-Dmosvegas.character.autotest=true'
+            vmArg '-Dmosvegas.character.duo=2'
+            programArgs '--username', 'Player2', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}

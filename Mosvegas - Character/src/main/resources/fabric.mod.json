@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "mosvegas_character",
+  "version": "${version}",
+  "name": "MosVegas Character",
+  "description": "Создание персонажа.",
+  "authors": ["Warden", "Merami Studio"],
+  "contact": { "homepage": "https://t.me/merami_studio" },
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["ru.mosvegas.character.MosVegasCharacter"],
+    "client": ["ru.mosvegas.character.client.MosVegasCharacterClient"]
+  },
+  "mixins": [
+    "mosvegas_character.mixins.json",
+    { "config": "mosvegas_character.client.mixins.json", "environment": "client" }
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.6",
+    "minecraft": "~1.20.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

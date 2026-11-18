@@ -1,0 +1,14 @@
+.gradle/
+build/
+run/
+run-server/
+run-client2/
+.idea/
+*.iml
+*.log
+.work/
+logs/
+*.md
+docs/
+tools/
+.gradle-duo2/
