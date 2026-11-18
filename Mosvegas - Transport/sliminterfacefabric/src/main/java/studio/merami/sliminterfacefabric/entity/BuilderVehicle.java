@@ -23,6 +23,8 @@ import studio.merami.slimcore.entities.instances.EntityVehicleF_Physics;
 import studio.merami.slimcore.sliminterface.IEntityData;
 import studio.merami.slimcore.sliminterface.IWrapperEntity;
 import studio.merami.slimcore.sliminterface.SyncedValue;
+import studio.merami.sliminterfacefabric.shop.PaintJobs;
+import studio.merami.sliminterfacefabric.shop.PlateShop;
 import studio.merami.sliminterfacefabric.wrapper.Convert;
 import studio.merami.sliminterfacefabric.wrapper.WrapperDamage;
 import studio.merami.sliminterfacefabric.wrapper.WrapperEntity;
@@ -135,6 +137,14 @@ public class BuilderVehicle extends Entity {
     public void tick() {
         super.tick();
         vehicle.tick();
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        super.remove(reason);
+        if (level().isClientSide || !reason.shouldDestroy()) return;
+        PlateShop.destroyed(getUUID());
+        PaintJobs.vanished(getUUID(), reason);
     }
 
     @Override

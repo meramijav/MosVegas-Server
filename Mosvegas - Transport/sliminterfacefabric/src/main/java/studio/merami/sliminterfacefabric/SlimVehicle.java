@@ -12,11 +12,13 @@ import studio.merami.sliminterfacefabric.event.SeatedInteractionEvents;
 import studio.merami.sliminterfacefabric.network.NetworkHandler;
 import studio.merami.sliminterfacefabric.network.RadioServer;
 import studio.merami.sliminterfacefabric.packs.PackDiscovery;
+import studio.merami.sliminterfacefabric.registry.BlockRegistry;
 import studio.merami.sliminterfacefabric.registry.EntityRegistry;
 import studio.merami.sliminterfacefabric.registry.ItemRegistry;
 import studio.merami.sliminterfacefabric.registry.ParticleRegistry;
 import studio.merami.sliminterfacefabric.registry.RuleRegistry;
 import studio.merami.sliminterfacefabric.registry.SoundRegistry;
+import studio.merami.sliminterfacefabric.shop.ShopEvents;
 
 public class SlimVehicle implements ModInitializer {
     public static ResourceLocation id(String path) {
@@ -31,9 +33,11 @@ public class SlimVehicle implements ModInitializer {
         ParticleRegistry.register();
         RuleRegistry.register();
         EntityRegistry.register();
+        BlockRegistry.register();
         ItemRegistry.register();
         NetworkHandler.registerServer();
         RadioServer.register();
+        ShopEvents.register();
         SeatedInteractionEvents.register();
         TaczCompat.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registries, environment) -> SlimVehicleCommand.register(dispatcher));

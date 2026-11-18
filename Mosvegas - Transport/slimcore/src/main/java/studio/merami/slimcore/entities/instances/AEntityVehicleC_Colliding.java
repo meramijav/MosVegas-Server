@@ -27,6 +27,7 @@ import studio.merami.slimcore.sliminterface.IWrapperWorld;
 import studio.merami.slimcore.sliminterface.SyncedValue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -151,6 +152,25 @@ public abstract class AEntityVehicleC_Colliding extends AEntityF_Multipart<JSONV
             }
         }
         return new Hull(boxes, controls, frame);
+    }
+
+    public Map<String, List<Hull.Box>> boneBoxes(Collection<String> names) {
+        JSONVehicle definition = definition();
+        Map<String, List<Hull.Box>> found = new HashMap<>();
+        if (definition.modelLocation == null || names.isEmpty()) return found;
+        Map<String, ModelSkeleton.Bone> byName = ModelSkeleton.byName(ModelSkeleton.bones(definition.modelLocation));
+        Map<String, Matrix4d> matrices = new HashMap<>();
+        Matrix4d body = body(root(yaw()));
+        for (String name : names) {
+            ModelSkeleton.Bone bone = byName.get(name);
+            if (bone == null) continue;
+            Matrix4d matrix = boneMatrix(bone, byName, matrices, body);
+            APart part = partOf(name, byName);
+            List<Hull.Box> boxes = new ArrayList<>();
+            for (ModelSkeleton.Cube cube : bone.cubes()) boxes.add(Hull.bake(matrix, cube, part, -1));
+            found.put(name, boxes);
+        }
+        return found;
     }
 
     private Matrix4d root(float yaw) {
@@ -555,6 +575,7 @@ public abstract class AEntityVehicleC_Colliding extends AEntityF_Multipart<JSONV
     public boolean attack(IWrapperDamage source, float amount) {
         if (world().isClient()) return true;
         IWrapperPlayer attacker = source.attacker() == null ? null : source.attacker().asPlayer();
+        if (attacker != null && !attacker.isCreative() && attacker.isSneaking() && shove(attacker)) return true;
         if (!world().allows(attacker, IWrapperWorld.Access.DAMAGE, this)) return false;
         IWrapperEntity projectile = source.projectile();
         if (projectile != null) {
@@ -573,6 +594,10 @@ public abstract class AEntityVehicleC_Colliding extends AEntityF_Multipart<JSONV
             remove();
             return true;
         }
+        return false;
+    }
+
+    protected boolean shove(IWrapperPlayer player) {
         return false;
     }
 
@@ -597,7 +622,7 @@ public abstract class AEntityVehicleC_Colliding extends AEntityF_Multipart<JSONV
     protected Point3D tryStep(Hull before, Hull hull, Point3D travel, Point3D candidate, HullCollision.World world) {
         double maxStep = definition().maxStep;
         if (maxStep <= 0) return null;
-        if (!onGround()) {
+        if (!onGround() && definition().craft == null) {
             boolean supported = false;
             for (int i = 0; i < wheels().size(); i++) {
                 double gap = y() - sampleWheelGround(i);

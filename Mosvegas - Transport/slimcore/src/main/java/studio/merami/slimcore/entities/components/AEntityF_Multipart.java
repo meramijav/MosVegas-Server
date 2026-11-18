@@ -420,6 +420,10 @@ public abstract class AEntityF_Multipart<J extends AJSONMultipart> extends AEnti
 
     public void requestExit(IWrapperPlayer player) {
         if (!hasPassenger(player)) return;
+        if (exitBlocked()) {
+            message(player, "message.slimvehicle.land_first");
+            return;
+        }
         if (Math.abs(speed()) > .07) {
             message(player, "message.slimvehicle.stop_first");
             return;
@@ -439,6 +443,10 @@ public abstract class AEntityF_Multipart<J extends AJSONMultipart> extends AEnti
         return !pendingExits.isEmpty();
     }
 
+    protected boolean exitBlocked() {
+        return false;
+    }
+
     protected void tickExits() {
         Iterator<Map.Entry<Integer, ExitRequest>> iterator = pendingExits.entrySet().iterator();
         while (iterator.hasNext()) {
@@ -446,6 +454,11 @@ public abstract class AEntityF_Multipart<J extends AJSONMultipart> extends AEnti
             IWrapperPlayer player = request.player();
             if (!hasPassenger(player)) {
                 iterator.remove();
+                continue;
+            }
+            if (exitBlocked()) {
+                iterator.remove();
+                message(player, "message.slimvehicle.land_first");
                 continue;
             }
             int seat = seatOf(player);

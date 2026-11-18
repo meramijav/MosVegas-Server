@@ -19,6 +19,13 @@ final class VehicleRenderTypes extends RenderType {
                     .setOverlayState(OVERLAY)
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(true)));
+    private static final Function<ResourceLocation, RenderType> LAMP = Util.memoize(texture -> create("slimvehicle_lamp",
+            DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false, CompositeState.builder()
+                    .setShaderState(RENDERTYPE_EYES_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false)));
 
     private VehicleRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int size, boolean crumbling, boolean sort, Runnable setup, Runnable clear) {
         super(name, format, mode, size, crumbling, sort, setup, clear);
@@ -26,5 +33,9 @@ final class VehicleRenderTypes extends RenderType {
 
     static RenderType glass(ResourceLocation texture) {
         return GLASS.apply(texture);
+    }
+
+    static RenderType lamp(ResourceLocation texture) {
+        return LAMP.apply(texture);
     }
 }

@@ -37,7 +37,9 @@ public class JSONSounds {
     public String trunkClose;
     public String hatchOpen = "slimvehicle:hatch_open";
     public String hatchClose = "slimvehicle:hatch_close";
-    public String refuel = "minecraft:item.bottle.empty";
+
+    public static final String FOLLOW_RPM = "rpm";
+    public static final String FOLLOW_SPEED = "speed";
 
     public static class EngineLayer {
         public String sound;
@@ -46,6 +48,17 @@ public class JSONSounds {
         public double[] fadeOut;
         public double pitchRpm = 3300;
         public double pitchFollow = Double.NaN;
+        public String follow = FOLLOW_RPM;
+        public double volume = 1;
+        public double load;
+
+        public boolean followsSpeed() {
+            return FOLLOW_SPEED.equals(follow);
+        }
+
+        public float loadShare(float load) {
+            return (float) (1 - this.load * (1 - Math.max(0, Math.min(1, load))));
+        }
 
         static EngineLayer of(String sound, double[] fadeIn, double[] fadeOut, double pitchRpm) {
             EngineLayer layer = new EngineLayer();
@@ -104,6 +117,10 @@ public class JSONSounds {
         if (spinDown < 0) throw new IllegalArgumentException("sounds \"spin_down\" can not be negative");
         for (EngineLayer layer : engine) {
             if (silent(layer.sound)) throw new IllegalArgumentException("an engine sound layer has no \"sound\"");
+            if (!FOLLOW_RPM.equals(layer.follow) && !FOLLOW_SPEED.equals(layer.follow)) throw new IllegalArgumentException("engine sound \"follow\" is \"rpm\" or \"speed\", not \"" + layer.follow + "\"");
+            if (!(layer.volume >= 0)) throw new IllegalArgumentException("engine sound \"volume\" can not be negative");
+            if (!(layer.load >= 0 && layer.load <= 1)) throw new IllegalArgumentException("engine sound \"load\" is a share from 0 to 1, not " + layer.load);
+            if (!(layer.pitchRpm > 0)) throw new IllegalArgumentException("engine sound \"pitch_rpm\" must be above 0");
             layer.sound = qualify.apply(layer.sound);
             layer.inside = name(qualify, layer.inside);
         }
@@ -132,6 +149,5 @@ public class JSONSounds {
         trunkClose = trunkClose == null ? hoodClose : name(qualify, trunkClose);
         hatchOpen = name(qualify, hatchOpen);
         hatchClose = name(qualify, hatchClose);
-        refuel = name(qualify, refuel);
     }
 }

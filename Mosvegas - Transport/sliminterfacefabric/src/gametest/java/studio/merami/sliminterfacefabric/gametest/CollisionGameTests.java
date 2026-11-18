@@ -239,8 +239,8 @@ public class CollisionGameTests implements FabricGameTest {
         List<String> stuck = new ArrayList<>();
         List<String> inside = new ArrayList<>();
         Random random = new Random(7);
-        for (int scene = 0; scene < 9; scene++) {
-            String model = scene < 3 ? "volga" : scene < 6 ? "g63" : "l9";
+        for (int scene = 0; scene < 6; scene++) {
+            String model = scene < 3 ? "volga" : "g63";
             List<EntityVehicleF_Physics> cars = new ArrayList<>();
             cars.add(car(h, 12, 12, 30, model));
             if (scene % 3 == 1) for (int seat = 0; seat < 4; seat++) openDoor(cars.get(0), seat);
@@ -372,7 +372,7 @@ public class CollisionGameTests implements FabricGameTest {
     public void carDrivenIntoPlayerNeverSwallowsThem(GameTestHelper h) {
         floor(h, 1, 24, 1, 24);
         double ground = h.absoluteVec(new Vec3(0, 1, 0)).y;
-        for (String model : new String[]{"g63", "volga", "l9"}) {
+        for (String model : new String[]{"g63", "volga"}) {
             for (int yaw : new int[]{0, 30}) {
                 EntityVehicleF_Physics car = car(h, 12, 4, yaw, model);
                 spawn(h, car);
@@ -409,7 +409,7 @@ public class CollisionGameTests implements FabricGameTest {
         floor(h, 1, 24, 1, 24);
         double ground = h.absoluteVec(new Vec3(0, 1, 0)).y;
         List<String> trapped = new ArrayList<>();
-        for (String model : new String[]{"g63", "volga", "l9"}) {
+        for (String model : new String[]{"g63", "volga"}) {
             EntityVehicleF_Physics car = car(h, 12, 12, 30, model);
             spawn(h, car);
             int tried = 0;

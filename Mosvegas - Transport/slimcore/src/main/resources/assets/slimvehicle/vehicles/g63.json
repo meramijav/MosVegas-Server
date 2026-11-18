@@ -186,6 +186,23 @@
     "dent": ["body", "door_fl", "door_fr", "door_rl", "door_rr", "bonnet", "trunk", "fuel_flap", "headlights", "taillights", "tail_strips",
              "indicator_front_left", "indicator_front_right"],
     "interior": ["interior", "engine"],
+    "interior_paint": ["seat_fl", "seat_fr", "seat_rear", "interior_trim", "glovebox", "door_fl_card", "door_fr_card", "door_rl_card", "door_rr_card"],
+    "paint_keep": ["spare_wheel", "seat_fl_posts", "seat_fr_posts", "seat_rear_posts"],
+    "paint_keep_faces": {
+      "body": {"north": [10], "all": [6, 11, 12, 13, 17, 18, 37, 38, 39, 40, 51, 52, 55, 56, 65, 66, 74, 121]},
+      "bonnet": {"all": [0, 1, 2, 3, 4, 5]},
+      "door_fl": {"all": [5, 6, 7, 10, 13]},
+      "door_fr": {"all": [5, 6, 7, 10, 13]},
+      "door_rl": {"all": [4, 5, 10]},
+      "door_rr": {"all": [4, 5, 10]},
+      "trunk": {"all": [3]},
+      "mirror_fl": {"south": [3]},
+      "mirror_fr": {"south": [3]}
+    },
+    "paint_faces": {
+      "headlights": {"up": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]},
+      "engine": {"north": [1]}
+    },
     "shadow": [1.25, 3.0],
     "speedometer": 280
   }

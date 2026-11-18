@@ -14,6 +14,7 @@ import studio.merami.slimcore.entities.instances.EntityVehicleF_Physics;
 import studio.merami.slimcore.entities.instances.VehicleAction;
 import studio.merami.slimcore.items.ItemKey;
 import studio.merami.sliminterfacefabric.client.hud.InteractionOverlay;
+import studio.merami.sliminterfacefabric.client.paint.PaintShopClient;
 import studio.merami.sliminterfacefabric.entity.BuilderVehicle;
 import studio.merami.sliminterfacefabric.network.PacketVehicleAction;
 import studio.merami.sliminterfacefabric.network.PacketVehicleInput;
@@ -50,14 +51,12 @@ public final class VehicleControls {
     private static KeyMapping enter;
     private static KeyMapping interact;
     private static KeyMapping megaphone;
-    private static KeyMapping vibrations;
     private static KeyMapping wipers;
     private static int interactionCooldown;
 
     private VehicleControls() {}
 
     static void register() {
-        vibrations = key("vibrations", GLFW.GLFW_KEY_O);
         engine = key("engine", GLFW.GLFW_KEY_R);
         up = key("gear_up", GLFW.GLFW_KEY_X);
         down = key("gear_down", GLFW.GLFW_KEY_Z);
@@ -105,10 +104,6 @@ public final class VehicleControls {
         return label(handbrake);
     }
 
-    public static String vibrationsName() {
-        return label(vibrations);
-    }
-
     private static String label(KeyMapping key) {
         if (key == null) return "?";
         InputConstants.Key bound = KeyBindingHelper.getBoundKeyOf(key);
@@ -127,12 +122,6 @@ public final class VehicleControls {
 
     static void tickSettings(Minecraft mc) {
         if (interactionCooldown > 0) interactionCooldown--;
-        if (pressed(vibrations)) {
-            ClientConfig.toggleVibrations();
-            if (mc.player != null) {
-                mc.player.displayClientMessage(Component.translatable(ClientConfig.vibrations ? "message.slimvehicle.vibration_on" : "message.slimvehicle.vibration_off"), true);
-            }
-        }
     }
 
     static void tick(Minecraft mc) {
@@ -159,15 +148,20 @@ public final class VehicleControls {
             }
             long windowHandle = mc.getWindow().getWindow();
             float throttle = mc.options.keyUp.isDown() || InputConstants.isKeyDown(windowHandle, GLFW.GLFW_KEY_UP) ? 1 : 0;
-            float brake = mc.options.keyDown.isDown() || mc.options.keyJump.isDown() || InputConstants.isKeyDown(windowHandle, GLFW.GLFW_KEY_DOWN) ? 1 : 0;
+            boolean craft = vehicle.craft();
+            float brake = mc.options.keyDown.isDown() || !craft && mc.options.keyJump.isDown() || InputConstants.isKeyDown(windowHandle, GLFW.GLFW_KEY_DOWN) ? 1 : 0;
             float steer = (mc.options.keyLeft.isDown() || InputConstants.isKeyDown(windowHandle, GLFW.GLFW_KEY_LEFT) ? 1 : 0)
                     - (mc.options.keyRight.isDown() || InputConstants.isKeyDown(windowHandle, GLFW.GLFW_KEY_RIGHT) ? 1 : 0);
+            float lift = craft ? (mc.options.keyJump.isDown() ? 1 : 0) - (mc.options.keySprint.isDown() || InputConstants.isKeyDown(windowHandle, GLFW.GLFW_KEY_LEFT_CONTROL) ? 1 : 0) : 0;
             if (mc.screen != null) {
                 throttle = 0;
                 brake = 0;
                 steer = 0;
+                lift = 0;
             }
-            ClientPlayNetworking.send(new PacketVehicleInput(vehicle.id(), throttle, brake, steer, mc.screen == null && isDown(handbrake), mc.screen == null && isDown(horn)));
+            EntityVehicleF_Physics paintShop = PaintShopClient.parkedVehicle(mc);
+            if (paintShop != null && pressed(horn)) PaintShopClient.request(mc, paintShop);
+            ClientPlayNetworking.send(new PacketVehicleInput(vehicle.id(), throttle, brake, steer, mc.screen == null && isDown(handbrake), mc.screen == null && paintShop == null && isDown(horn), lift));
             action(engine, VehicleAction.ENGINE);
             action(up, VehicleAction.GEAR_UP);
             action(down, VehicleAction.GEAR_DOWN);
@@ -222,7 +216,7 @@ public final class VehicleControls {
     }
 
     public static boolean hornHeld() {
-        return horn != null && Minecraft.getInstance().screen == null && isDown(horn);
+        return horn != null && Minecraft.getInstance().screen == null && isDown(horn) && PaintShopClient.parkedVehicle(Minecraft.getInstance()) == null;
     }
 
     public static String useKeyName() {
@@ -231,6 +225,26 @@ public final class VehicleControls {
 
     public static String forwardName() {
         return label(Minecraft.getInstance().options.keyUp);
+    }
+
+    public static String backName() {
+        return label(Minecraft.getInstance().options.keyDown);
+    }
+
+    public static String liftName() {
+        return label(Minecraft.getInstance().options.keyJump);
+    }
+
+    public static String leftName() {
+        return label(Minecraft.getInstance().options.keyLeft);
+    }
+
+    public static String rightName() {
+        return label(Minecraft.getInstance().options.keyRight);
+    }
+
+    public static String sinkName() {
+        return label(Minecraft.getInstance().options.keySprint);
     }
 
     public static void interactSeated(Minecraft mc) {

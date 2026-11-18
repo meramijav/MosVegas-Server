@@ -10,6 +10,7 @@
     "common.PlayerMixin",
     "common.ProjectileUtilMixin",
     "common.ServerGamePacketListenerImplMixin",
+    "common.ServerPlayerDropMixin",
     "compat.EntityKineticBulletMixin",
     "compat.EntityUtilMixin"
   ],
@@ -23,6 +24,7 @@
     "client.HumanoidModelMixin",
     "client.ItemInHandLayerMixin",
     "client.ItemInHandRendererMixin",
+    "client.LivingEntityRendererMixin",
     "client.LocalPlayerMixin",
     "client.MinecraftMixin",
     "client.PackRepositoryMixin",

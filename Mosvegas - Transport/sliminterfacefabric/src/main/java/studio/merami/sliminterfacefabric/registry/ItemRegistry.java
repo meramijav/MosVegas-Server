@@ -41,6 +41,9 @@ public final class ItemRegistry {
         Item key = register(SlimItems.KEY);
         Item fuelCan = register(SlimItems.FUEL_CAN);
         Item repairKit = register(SlimItems.REPAIR_KIT);
+        register(SlimItems.SPRAY_GUN);
+        Item zoneMarker = register(SlimItems.ZONE_MARKER);
+        Item paintStand = register(SlimItems.PAINT_STAND);
         for (Map.Entry<JSONVehicle, ItemVehicle> entry : SlimItems.createVehicleItems().entrySet()) {
             ResourceLocation id = Convert.location(entry.getValue().id);
             if (BuiltInRegistries.ITEM.containsKey(id)) {
@@ -57,6 +60,9 @@ public final class ItemRegistry {
                     output.accept(key);
                     output.accept(fuelCan);
                     output.accept(repairKit);
+                    output.accept(zoneMarker);
+                    output.accept(paintStand);
+                    output.accept(BlockRegistry.PLATE_TERMINAL_ITEM);
                 }).build());
     }
 }

@@ -15,7 +15,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import studio.merami.sliminterfacefabric.client.CraftCamera;
 import studio.merami.sliminterfacefabric.client.DriverPose;
+import studio.merami.sliminterfacefabric.client.paint.PaintShopScreen;
 import studio.merami.sliminterfacefabric.entity.BuilderVehicle;
 
 @Mixin(Camera.class)
@@ -35,6 +37,9 @@ public abstract class CameraMixin {
     @Shadow
     protected abstract void setPosition(Vec3 position);
 
+    @Shadow
+    protected abstract void setRotation(float yaw, float pitch);
+
     @Inject(method = "getMaxZoom", at = @At("RETURN"), cancellable = true)
     private void slimvehicle$keepOutOfGround(double start, CallbackInfoReturnable<Double> cir) {
         if (entity == null || !(entity.getVehicle() instanceof BuilderVehicle)) return;
@@ -48,5 +53,14 @@ public abstract class CameraMixin {
     @Inject(method = "setup", at = @At("TAIL"))
     private void slimvehicle$driverNeck(BlockGetter area, Entity viewer, boolean detached, boolean mirrored, float partial, CallbackInfo ci) {
         if (!detached && viewer != null && DriverPose.firstPersonDriver(viewer)) setPosition(DriverPose.eye(viewer, partial));
+        else if (!detached && viewer != null) {
+            Vec3 craft = CraftCamera.eye(viewer, position, partial);
+            if (craft != null) setPosition(craft);
+        }
+        double[] orbit = PaintShopScreen.camera(partial);
+        if (orbit != null) {
+            setRotation((float) orbit[3], (float) orbit[4]);
+            setPosition(new Vec3(orbit[0], orbit[1], orbit[2]));
+        }
     }
 }

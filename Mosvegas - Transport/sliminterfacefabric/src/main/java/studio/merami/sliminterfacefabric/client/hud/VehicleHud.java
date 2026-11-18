@@ -16,15 +16,18 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import studio.merami.slimcore.baseclasses.DamageModel;
 import studio.merami.slimcore.entities.instances.EntityVehicleF_Physics;
+import studio.merami.slimcore.physics.CraftPhysics;
 import studio.merami.slimcore.entities.instances.PartGroundDevice;
 import studio.merami.slimcore.entities.instances.VehicleAction;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
 import studio.merami.sliminterfacefabric.SlimVehicle;
 import studio.merami.sliminterfacefabric.client.ClientConfig;
 import studio.merami.sliminterfacefabric.client.VehicleControls;
+import studio.merami.sliminterfacefabric.client.paint.PaintShopClient;
 import studio.merami.sliminterfacefabric.client.sound.RadioStations;
 import studio.merami.sliminterfacefabric.entity.BuilderVehicle;
 import studio.merami.sliminterfacefabric.wrapper.Convert;
+import studio.merami.sliminterfacefabric.wrapper.WrapperEntity;
 import studio.merami.sliminterfacefabric.wrapper.WrapperPlayer;
 
 import java.util.ArrayList;
@@ -73,16 +76,17 @@ public final class VehicleHud {
     private static final int NEEDLE_TAIL = 8;
     private static final int SEGMENTS = 7;
     private static final int SEGMENT = 4;
+    private static final int STACK_GAP = 4;
     private static final int ABOVE_HOTBAR = 30;
     private static final int ABOVE_ACTION_BAR = 78;
     private static final int KEY_FACE = 0xff913432;
     private static final int KEY_LIGHT = 0xffb5554c;
     private static final int KEY_DARK = 0xff561a18;
-    private static final int KEY_HEIGHT = 11;
+    static final int KEY_HEIGHT = 11;
     private static final int KEY_GAP = 2;
     private static final int LABEL_GAP = 4;
     private static final int SEGMENT_GAP = 10;
-    private static final int HINT_ROW = 14;
+    static final int HINT_ROW = 14;
     private static final int HINT_ON = 0xfff2f5f7;
     private static final int HINT_OFF = 0xffb4bcc3;
     private static final int[] SPEED_STEPS = {5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100};
@@ -98,13 +102,13 @@ public final class VehicleHud {
 
     private VehicleHud() {}
 
-    private record Hint(List<String> keys, String label, boolean on) {
+    record Hint(List<String> keys, String label, boolean on) {
         Hint(String key, String label, boolean on) {
             this(List.of(key), label, on);
         }
     }
 
-    private record Segment(List<String> keys, String text) {}
+    record Segment(List<String> keys, String text) {}
 
     public static void registerReload() {
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
@@ -119,6 +123,11 @@ public final class VehicleHud {
                 DamageDiagram.clear();
             }
         });
+    }
+
+    public static int freeBottom(GuiGraphics gui) {
+        Minecraft mc = Minecraft.getInstance();
+        return gui.guiHeight() - (mc.gameMode != null && mc.gameMode.canHurtPlayer() ? ABOVE_ACTION_BAR : ABOVE_HOTBAR) - STACK_GAP;
     }
 
     public static void render(GuiGraphics gui, float partial) {
@@ -145,19 +154,20 @@ public final class VehicleHud {
         shownFuel = Mth.lerp(blend, shownFuel, fuel);
         RenderSystem.enableBlend();
         gui.drawManaged(() -> {
-            if (vehicle.driver(WrapperPlayer.of(mc.player))) dashboard(gui, mc.font, vehicle);
-            else passenger(gui, mc.font);
+            if (vehicle.driver(WrapperPlayer.of(mc.player)) && vehicle.craft()) CraftHud.dashboard(gui, mc.font, vehicle, shownSpeed, shownRpm, shownFuel);
+            else if (vehicle.driver(WrapperPlayer.of(mc.player))) dashboard(gui, mc.font, vehicle);
+            else passenger(gui, mc.font, vehicle);
         });
         RenderSystem.disableBlend();
     }
 
-    private static void prompt(GuiGraphics gui, Font font, int centre, int bottom) {
+    static void prompt(GuiGraphics gui, Font font, int centre, int bottom) {
         var hit = InteractionOverlay.hit;
         if (hit == null || hit.zone().part() instanceof PartGroundDevice) return;
         segments(gui, font, List.of(new Segment(List.of(VehicleControls.useKeyName()), Convert.text(hit.zone().text()).getString())), centre, bottom - KEY_HEIGHT);
     }
 
-    private static void passenger(GuiGraphics gui, Font font) {
+    private static void passenger(GuiGraphics gui, Font font, EntityVehicleF_Physics vehicle) {
         String text = I18n.get("hud.slimvehicle.speed", Math.round(shownSpeed));
         int width = font.width(text) + 11;
         int x = gui.guiWidth() / 2 - width / 2;
@@ -166,36 +176,48 @@ public final class VehicleHud {
         gui.drawString(font, text, x + 6, y + 4, WHITE, true);
         prompt(gui, font, gui.guiWidth() / 2, y - 4);
         if (!ClientConfig.hints) return;
-        List<Hint> right = List.of(
-                new Hint(VehicleControls.keyName(VehicleAction.WINDOW), I18n.get("hud.slimvehicle.keys.window"), false),
-                new Hint(VehicleControls.keyName(VehicleAction.EXIT), I18n.get("hud.slimvehicle.keys.exit"), false));
+        List<Hint> right = new ArrayList<>();
+        if (ownWindow(vehicle)) right.add(new Hint(VehicleControls.keyName(VehicleAction.WINDOW), I18n.get("hud.slimvehicle.keys.window"), false));
+        right.add(new Hint(VehicleControls.keyName(VehicleAction.EXIT), I18n.get("hud.slimvehicle.keys.exit"), false));
         hints(gui, font, right, gui.guiWidth() / 2 + 100, gui.guiHeight() - 2 - right.size() * HINT_ROW, false);
     }
 
-    private static List<Hint> driverLeft(EntityVehicleF_Physics vehicle) {
+    private static boolean ownWindow(EntityVehicleF_Physics vehicle) {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && vehicle.definition().hasWindow(vehicle.seatOf(WrapperEntity.of(mc.player)));
+    }
+
+    static List<Hint> driverLeft(EntityVehicleF_Physics vehicle) {
         List<Hint> list = new ArrayList<>();
         list.add(new Hint(VehicleControls.keyName(VehicleAction.ENGINE), I18n.get("hud.slimvehicle.keys.engine"), vehicle.flag(EntityVehicleF_Physics.ENGINE)));
         list.add(new Hint(VehicleControls.keyName(VehicleAction.LIGHTS), I18n.get("hud.slimvehicle.keys.lights"), vehicle.flag(EntityVehicleF_Physics.LIGHTS)));
-        list.add(new Hint(List.of(VehicleControls.keyName(VehicleAction.GEAR_DOWN), VehicleControls.keyName(VehicleAction.GEAR_UP)),
-                I18n.get(vehicle.definition().transmission.automatic ? "hud.slimvehicle.keys.selector" : "hud.slimvehicle.keys.gears"), false));
-        list.add(new Hint(VehicleControls.handbrakeName(), I18n.get("hud.slimvehicle.keys.handbrake"), VehicleControls.handbrakeHeld()));
-        list.add(new Hint(VehicleControls.keyName(VehicleAction.HORN), I18n.get("hud.slimvehicle.keys.horn"), VehicleControls.hornHeld()));
+        if (vehicle.craft()) {
+            if (vehicle.definition().craft.helicopter()) {
+                list.add(new Hint(List.of(VehicleControls.sinkName(), VehicleControls.liftName()), I18n.get("hud.slimvehicle.keys.lift"), false));
+            } else {
+                list.add(new Hint(VehicleControls.liftName(), I18n.get("hud.slimvehicle.keys.hop"), false));
+            }
+        } else {
+            list.add(new Hint(List.of(VehicleControls.keyName(VehicleAction.GEAR_DOWN), VehicleControls.keyName(VehicleAction.GEAR_UP)),
+                    I18n.get(vehicle.definition().transmission.automatic ? "hud.slimvehicle.keys.selector" : "hud.slimvehicle.keys.gears"), false));
+            list.add(new Hint(VehicleControls.handbrakeName(), I18n.get("hud.slimvehicle.keys.handbrake"), VehicleControls.handbrakeHeld()));
+        }
+        list.add(new Hint(VehicleControls.keyName(VehicleAction.HORN), I18n.get(PaintShopClient.parkedVehicle(Minecraft.getInstance()) != null ? "hud.slimvehicle.keys.paint" : "hud.slimvehicle.keys.horn"), VehicleControls.hornHeld()));
         list.add(new Hint(VehicleControls.keyName(VehicleAction.EXIT), I18n.get("hud.slimvehicle.keys.exit"), false));
         return list;
     }
 
-    private static List<Hint> driverRight(EntityVehicleF_Physics vehicle) {
+    static List<Hint> driverRight(EntityVehicleF_Physics vehicle) {
         JSONVehicle definition = vehicle.definition();
         List<Hint> list = new ArrayList<>();
         list.add(new Hint(VehicleControls.keyName(VehicleAction.LOCK), I18n.get("hud.slimvehicle.keys.lock"), vehicle.flag(EntityVehicleF_Physics.LOCKED)));
-        list.add(new Hint(VehicleControls.keyName(VehicleAction.WINDOW), I18n.get("hud.slimvehicle.keys.window"), false));
+        if (ownWindow(vehicle)) list.add(new Hint(VehicleControls.keyName(VehicleAction.WINDOW), I18n.get("hud.slimvehicle.keys.window"), false));
         if (definition.wipers != null) list.add(new Hint(VehicleControls.keyName(VehicleAction.WIPERS), I18n.get("hud.slimvehicle.keys.wipers"), vehicle.flag(EntityVehicleF_Physics.WIPERS)));
         list.add(new Hint(VehicleControls.keyName(VehicleAction.RADIO), I18n.get("hud.slimvehicle.keys.radio"), vehicle.flag(EntityVehicleF_Physics.RADIO)));
         if (vehicle.flag(EntityVehicleF_Physics.RADIO) && RadioStations.any()) {
             list.add(new Hint(List.of(VehicleControls.keyName(VehicleAction.RADIO_PREVIOUS), VehicleControls.keyName(VehicleAction.RADIO_NEXT)), I18n.get("hud.slimvehicle.keys.station"), false));
         }
         if (definition.emergency) list.add(new Hint(VehicleControls.keyName(VehicleAction.SIREN), I18n.get("hud.slimvehicle.keys.siren"), vehicle.flag(EntityVehicleF_Physics.SIREN)));
-        list.add(new Hint(VehicleControls.vibrationsName(), I18n.get("hud.slimvehicle.keys.vibrations"), ClientConfig.vibrations));
         return list;
     }
 
@@ -203,13 +225,13 @@ public final class VehicleHud {
         return Math.max(KEY_HEIGHT, font.width(key) + 6);
     }
 
-    private static int capsWidth(Font font, List<String> keys) {
+    static int capsWidth(Font font, List<String> keys) {
         int width = -KEY_GAP;
         for (String key : keys) width += keyWidth(font, key) + KEY_GAP;
         return width;
     }
 
-    private static void caps(GuiGraphics gui, Font font, List<String> keys, int x, int y) {
+    static void caps(GuiGraphics gui, Font font, List<String> keys, int x, int y) {
         for (String key : keys) {
             int width = keyWidth(font, key);
             keycap(gui, font, key, x, y, width);
@@ -217,7 +239,7 @@ public final class VehicleHud {
         }
     }
 
-    private static int hints(GuiGraphics gui, Font font, List<Hint> hints, int edge, int top, boolean leftSide) {
+    static int hints(GuiGraphics gui, Font font, List<Hint> hints, int edge, int top, boolean leftSide) {
         int caps = 0;
         int labels = 0;
         for (Hint hint : hints) {
@@ -235,7 +257,7 @@ public final class VehicleHud {
         return caps + LABEL_GAP + labels;
     }
 
-    private static void segments(GuiGraphics gui, Font font, List<Segment> segments, int centre, int top) {
+    static void segments(GuiGraphics gui, Font font, List<Segment> segments, int centre, int top) {
         int width = -SEGMENT_GAP;
         for (Segment segment : segments) width += segmentWidth(font, segment) + SEGMENT_GAP;
         int x = centre - width / 2;
@@ -327,7 +349,7 @@ public final class VehicleHud {
         needle(gui, left + DIAL / 2, top + DIAL / 2, DialFace.angle(shownRpm / 1000, step));
     }
 
-    private static void readout(GuiGraphics gui, Font font, int value, int count, boolean lit, int centre, int y) {
+    static void readout(GuiGraphics gui, Font font, int value, int count, boolean lit, int centre, int y) {
         String digits = String.format(Locale.ROOT, "%0" + count + "d", value);
         int lead = 0;
         while (lead < count - 1 && digits.charAt(lead) == '0') lead++;
@@ -368,7 +390,7 @@ public final class VehicleHud {
         JSONVehicle definition = vehicle.definition();
         framed(gui, x, y, x + MODULE_WIDTH, y + MODULE_HEIGHT, PANEL, RIM);
         int gear = vehicle.gear();
-        String gearText = gear < 0 ? "R" : gear == 0 ? "N" : !definition.transmission.automatic ? Integer.toString(gear) : definition.gears() == 1 ? "D" : "D" + gear;
+        String gearText = gear < 0 ? "R" : gear == 0 ? "N" : definition.transmission.automatic ? "D" + gear : Integer.toString(gear);
         int boxX = x + (MODULE_WIDTH - 44) / 2;
         int boxY = y + 19;
         framed(gui, boxX, boxY, boxX + 44, boxY + 34, INSET, INSET_RIM);
@@ -381,9 +403,7 @@ public final class VehicleHud {
         float fuel = Mth.clamp(shownFuel, 0, 1);
         int fuelColor = fuel < .1f ? (blink ? RED : DARK_RED) : fuel < .25f ? AMBER : GREEN;
         bar(gui, x + 16, y + 62, fuel, fuelColor);
-        String energy = definition.engine.electric ? Math.round(vehicle.fuel() / definition.fuel.tank * 100) + "%"
-                : I18n.get("hud.slimvehicle.litres", String.format(Locale.ROOT, "%.0f", vehicle.fuel()));
-        gui.drawString(font, energy, x + 16 + SEGMENTS * (SEGMENT + 1) + 3, y + 61, DIM, false);
+        gui.drawString(font, I18n.get("hud.slimvehicle.litres", String.format(Locale.ROOT, "%.0f", vehicle.fuel())), x + 16 + SEGMENTS * (SEGMENT + 1) + 3, y + 61, DIM, false);
         float health = Mth.clamp(vehicle.health() / DamageModel.FULL, 0, 1);
         bar(gui, x + 16, y + 76, health, health > .6f ? GREEN : health > .3f ? AMBER : RED);
         String condition = vehicle.wrecked() ? "0%" : Math.round(health * 100) + "%";
@@ -429,13 +449,24 @@ public final class VehicleHud {
         gui.blit(ICONS, x, y, index * ICON, 0, ICON, ICON, ICON * ICON_COUNT, ICON);
     }
 
-    private static List<Segment> hint(EntityVehicleF_Physics vehicle) {
+    static List<Segment> hint(EntityVehicleF_Physics vehicle) {
         if (vehicle.wrecked()) return text("hud.slimvehicle.hint.wrecked");
         if (vehicle.engineHealth() <= 0) return text("hud.slimvehicle.hint.engine_dead");
-        if (vehicle.fuel() <= 0) return text(vehicle.definition().engine.electric ? "hud.slimvehicle.hint.tank_empty.electric" : "hud.slimvehicle.hint.tank_empty");
+        if (vehicle.fuel() <= 0) return text("hud.slimvehicle.hint.tank_empty");
         if (!vehicle.flag(EntityVehicleF_Physics.ENGINE)) {
             if (!VehicleControls.holdsKey(vehicle)) return text("hud.slimvehicle.hint.no_key");
             return List.of(new Segment(List.of(VehicleControls.keyName(VehicleAction.ENGINE)), I18n.get("hud.slimvehicle.hint.start")));
+        }
+        if (vehicle.craft()) {
+            if (Math.abs(vehicle.speed()) > .02) return List.of();
+            if (!vehicle.definition().craft.helicopter()) {
+                if (Double.isNaN(vehicle.waterDepth())) return text("hud.slimvehicle.hint.beached");
+                return List.of(new Segment(List.of(VehicleControls.forwardName()), I18n.get("hud.slimvehicle.hint.forward")),
+                        new Segment(List.of(VehicleControls.liftName()), I18n.get("hud.slimvehicle.hint.hop")));
+            }
+            if (vehicle.rotor() < CraftPhysics.HOVER_ROTOR) return text("hud.slimvehicle.hint.rotor");
+            return List.of(new Segment(List.of(VehicleControls.liftName()), I18n.get("hud.slimvehicle.hint.climb")),
+                    new Segment(List.of(VehicleControls.sinkName()), I18n.get("hud.slimvehicle.hint.descend")));
         }
         if (vehicle.gear() == 0 && Math.abs(vehicle.speed()) < .02) {
             String reverse = VehicleControls.keyName(VehicleAction.GEAR_DOWN);
@@ -453,7 +484,7 @@ public final class VehicleHud {
         return List.of(new Segment(List.of(), I18n.get(key)));
     }
 
-    private static void centered(GuiGraphics gui, Font font, String text, int x, int y, int color) {
+    static void centered(GuiGraphics gui, Font font, String text, int x, int y, int color) {
         gui.drawString(font, text, x - (font.width(text) - 1) / 2, y, color, false);
     }
 
@@ -461,7 +492,7 @@ public final class VehicleHud {
         framed(gui, x0, y0, x1, y1, PANEL, RIM);
     }
 
-    private static void framed(GuiGraphics gui, int x0, int y0, int x1, int y1, int fill, int rim) {
+    static void framed(GuiGraphics gui, int x0, int y0, int x1, int y1, int fill, int rim) {
         gui.fill(x0 + 1, y0 + 1, x1 - 1, y1 - 1, fill);
         gui.fill(x0 + 1, y0, x1 - 1, y0 + 1, rim);
         gui.fill(x0 + 1, y1 - 1, x1 - 1, y1, rim);

@@ -10,19 +10,30 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import studio.merami.slimcore.entities.components.AEntityA_Base;
 import studio.merami.slimcore.entities.instances.EntityVehicleF_Physics;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
 import studio.merami.slimcore.packloading.PackParser;
+import studio.merami.slimcore.baseclasses.BlockPosition;
+import studio.merami.slimcore.baseclasses.Point3D;
 import studio.merami.slimcore.systems.RadioLibrary;
+import studio.merami.slimcore.systems.TestArena;
 import studio.merami.slimcore.systems.VehicleSpawner;
 import studio.merami.sliminterfacefabric.network.RadioServer;
 import studio.merami.sliminterfacefabric.wrapper.Convert;
 import studio.merami.sliminterfacefabric.wrapper.WrapperPlayer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -47,6 +58,7 @@ public final class SlimVehicleCommand {
                 .then(Commands.literal("remove").requires(source -> source.hasPermission(2)).executes(SlimVehicleCommand::remove))
                 .then(Commands.literal("packs").executes(SlimVehicleCommand::packs))
                 .then(Commands.literal("radio").executes(SlimVehicleCommand::radio))
+                .then(Commands.literal("testarena").requires(source -> source.hasPermission(2)).executes(SlimVehicleCommand::testArena))
                 .then(Commands.literal("help").executes(context -> {
                     context.getSource().sendSuccess(() -> Component.translatable("command.slimvehicle.help"), false);
                     return 1;
@@ -160,5 +172,41 @@ public final class SlimVehicleCommand {
             context.getSource().sendSuccess(() -> Component.translatable("command.slimvehicle.radio.station", name, station.tracks().size(), Math.round(station.seconds() / 60)), false);
         }
         return stations.size();
+    }
+
+    private static int testArena(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        ServerLevel level = player.serverLevel();
+        BlockPos feet = player.blockPosition();
+        BlockPosition origin = new BlockPosition(feet.getX(), feet.getY(), feet.getZ());
+        Map<String, BlockState> states = new HashMap<>();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int changed = 0;
+        for (TestArena.Fill fill : TestArena.layout(origin)) {
+            BlockState state = states.computeIfAbsent(fill.block(), id -> parse(level, id));
+            for (int x = fill.minX(); x <= fill.maxX(); x++) {
+                for (int z = fill.minZ(); z <= fill.maxZ(); z++) {
+                    for (int y = fill.minY(); y <= fill.maxY(); y++) {
+                        pos.set(x, y, z);
+                        if (level.getBlockState(pos) == state) continue;
+                        level.setBlock(pos, state, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                        changed++;
+                    }
+                }
+            }
+        }
+        Point3D pier = TestArena.pier(origin);
+        player.teleportTo(level, pier.x, pier.y, pier.z, -90, 0);
+        int blocks = changed;
+        context.getSource().sendSuccess(() -> Component.translatable("command.slimvehicle.testarena.built", blocks), true);
+        return 1;
+    }
+
+    private static BlockState parse(ServerLevel level, String id) {
+        try {
+            return BlockStateParser.parseForBlock(level.holderLookup(Registries.BLOCK), id, false).blockState();
+        } catch (CommandSyntaxException e) {
+            throw new IllegalArgumentException(id, e);
+        }
     }
 }

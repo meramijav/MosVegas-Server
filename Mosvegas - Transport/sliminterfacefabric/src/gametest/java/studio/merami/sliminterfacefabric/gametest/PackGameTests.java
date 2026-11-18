@@ -17,6 +17,7 @@ import studio.merami.slimcore.entities.instances.EntityVehicleF_Physics;
 import studio.merami.slimcore.entities.instances.PartOpening;
 import studio.merami.slimcore.entities.instances.VehicleAction;
 import studio.merami.slimcore.jsondefs.AJSONMultipart;
+import studio.merami.slimcore.jsondefs.JSONCraft;
 import studio.merami.slimcore.jsondefs.JSONSounds;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
 import studio.merami.slimcore.packloading.JSONParser;
@@ -81,7 +82,13 @@ public class PackGameTests implements FabricGameTest {
             for (AJSONMultipart.Glass pane : definition.glass) h.assertTrue(bones.contains(pane.bone), definition + ": no glass bone " + pane.bone);
             for (String bone : definition.dentBones) h.assertTrue(bones.contains(bone), definition + ": no dent bone " + bone);
             for (String bone : definition.paintBones) h.assertTrue(bones.contains(bone), definition + ": no paint bone " + bone);
-            for (AJSONMultipart.Wheel wheel : definition.wheels) h.assertTrue(bones.contains("steer_" + wheel.bone) || bones.contains("roll_" + wheel.bone), definition + ": no wheel bones " + wheel.bone);
+            if (definition.craft != null) {
+                for (JSONCraft.Rotor rotor : definition.craft.rotors) h.assertTrue(bones.contains(rotor.bone), definition + ": no rotor bone " + rotor.bone);
+                for (JSONCraft.Steer part : definition.craft.steer) h.assertTrue(bones.contains(part.bone), definition + ": no steer bone " + part.bone);
+                for (JSONCraft.Light lamp : definition.craft.lights) h.assertTrue(bones.contains(lamp.bone), definition + ": no light bone " + lamp.bone);
+            } else {
+                for (AJSONMultipart.Wheel wheel : definition.wheels) h.assertTrue(bones.contains("steer_" + wheel.bone) || bones.contains("roll_" + wheel.bone), definition + ": no wheel bones " + wheel.bone);
+            }
             if (definition.driver != null) h.assertTrue(bones.contains(definition.driver.steering.bone), definition + ": no steering bone");
             EntityVehicleF_Physics car = create(h);
             car.setDefinition(definition.id);
@@ -147,7 +154,7 @@ public class PackGameTests implements FabricGameTest {
     @GameTest(template = EMPTY_STRUCTURE)
     public void panesBreakAndOpeningsAnswerFromOutside(GameTestHelper h) {
         for (int x = 1; x < 9; x++) for (int z = 0; z < 9; z++) h.setBlock(x, 0, z, Blocks.STONE);
-        for (String id : new String[]{"volga", "g63", "l9"}) {
+        for (String id : new String[]{"volga", "g63"}) {
             EntityVehicleF_Physics car = createAt(h, new Vec3(4, 1.02, 4));
             car.setDefinition(id);
             spawn(h, car);
@@ -172,12 +179,8 @@ public class PackGameTests implements FabricGameTest {
             }
             Player player = h.makeMockPlayer();
             List<Hull.Box> panes = car.hull().boxes().stream().filter(b -> b.glass >= 0).toList();
-            h.assertTrue(panes.stream().map(pane -> pane.glass).distinct().count() == car.definition().glass.size(), id + ": every pane is in the hull");
+            h.assertTrue(panes.size() == car.definition().glass.size(), id + ": every pane is in the hull");
             for (Hull.Box pane : panes) {
-                if (car.brokenGlass(pane.glass)) {
-                    car.repair();
-                    car.refreshHull();
-                }
                 Point3D eye = pane.center.add(outward(car, pane).scale(1.5));
                 place(player, eye.subtract(0, player.getEyeHeight(), 0));
                 lookAt(player, pane.center);

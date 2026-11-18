@@ -25,8 +25,7 @@ public final class ClientConfig {
     }
 
     private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("slimvehicle-client.properties");
-    private static final String[] KEYS = {"vibrations", "lights", "headlights", "hints"};
-    public static boolean vibrations = true;
+    private static final String[] KEYS = {"lights", "headlights", "hints"};
     public static Lights lights = Lights.FULL;
     public static Headlights headlights = Headlights.PACK;
     public static boolean hints = true;
@@ -39,7 +38,6 @@ public final class ClientConfig {
             try (Reader reader = Files.newBufferedReader(FILE)) {
                 Properties properties = new Properties();
                 properties.load(reader);
-                vibrations = Boolean.parseBoolean(properties.getProperty("vibrations", "true"));
                 lights = "off".equals(value(properties, "lights", "full")) ? Lights.OFF : Lights.FULL;
                 headlights = switch (value(properties, "headlights", "pack")) {
                     case JSONVehicle.HEADLIGHT_HALOGEN -> Headlights.HALOGEN;
@@ -65,21 +63,15 @@ public final class ClientConfig {
         return headlights == Headlights.PACK ? lamps != null && JSONVehicle.HEADLIGHT_LED.equals(lamps.headlightType) : headlights == Headlights.LED;
     }
 
-    public static void toggleVibrations() {
-        vibrations = !vibrations;
-        save();
-    }
-
     private static void save() {
         try {
             Files.createDirectories(FILE.getParent());
             try (Writer writer = Files.newBufferedWriter(FILE)) {
                 Properties properties = new Properties();
-                properties.setProperty("vibrations", Boolean.toString(vibrations));
                 properties.setProperty("lights", lights.name().toLowerCase(Locale.ROOT));
                 properties.setProperty("headlights", headlights.name().toLowerCase(Locale.ROOT));
                 properties.setProperty("hints", Boolean.toString(hints));
-                properties.store(writer, "vibrations = cosmetic engine and body shake (suspension always stays); lights = full | off, the screen-space lamp pass, read at start; "
+                properties.store(writer, "lights = full | off, the screen-space lamp pass, read at start; "
                         + "headlights = pack | halogen | led, pack keeps each vehicle's lamps.headlight_type, halogen is warm yellowish, led is cold white; "
                         + "hints = true | false, the key hints beside the dashboard");
             }

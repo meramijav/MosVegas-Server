@@ -7,6 +7,7 @@ import studio.merami.slimcore.items.ItemKey;
 import studio.merami.slimcore.items.SlimItems;
 import studio.merami.slimcore.jsondefs.AJSONMultipart;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
+import studio.merami.slimcore.physics.CraftPhysics;
 import studio.merami.slimcore.physics.DrivePhysics;
 import studio.merami.slimcore.sliminterface.IEntityData;
 import studio.merami.slimcore.sliminterface.IWrapperEntity;
@@ -18,6 +19,7 @@ import studio.merami.slimcore.sliminterface.SyncedValue;
 import studio.merami.slimcore.systems.SeatedInteractions;
 
 import java.util.Locale;
+import java.util.UUID;
 
 public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
     public static final int ENGINE = 1;
@@ -38,10 +40,15 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
     private static final SyncedValue<Integer> POP_SEQUENCE = SyncedValue.integer(AEntityVehicleE_Powered.class, 0);
     private static final SyncedValue<Integer> LOCK_FLASH = SyncedValue.integer(AEntityVehicleE_Powered.class, Integer.MIN_VALUE / 2);
     private static final SyncedValue<Integer> RADIO_STATION = SyncedValue.integer(AEntityVehicleE_Powered.class, 0);
+    private static final SyncedValue<Integer> PAINT_COATS = SyncedValue.integer(AEntityVehicleE_Powered.class, -1);
+    private static final SyncedValue<Integer> PAINT_BODY = SyncedValue.integer(AEntityVehicleE_Powered.class, -1);
+    private static final SyncedValue<Integer> PAINT_INTERIOR = SyncedValue.integer(AEntityVehicleE_Powered.class, -1);
+    private static final SyncedValue<String> PAINT_OWNER = SyncedValue.text(AEntityVehicleE_Powered.class, "");
     private static final int LOCK_FLASH_TICKS = 14;
     private static final String EXPLODE_SOUND = "minecraft:entity.generic.explode";
     private static final String EXTINGUISH_SOUND = "minecraft:block.fire.extinguish";
     private static final String ANVIL_SOUND = "minecraft:block.anvil.use";
+    private static final String POUR_SOUND = "minecraft:item.bottle.empty";
     private static final int FRESH_START = 10;
     private static final int OVERRUN_PAUSE = 35;
     private static final int SHIFT_POP_PAUSE = 12;
@@ -60,6 +67,45 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
 
     protected AEntityVehicleE_Powered(IWrapperEntity host, IEntityData data) {
         super(host, data);
+    }
+
+    public boolean painting() {
+        return data.get(PAINT_COATS) >= 0;
+    }
+
+    public int paintCoats() {
+        return data.get(PAINT_COATS);
+    }
+
+    public int paintBody() {
+        return data.get(PAINT_BODY);
+    }
+
+    public int paintInterior() {
+        return data.get(PAINT_INTERIOR);
+    }
+
+    public UUID paintOwner() {
+        String owner = data.get(PAINT_OWNER);
+        return owner.isEmpty() ? null : UUID.fromString(owner);
+    }
+
+    public void startPainting(UUID owner, int body, int interior, int coats) {
+        data.set(PAINT_OWNER, owner.toString());
+        data.set(PAINT_BODY, body);
+        data.set(PAINT_INTERIOR, interior);
+        data.set(PAINT_COATS, Math.max(0, coats));
+    }
+
+    public void setPaintCoats(int coats) {
+        data.set(PAINT_COATS, Math.max(0, coats));
+    }
+
+    public void stopPainting() {
+        data.set(PAINT_COATS, -1);
+        data.set(PAINT_BODY, -1);
+        data.set(PAINT_INTERIOR, -1);
+        data.set(PAINT_OWNER, "");
     }
 
     public float engineHealth() {
@@ -128,7 +174,7 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
         previousThrottle = applied.throttle();
         float leak = fuelLeak();
         if (leak > 0 && fuel() > 0) data.set(FUEL, Math.max(0, fuel() - leak));
-        if (fuel() <= 0 || host.inWater()) {
+        if (fuel() <= 0 || host.inWater() && !(craft() && definition.craft.watercraft())) {
             setFlag(ENGINE, false);
             data.set(GEAR, 0);
         }
@@ -181,6 +227,15 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
         return result.yawDelta();
     }
 
+    protected void craftEngine(CraftPhysics.Result result) {
+        JSONVehicle definition = definition();
+        double load = flag(ENGINE) ? result.load() : 0;
+        double target = flag(ENGINE) ? definition.engine.idleRpm + (definition.engine.limitRpm - definition.engine.idleRpm) * load : 0;
+        data.set(RPM, (float) DrivePhysics.revsToward(rpm(), target));
+        if (flag(ENGINE)) data.set(FUEL, (float) Math.max(0, fuel() - definition.fuel.perTick * (.2 + .8 * load)));
+        setSlip(0);
+    }
+
     protected boolean shouldShutOpenings() {
         return !exiting() && (Math.abs(forward) > .035 || (input.throttle() > .05 && gear() != 0 && flag(ENGINE))) && anyShutOnMoveOpen();
     }
@@ -188,17 +243,8 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
     protected void warnLowFuel() {
         IWrapperPlayer player = controllingPlayer();
         if (ticks() % 40 == 0 && flag(ENGINE) && fuel() < 3 && player != null) {
-            message(player, energyKey("message.slimvehicle.low_fuel"), energy());
+            message(player, "message.slimvehicle.low_fuel", String.format(Locale.ROOT, "%.1f", fuel()));
         }
-    }
-
-    private String energyKey(String key) {
-        return definition().engine.electric ? key + ".electric" : key;
-    }
-
-    private String energy() {
-        JSONVehicle definition = definition();
-        return definition.engine.electric ? String.format(Locale.ROOT, "%.0f", fuel() / definition.fuel.tank * 100) : String.format(Locale.ROOT, "%.1f", fuel());
     }
 
     private void stall() {
@@ -207,7 +253,7 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
         engineSound(definition().sounds.stop);
         IWrapperPlayer player = controllingPlayer();
         if (player != null && !wrecked()) {
-            message(player, energyKey(engineHealth() <= 0 ? "message.slimvehicle.engine_dead" : "message.slimvehicle.stalled"));
+            message(player, engineHealth() <= 0 ? "message.slimvehicle.engine_dead" : "message.slimvehicle.stalled");
         }
     }
 
@@ -271,24 +317,24 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
     protected boolean useItemOnPart(IWrapperPlayer player, PartOpening part) {
         if (part.kind() != AJSONMultipart.OpeningType.FUEL || player.mainHand().item() != SlimItems.FUEL_CAN) return false;
         if (!part.isOpen()) {
-            message(player, energyKey("message.slimvehicle.open_fuel_flap"));
+            message(player, "message.slimvehicle.open_fuel_flap");
             return true;
         }
         if (flag(ENGINE)) {
-            message(player, energyKey("message.slimvehicle.stop_engine_to_refuel"));
+            message(player, "message.slimvehicle.stop_engine_to_refuel");
             return true;
         }
         IWrapperItemStack can = player.mainHand();
         int litres = can.dataOrCreate().has("Litres") ? can.data().getInt("Litres") : 20;
         float amount = Math.min(litres, (float) definition().fuel.tank - fuel());
         if (amount <= 0) {
-            message(player, litres <= 0 ? "message.slimvehicle.can_empty" : energyKey("message.slimvehicle.tank_full"));
+            message(player, litres <= 0 ? "message.slimvehicle.can_empty" : "message.slimvehicle.tank_full");
             return true;
         }
         data.set(FUEL, fuel() + amount);
         if (!player.instabuild()) can.dataOrCreate().setInt("Litres", Math.max(0, litres - (int) Math.ceil(amount)));
-        emitSound(definition().sounds.refuel, 1);
-        message(player, energyKey("message.slimvehicle.fuel"), energy());
+        emitSound(POUR_SOUND, 1);
+        message(player, "message.slimvehicle.fuel", String.format(Locale.ROOT, "%.1f", fuel()));
         return true;
     }
 
@@ -397,8 +443,12 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
                 else if (!flag(ENGINE) && !driveAllowed()) message(player, "message.slimvehicle.zone.use");
                 else toggleEngine(player);
             }
-            case GEAR_UP -> shift(definition.transmission.automatic && gear() >= 1 ? gear() : gear() + 1, player);
-            case GEAR_DOWN -> shift(definition.transmission.automatic && gear() >= 1 ? 0 : gear() - 1, player);
+            case GEAR_UP -> {
+                if (!craft()) shift(definition.transmission.automatic && gear() >= 1 ? gear() : gear() + 1, player);
+            }
+            case GEAR_DOWN -> {
+                if (!craft()) shift(definition.transmission.automatic && gear() >= 1 ? 0 : gear() - 1, player);
+            }
             case LIGHTS -> setFlag(LIGHTS, !flag(LIGHTS));
             case SIREN -> {
                 if (definition.emergency) setFlag(SIREN, !flag(SIREN));
@@ -438,12 +488,12 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
         } else if (wrecked()) {
             message(player, "message.slimvehicle.wrecked");
         } else if (engineHealth() <= 0) {
-            message(player, energyKey("message.slimvehicle.engine_dead_repair"));
+            message(player, "message.slimvehicle.engine_dead_repair");
         } else if (fuel() > 0) {
             setFlag(ENGINE, true);
             data.set(START_TICK, (int) world().gameTime());
         } else {
-            message(player, energyKey("message.slimvehicle.tank_empty"));
+            message(player, "message.slimvehicle.tank_empty");
         }
     }
 

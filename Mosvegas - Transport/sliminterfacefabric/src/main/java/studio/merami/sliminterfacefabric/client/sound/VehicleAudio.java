@@ -51,6 +51,10 @@ public class VehicleAudio extends AbstractTickableSoundInstance implements Fabri
     private static final float RADIO_SHUT = .12f;
     private static final float HORN = 2f;
     private static final String STATION_SOUND = "slimvehicle:radio_station";
+    private static final float KMH = 72;
+    private static final float FULL_PULL = .006f;
+    private static final float FULL_REGEN = .012f;
+    private static final float LOAD_EASE = .15f;
     private final EntityVehicleF_Physics vehicle;
     private final JSONVehicle definition;
     private final Kind kind;
@@ -58,6 +62,8 @@ public class VehicleAudio extends AbstractTickableSoundInstance implements Fabri
     private int silentTicks;
     private int offTicks;
     private float lastRpm;
+    private float lastSpeed = -1;
+    private float load;
     private volatile float shut;
     private final RadioStations.Tuned tuned;
     private final int station;
@@ -123,6 +129,15 @@ public class VehicleAudio extends AbstractTickableSoundInstance implements Fabri
         return shut;
     }
 
+    private float load() {
+        if (layer.load <= 0) return 1;
+        float speed = Math.abs(vehicle.speed());
+        float change = lastSpeed < 0 ? 0 : speed - lastSpeed;
+        float pull = change > 0 ? change / FULL_PULL : -change / FULL_REGEN;
+        load = Mth.lerp(LOAD_EASE, load, Mth.clamp(pull, 0, 1));
+        return load;
+    }
+
     @Override
     public boolean canStartSilent() {
         return true;
@@ -162,11 +177,11 @@ public class VehicleAudio extends AbstractTickableSoundInstance implements Fabri
             }
             case ENGINE, ENGINE_INSIDE -> {
                 float fall = on ? 0 : offTicks / (float) Math.max(1, spin);
-                if (on) lastRpm = vehicle.rpm();
+                if (on) lastRpm = layer.followsSpeed() ? Math.abs(vehicle.speed()) * KMH : vehicle.rpm();
                 float rpm = on ? lastRpm : lastRpm * (1 - fall);
                 float inside = layer.inside == null ? 0 : CabinAcoustics.inside(vehicle);
-                target = (float) definition.sounds.engineVolume * layer.blend(rpm) * definition.sounds.startFade(vehicle.ticks() - vehicle.startedAt)
-                        * (kind == Kind.ENGINE ? 1 - inside : inside) * (1 - fall * fall);
+                target = (float) (definition.sounds.engineVolume * layer.volume) * layer.blend(rpm) * layer.loadShare(load())
+                        * definition.sounds.startFade(vehicle.ticks() - vehicle.startedAt) * (kind == Kind.ENGINE ? 1 - inside : inside) * (1 - fall * fall);
                 pitch = layer.pitch(rpm);
             }
             case RADIO -> {
@@ -184,6 +199,7 @@ public class VehicleAudio extends AbstractTickableSoundInstance implements Fabri
             }
         }
         volume = kind == Kind.HORN ? target : Mth.lerp(.25f, volume, target);
+        lastSpeed = Math.abs(vehicle.speed());
         if ((kind.flag == 0 || kind == Kind.ENGINE_INSIDE) && target < .001f) {
             if (++silentTicks > 25) stop();
         } else {

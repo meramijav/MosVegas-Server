@@ -7,3 +7,6 @@ run/
 .tools/
 .work/
 logs/
+*.md
+docs/
+tools/

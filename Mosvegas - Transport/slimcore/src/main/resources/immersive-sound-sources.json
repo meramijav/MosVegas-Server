@@ -362,118 +362,131 @@
     "durationSeconds": 0.317
   },
   {
-    "sha256": "ecf5389a8589c313a856882b2d4e2ad342b07cbdce6bdffd4acf8afa20117212",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/doorplaneopen2.ogg",
-    "event": "l9_door_open",
-    "upstreamGitBlob": "f3cffaf490449952f3ba4c913688792c7ca6384b",
-    "durationSeconds": 0.897
-  },
-  {
-    "sha256": "20f1bf8a633fc728524ce00b226162cb62ac77f5206ca9573c9688bb2a71e166",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/hoodcarclose2.ogg",
-    "event": "l9_door_close",
-    "upstreamGitBlob": "b28fa3ce3a16353af180113d5a3cdcf040088041",
-    "originalSha256": "8b08092a0b24a4834068f15625e51efd0e4306999ffdb8f0d92a5c314f710e75",
-    "processing": "Stereo downmixed to mono for positional playback",
-    "durationSeconds": 0.498
-  },
-  {
-    "sha256": "42266d232581858858c62387a37bcb4a60ed29fc4e48913950ff58ed84661adc",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/doorplaneopen.ogg",
-    "event": "l9_hood_open",
-    "upstreamGitBlob": "8d53e91654da8c1967b1591b43f336c9f12e0427",
-    "durationSeconds": 0.361
-  },
-  {
-    "sha256": "76d357ff1c1e23564cd93528c5722de0376f774681acc6b99ec1ca94032858d6",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/hoodcarclose3.ogg",
-    "event": "l9_hood_close",
-    "upstreamGitBlob": "b679734e935bd744a98b2c44ad414907a6ff2df1",
-    "originalSha256": "17d6ab4e62040469245727e6ab7d9ab3701f7b364316df9ce4bdb26624771ec4",
-    "processing": "Stereo downmixed to mono for positional playback",
-    "durationSeconds": 0.879
-  },
-  {
-    "sha256": "3e3ccbcfd8dc91e366e3c9f24b1b50c89e6f0bbd4233aa89537ead21e8d90168",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/gearhydraulics_start.ogg",
-    "event": "l9_trunk_open",
-    "upstreamGitBlob": "c1f362768df8bcefef377d0bf17b2695bbc4d7fb",
-    "originalSha256": "008c0c54a91ff6f7a81722d9a0b3e4f48d63a7372d4b68b27debcad7edb0f02c",
-    "processing": "Stereo downmixed to mono for positional playback",
-    "durationSeconds": 0.759
-  },
-  {
-    "sha256": "5fb252efad9356d41be39387fda7ca9b52de9b6aabf9669e5a73ea922cbcc672",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/gearhydraulics_end.ogg",
-    "event": "l9_trunk_close",
-    "upstreamGitBlob": "e621dd7097aa8fbf8d9793352265a5ce1f8e19b6",
-    "originalSha256": "a77b8b2ed3fefa0e1eabb9811a618a2dd6e8eadcc45908b1c8382ba8fde9eb61",
-    "processing": "Stereo downmixed to mono for positional playback",
-    "durationSeconds": 1.802
-  },
-  {
-    "sha256": "5ff3074ba39185a41758dd08e2343c3fafc90568f4301fb4956d5c1aa5cbae23",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/interact_hatchopen.ogg",
-    "event": "l9_hatch_open",
-    "upstreamGitBlob": "c01043c56765b46fd684b6ce0dced33a5d2e451f",
-    "originalSha256": "88f945fe031ef9f6ca4407c1298d6481768205daf4da53894b44c9634f8b0607",
-    "processing": "Stereo downmixed to mono for positional playback",
-    "durationSeconds": 1.117
-  },
-  {
-    "sha256": "b2e5074eb6bb9afd858428c1dd06d975021493b0ab4396fcd239831938571523",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/interact_hatchclose.ogg",
-    "event": "l9_hatch_close",
-    "upstreamGitBlob": "97967430befeea75468089829af05f9f28bacf9c",
-    "originalSha256": "2b54ecf2f5cb4eb2661414801f7c2e8393a9e9c000ed02029cc07fa89f1dadc4",
-    "processing": "Stereo downmixed to mono for positional playback",
-    "durationSeconds": 1.018
-  },
-  {
-    "sha256": "f61155f5af7d0149d31bf17b964f4686bf4f0fd697775e262cd5bee26a67ec88",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/switch_on.ogg",
-    "event": "l9_shift_up",
-    "upstreamGitBlob": "61fc8b7f022e0715e88c50b3380c521d3e618315",
-    "durationSeconds": 0.221
-  },
-  {
-    "sha256": "9456b17f92aa9aeb3288cc5a6381bbbaa45acefbf57d2543b41ad6e77ad5b264",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/triggerclick.ogg",
-    "event": "l9_shift_down",
-    "upstreamGitBlob": "9a7ed01ea0df2526595529f398f14c70005b11c5",
-    "durationSeconds": 0.141
-  },
-  {
-    "sha256": "e61a729f1d9b7a3981db640dea11649c3b26692b1fb092a1f9f52aa9eb92161d",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/planebrakepush1.ogg",
-    "event": "l9_handbrake_on",
-    "upstreamGitBlob": "0289ff1e08b9cb62c02794b11a2650b74f0f3121",
-    "originalSha256": "2286cfc1797e422bb7a2afb016edce201ecc50310691d61d7e225682d3313ab8",
-    "processing": "Stereo downmixed to mono for positional playback",
-    "durationSeconds": 0.323
-  },
-  {
-    "sha256": "a90bed74861beda8b0e55081fb52c259915a0cab3c67a1d70453712641518462",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/planebrakerelease1.ogg",
-    "event": "l9_handbrake_off",
-    "upstreamGitBlob": "7ec7b6961fb90497cf38e81c3b59bac29ff62ce0",
-    "originalSha256": "caa2061777d11b3e391910c9dc63d7f9091b445290bca1ef8cb2913f84cc040c",
-    "processing": "Stereo downmixed to mono for positional playback",
-    "durationSeconds": 0.338
-  },
-  {
-    "sha256": "24372127d23ecb01daf4f056fd24794338b5e590cb77092e32793e08489e1061",
-    "source": "https://raw.githubusercontent.com/DonBruce64/MTSOfficialPack/a157eef94d525b7411504264c40e2abab53c10cc/src/main/resources/assets/mtsofficialpack/sounds/beep.ogg",
-    "event": "l9_lock",
-    "upstreamGitBlob": "4193f91e347bba35f648edc4d6d08f1b51fd7e18",
-    "durationSeconds": 0.574
-  },
-  {
     "sha256": "9b700b56c122cc5e5b251280695d75fffd9b132097c18ded442ca4602de869dc",
     "source": "https://raw.githubusercontent.com/DonBruce64/MinecraftTransportSimulator/5c840cf70b5d93b0003eab7088a0db3613400208/mccore/src/main/resources/assets/mts/sounds/wheel_blowout.ogg",
     "event": "tyre_blowout",
     "originalSha256": "eaf69be1f94a4f3494836d0f960aab1d012eeea36537a5f2fb9c96300efb4a71",
     "processing": "Stereo downmixed to mono for positional playback",
     "durationSeconds": 1.16
+  },
+  {
+    "sha256": "3486cedf81aa6cce2b56f40f72e68d4c1ae0701579354ae011e7cd63e9a7ca56",
+    "source": "https://freesound.org/s/433584/",
+    "event": "changan_idle",
+    "author": "jackthemurray",
+    "title": "Car Starting and Accelerating",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 3.0-9.0 s, pitch-tracked and held at 47.5 Hz (713 rpm), seamless loop; tools/generate_changan_sounds.py",
+    "durationSeconds": 5.763
+  },
+  {
+    "sha256": "c555e44828d5454464a043ca46b3348f69c0ed25f93ad0262a1aefc59afc5809",
+    "source": "https://freesound.org/s/433584/",
+    "event": "changan_idle_inside",
+    "author": "jackthemurray",
+    "title": "Car Starting and Accelerating",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 3.0-9.0 s, pitch-tracked and held at 47.5 Hz (713 rpm), seamless loop; cabin low-pass at 600 Hz with a low boom; tools/generate_changan_sounds.py",
+    "durationSeconds": 5.763
+  },
+  {
+    "sha256": "6f1d0f66dbc5e2df2bcc2632921f559bef00835dcdc6c69e8f0d66c6ad988562",
+    "source": "https://freesound.org/s/496171/",
+    "event": "changan_low",
+    "author": "editboy23",
+    "title": "Import car revs on Chassis Dyno with Turbo.wav",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 11.6-15.5 s, pitch-tracked and resampled to a steady 100 Hz (1500 rpm), seamless loop; tools/generate_changan_sounds.py",
+    "durationSeconds": 6.26
+  },
+  {
+    "sha256": "328bac3df5f798e1a6c5145e95c1b5241df1e5d20231394095f6cbf3241a847d",
+    "source": "https://freesound.org/s/496171/",
+    "event": "changan_low_inside",
+    "author": "editboy23",
+    "title": "Import car revs on Chassis Dyno with Turbo.wav",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 11.6-15.5 s, pitch-tracked and resampled to a steady 100 Hz (1500 rpm), seamless loop; cabin low-pass at 600 Hz with a low boom; tools/generate_changan_sounds.py",
+    "durationSeconds": 6.26
+  },
+  {
+    "sha256": "9e675b5b161638ee68057c140ec708a62ea6c1428f5279b3cf88316d1ab23567",
+    "source": "https://freesound.org/s/496171/",
+    "event": "changan_mid",
+    "author": "editboy23",
+    "title": "Import car revs on Chassis Dyno with Turbo.wav",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 15.5-18.0 s, pitch-tracked and held at 178 Hz (2670 rpm), seamless loop; tools/generate_changan_sounds.py",
+    "durationSeconds": 2.225
+  },
+  {
+    "sha256": "08b966c5682dca00b9a70e610cfcb45264f98be41dbf13386ca71538d9ec6fed",
+    "source": "https://freesound.org/s/496171/",
+    "event": "changan_mid_inside",
+    "author": "editboy23",
+    "title": "Import car revs on Chassis Dyno with Turbo.wav",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 15.5-18.0 s, pitch-tracked and held at 178 Hz (2670 rpm), seamless loop; cabin low-pass at 600 Hz with a low boom; tools/generate_changan_sounds.py",
+    "durationSeconds": 2.225
+  },
+  {
+    "sha256": "0ebc6b8aaba568cbf786d9dd9f653fd535ac76e905ad941c7a39e86177705a77",
+    "source": "https://freesound.org/s/496171/",
+    "event": "changan_high",
+    "author": "editboy23",
+    "title": "Import car revs on Chassis Dyno with Turbo.wav",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 20.3-22.0 s, pitch-tracked and held at 228 Hz (3420 rpm), seamless loop; tools/generate_changan_sounds.py",
+    "durationSeconds": 1.439
+  },
+  {
+    "sha256": "b47d4d8a3f210b5597a519cd332466c96fb7d1f8d912d2127e70b5029443354b",
+    "source": "https://freesound.org/s/496171/",
+    "event": "changan_high_inside",
+    "author": "editboy23",
+    "title": "Import car revs on Chassis Dyno with Turbo.wav",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 20.3-22.0 s, pitch-tracked and held at 228 Hz (3420 rpm), seamless loop; cabin low-pass at 600 Hz with a low boom; tools/generate_changan_sounds.py",
+    "durationSeconds": 1.439
+  },
+  {
+    "sha256": "81fb064497d0177aeb0042bfa965cd999a7c973dca92f61cb04e96c1efc7211a",
+    "source": "https://freesound.org/s/496171/",
+    "event": "changan_redline",
+    "author": "editboy23",
+    "title": "Import car revs on Chassis Dyno with Turbo.wav",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 23.4-25.0 s, pitch-tracked and held at 365 Hz (5475 rpm), seamless loop; tools/generate_changan_sounds.py",
+    "durationSeconds": 1.362
+  },
+  {
+    "sha256": "d4de95e8bff189c7bdf8ea615a3296959199c3527ad21a3ac7e6f7c51c851321",
+    "source": "https://freesound.org/s/496171/",
+    "event": "changan_redline_inside",
+    "author": "editboy23",
+    "title": "Import car revs on Chassis Dyno with Turbo.wav",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 23.4-25.0 s, pitch-tracked and held at 365 Hz (5475 rpm), seamless loop; cabin low-pass at 600 Hz with a low boom; tools/generate_changan_sounds.py",
+    "durationSeconds": 1.362
+  },
+  {
+    "sha256": "8c0d5a45889e5f302abc3db0621f91cf408012b9de3c24bba5de35cf9561eb01",
+    "source": "https://freesound.org/s/433584/",
+    "event": "changan_start",
+    "author": "jackthemurray",
+    "title": "Car Starting and Accelerating",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 1.1-3.4 s cut with a 0.6 s fade-out; tools/generate_changan_sounds.py",
+    "durationSeconds": 2.3
+  },
+  {
+    "sha256": "f9e438af57110f6ade55ebd104e1fb272703fceae05b23a39354c2c6a97f07d1",
+    "source": "https://freesound.org/s/433584/",
+    "event": "changan_start_inside",
+    "author": "jackthemurray",
+    "title": "Car Starting and Accelerating",
+    "license": "CC0 1.0",
+    "processing": "mono 44.1 kHz; 1.1-3.4 s cut with a 0.6 s fade-out; cabin low-pass at 600 Hz with a low boom; tools/generate_changan_sounds.py",
+    "durationSeconds": 2.3
   }
 ]

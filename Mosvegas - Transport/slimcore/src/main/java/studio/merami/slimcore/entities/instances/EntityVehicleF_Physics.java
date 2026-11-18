@@ -1,20 +1,37 @@
 package studio.merami.slimcore.entities.instances;
 
+import studio.merami.slimcore.baseclasses.DamageModel;
 import studio.merami.slimcore.baseclasses.SlimMath;
+import studio.merami.slimcore.jsondefs.JSONCraft;
+import studio.merami.slimcore.paint.PaintShop;
+import studio.merami.slimcore.physics.CraftPhysics;
 import studio.merami.slimcore.physics.DrivePhysics;
+import studio.merami.slimcore.plates.PlateNumber;
 import studio.merami.slimcore.sliminterface.IEntityData;
 import studio.merami.slimcore.sliminterface.IWrapperEntity;
 import studio.merami.slimcore.sliminterface.IWrapperNBT;
+import studio.merami.slimcore.sliminterface.InterfaceManager;
 import studio.merami.slimcore.sliminterface.SyncedValue;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EntityVehicleF_Physics extends AEntityVehicleE_Powered {
     private static final SyncedValue<Integer> TINT = SyncedValue.integer(EntityVehicleF_Physics.class, 25);
-    private static final SyncedValue<Integer> COLOR = SyncedValue.integer(EntityVehicleF_Physics.class, 0xffffff);
+    private static final SyncedValue<Integer> COLOR = SyncedValue.integer(EntityVehicleF_Physics.class, -1);
+    private static final SyncedValue<Integer> INTERIOR_COLOR = SyncedValue.integer(EntityVehicleF_Physics.class, -1);
+    private static final SyncedValue<IWrapperNBT> PART_COLORS = SyncedValue.nbt(EntityVehicleF_Physics.class);
+    private static final SyncedValue<String> PLATE = SyncedValue.text(EntityVehicleF_Physics.class, PlateNumber.NONE);
 
     public String rimStyle = "stock";
     public String bumperStyle = "stock";
     public String spoilerStyle = "none";
     public String skin = "stock";
+    private Map<String, Integer> partColors = Map.of();
+    public volatile PaintShop.Order paintPreview;
 
     public EntityVehicleF_Physics(IWrapperEntity host, IEntityData data) {
         super(host, data);
@@ -30,11 +47,79 @@ public class EntityVehicleF_Physics extends AEntityVehicleE_Powered {
     }
 
     public int color() {
-        return data.get(COLOR);
+        int own = data.get(COLOR);
+        return own >= 0 ? own : definition().bodyColor;
     }
 
     public void setColor(int rgb) {
-        data.set(COLOR, rgb & 0xffffff);
+        data.set(COLOR, rgb < 0 ? -1 : rgb & 0xffffff);
+        if (!partColors.isEmpty()) setPartColors(Map.of());
+    }
+
+    public int interiorColor() {
+        int own = data.get(INTERIOR_COLOR);
+        return own >= 0 ? own : definition().interiorColor;
+    }
+
+    public void setInteriorColor(int rgb) {
+        data.set(INTERIOR_COLOR, rgb < 0 ? -1 : rgb & 0xffffff);
+    }
+
+    public String plate() {
+        return data.get(PLATE);
+    }
+
+    public void setPlate(String number) {
+        data.set(PLATE, PlateNumber.valid(number) ? number : PlateNumber.NONE);
+    }
+
+    public Map<String, Integer> partColors() {
+        return partColors;
+    }
+
+    public int partColor(String bone) {
+        int own = definition().interiorPaintBones.contains(bone) ? interiorColor() : partColors.getOrDefault(bone, color());
+        PaintShop.Order preview = paintPreview;
+        return preview == null ? own : preview.colorOf(this, bone, own);
+    }
+
+    public void setPartColor(String bone, int rgb) {
+        if (!definition().paintBones.contains(bone)) return;
+        Map<String, Integer> next = new HashMap<>(partColors);
+        if ((rgb & 0xffffff) == color()) next.remove(bone);
+        else next.put(bone, rgb & 0xffffff);
+        setPartColors(next);
+    }
+
+    private void setPartColors(Map<String, Integer> colors) {
+        partColors = Collections.unmodifiableMap(new HashMap<>(colors));
+        IWrapperNBT tag = InterfaceManager.coreInterface.createNBT();
+        savePartColors(tag);
+        data.set(PART_COLORS, tag);
+    }
+
+    private void savePartColors(IWrapperNBT tag) {
+        List<IWrapperNBT> parts = new ArrayList<>();
+        for (Map.Entry<String, Integer> part : partColors.entrySet()) {
+            IWrapperNBT entry = InterfaceManager.coreInterface.createNBT();
+            entry.setString("Bone", part.getKey());
+            entry.setInt("Color", part.getValue());
+            parts.add(entry);
+        }
+        tag.setCompounds("PartColors", parts);
+    }
+
+    private static Map<String, Integer> loadPartColors(IWrapperNBT tag) {
+        Map<String, Integer> colors = new HashMap<>();
+        if (tag == null || !tag.hasList("PartColors")) return colors;
+        for (IWrapperNBT entry : tag.getCompounds("PartColors")) colors.put(entry.getString("Bone"), entry.getInt("Color") & 0xffffff);
+        return colors;
+    }
+
+    @Override
+    public void onSyncedDataUpdated(SyncedValue<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (world().isClient() && key == PART_COLORS) partColors = Collections.unmodifiableMap(loadPartColors(data.get(PART_COLORS)));
     }
 
     @Override
@@ -44,11 +129,16 @@ public class EntityVehicleF_Physics extends AEntityVehicleE_Powered {
         tickVisualMotion();
         tickWipers();
         if (world().isClient()) {
-            tickClientMotion();
+            if (craft()) tickCraftClient();
+            else tickClientMotion();
             return;
         }
         reconcileSeats();
         tickExits();
+        if (craft()) {
+            tickCraft();
+            return;
+        }
         DrivePhysics.Input applied = tickControls();
         tickHorn();
         tickEngine(applied);
@@ -61,6 +151,34 @@ public class EntityVehicleF_Physics extends AEntityVehicleE_Powered {
         double lastLateral = lateral;
         double yawDelta = driveStep(applied, steer);
         tickMotion(yawDelta, lastForward, lastLateral, lastY);
+        warnLowFuel();
+    }
+
+    private void tickCraft() {
+        JSONCraft craft = definition().craft;
+        CraftPhysics.Input controls = craftControls();
+        tickHorn();
+        tickEngine(DrivePhysics.IDLE);
+        tickParkedEngine();
+        if (!exiting() && (shouldShutOpenings() || !onGround())) closeMovingParts();
+        double power = DamageModel.power(engineHealth());
+        boolean running = flag(ENGINE) && fuel() > 0;
+        CraftPhysics.Result result;
+        if (craft.helicopter()) {
+            result = CraftPhysics.flight(craft, craftState(), controls, running, onGround(), power, craftClearance());
+        } else {
+            double depth = waterDepth();
+            boolean afloat = !Double.isNaN(depth) && depth > -.05;
+            double falling = motion().y;
+            boolean hop = craftHop(controls) && afloat && running;
+            result = CraftPhysics.water(craft, craftState(), controls, running, depth, onGround(), hop, power);
+            if (afloat && craftAirborne && falling < -.25) splash(-falling);
+            else if (hop) splash(.15);
+            craftAirborne = !afloat && !onGround();
+            setFlag(AIRBORNE, craftAirborne);
+        }
+        craftEngine(result);
+        tickCraftMotion(result);
         warnLowFuel();
     }
 
@@ -109,21 +227,32 @@ public class EntityVehicleF_Physics extends AEntityVehicleE_Powered {
     public void load(IWrapperNBT tag) {
         super.load(tag);
         setTint(tag.has("Tint") ? tag.getInt("Tint") : 25);
-        setColor(tag.has("Color") ? tag.getInt("Color") : 0xffffff);
+        boolean painted = tag.has("Painted") || tag.has("Color") && tag.getInt("Color") != 0xffffff;
+        setColor(painted ? tag.getInt("Color") : -1);
+        setInteriorColor(tag.has("InteriorColor") ? tag.getInt("InteriorColor") : -1);
+        Map<String, Integer> parts = loadPartColors(tag);
+        parts.keySet().retainAll(definition().paintBones);
+        setPartColors(parts);
         rimStyle = tag.getString("Rims");
         bumperStyle = tag.getString("Bumper");
         spoilerStyle = tag.getString("Spoiler");
         skin = tag.getString("Skin");
+        setPlate(tag.getString("Plate"));
     }
 
     @Override
     public void save(IWrapperNBT tag) {
         super.save(tag);
         tag.setInt("Tint", tint());
-        tag.setInt("Color", color());
+        int own = data.get(COLOR);
+        tag.setInt("Color", own >= 0 ? own : 0xffffff);
+        if (own == 0xffffff) tag.setInt("Painted", 1);
+        if (data.get(INTERIOR_COLOR) >= 0) tag.setInt("InteriorColor", data.get(INTERIOR_COLOR));
+        if (!partColors.isEmpty()) savePartColors(tag);
         tag.setString("Rims", rimStyle);
         tag.setString("Bumper", bumperStyle);
         tag.setString("Spoiler", spoilerStyle);
         tag.setString("Skin", skin);
+        if (PlateNumber.valid(plate())) tag.setString("Plate", plate());
     }
 }

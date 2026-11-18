@@ -250,9 +250,9 @@
       "slimvehicle:v8_start_inside"
     ]
   },
-  "l9_motor_hum": {
+  "changan_turbo": {
     "sounds": [
-      "slimvehicle:l9_motor_hum"
+      "slimvehicle:changan_turbo"
     ]
   },
   "l9_motor_low": {
@@ -265,89 +265,124 @@
       "slimvehicle:l9_motor_high"
     ]
   },
-  "l9_start": {
+  "l9_avas": {
     "sounds": [
-      "slimvehicle:l9_start"
+      "slimvehicle:l9_avas"
     ]
   },
-  "l9_stop": {
+  "l9_ready": {
     "sounds": [
-      "slimvehicle:l9_stop"
+      "slimvehicle:l9_ready"
     ]
   },
-  "l9_horn": {
+  "l9_off": {
     "sounds": [
-      "slimvehicle:l9_horn"
+      "slimvehicle:l9_off"
     ]
   },
-  "l9_charge": {
+  "selector_click": {
     "sounds": [
-      "slimvehicle:l9_charge"
+      "slimvehicle:selector_click"
     ]
   },
-  "l9_door_open": {
+  "changan_idle": {
     "sounds": [
-      "slimvehicle:l9_door_open"
+      "slimvehicle:changan_idle"
     ]
   },
-  "l9_door_close": {
+  "changan_idle_inside": {
     "sounds": [
-      "slimvehicle:l9_door_close"
+      "slimvehicle:changan_idle_inside"
     ]
   },
-  "l9_hood_open": {
+  "changan_low": {
     "sounds": [
-      "slimvehicle:l9_hood_open"
+      "slimvehicle:changan_low"
     ]
   },
-  "l9_hood_close": {
+  "changan_low_inside": {
     "sounds": [
-      "slimvehicle:l9_hood_close"
+      "slimvehicle:changan_low_inside"
     ]
   },
-  "l9_trunk_open": {
+  "changan_mid": {
     "sounds": [
-      "slimvehicle:l9_trunk_open"
+      "slimvehicle:changan_mid"
     ]
   },
-  "l9_trunk_close": {
+  "changan_mid_inside": {
     "sounds": [
-      "slimvehicle:l9_trunk_close"
+      "slimvehicle:changan_mid_inside"
     ]
   },
-  "l9_hatch_open": {
+  "changan_high": {
     "sounds": [
-      "slimvehicle:l9_hatch_open"
+      "slimvehicle:changan_high"
     ]
   },
-  "l9_hatch_close": {
+  "changan_high_inside": {
     "sounds": [
-      "slimvehicle:l9_hatch_close"
+      "slimvehicle:changan_high_inside"
     ]
   },
-  "l9_shift_up": {
+  "changan_redline": {
     "sounds": [
-      "slimvehicle:l9_shift_up"
+      "slimvehicle:changan_redline"
     ]
   },
-  "l9_shift_down": {
+  "changan_redline_inside": {
     "sounds": [
-      "slimvehicle:l9_shift_down"
+      "slimvehicle:changan_redline_inside"
     ]
   },
-  "l9_handbrake_on": {
+  "changan_start": {
     "sounds": [
-      "slimvehicle:l9_handbrake_on"
+      "slimvehicle:changan_start"
     ]
   },
-  "l9_handbrake_off": {
+  "changan_start_inside": {
     "sounds": [
-      "slimvehicle:l9_handbrake_off"
+      "slimvehicle:changan_start_inside"
     ]
   },
-  "l9_lock": {
+  "l9_inverter": {
     "sounds": [
-      "slimvehicle:l9_lock"
+      "slimvehicle:l9_inverter"
+    ]
+  },
+  "heli_rotor": {
+    "sounds": [
+      "slimvehicle:heli_rotor"
+    ]
+  },
+  "heli_engine": {
+    "sounds": [
+      "slimvehicle:heli_engine"
+    ]
+  },
+  "heli_start": {
+    "sounds": [
+      "slimvehicle:heli_start"
+    ]
+  },
+  "heli_stop": {
+    "sounds": [
+      "slimvehicle:heli_stop"
+    ]
+  },
+  "jetski_engine": {
+    "sounds": [
+      "slimvehicle:jetski_engine"
+    ]
+  },
+  "jetski_water": {
+    "sounds": [
+      "slimvehicle:jetski_water"
+    ]
+  },
+  "jetski_start": {
+    "sounds": [
+      "slimvehicle:jetski_start"
     ]
   }
 }

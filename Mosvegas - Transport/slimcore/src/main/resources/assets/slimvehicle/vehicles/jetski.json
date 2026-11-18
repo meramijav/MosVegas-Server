@@ -1,0 +1,78 @@
+{
+  "model": "jetski",
+  "texture": "jetski",
+  "scale": 1,
+  "size": {"half_width": 0.62, "half_length": 1.75, "height": 1.22},
+  "mass": 380,
+  "max_step": 0.55,
+  "body_pivot": 0.4,
+  "board_on_click": true,
+  "tyre_marks": false,
+  "physics": {"max_speed_kmh": 90, "steer_lock": 0.5},
+  "transmission": {"gears": 1},
+  "fuel": {"tank": 60, "per_tick": 0.0012},
+  "engine": {"pos": [0, 0.45, -0.4], "spread": [0.25, 0.1, 0.4], "power_kw": 130, "idle_rpm": 1200, "limit_rpm": 7800, "max_rpm": 8200, "redline_rpm": 7800},
+  "craft": {
+    "type": "watercraft",
+    "max_speed_kmh": 90,
+    "reverse_kmh": 8,
+    "acceleration": 0.02,
+    "brake": 0.05,
+    "coast": 0.012,
+    "yaw_rate": 5,
+    "tilt": 0.08,
+    "bank": 0.3,
+    "draft": 0.28,
+    "drag": 0.99,
+    "slip": 0.8,
+    "steer": [
+      {"bone": "handlebar", "axis": "y", "angle": 0.45},
+      {"bone": "nozzle", "axis": "y", "angle": 0.5}
+    ],
+    "riding": {"grip": [0.39, 1.15, 0.45], "bar": [0, 0.95, 0.55], "turn": 0.45, "foot": [0.48, 0.88, 0.28], "rest": [-0.26, 0.99, 0.05], "lean": 0.35}
+  },
+  "sounds": {
+    "engine_volume": 0.7,
+    "engine": [
+      {"sound": "jetski_engine", "fade_in": [1000, 1600], "pitch_rpm": 4000, "pitch_follow": 0.75, "volume": 1.0, "load": 0.5},
+      {"sound": "jetski_water", "follow": "speed", "fade_in": [2, 20], "pitch_rpm": 60, "pitch_follow": 0.3, "volume": 0.7}
+    ],
+    "start": "jetski_start",
+    "start_catch": 0.3,
+    "start_settle": 0.9,
+    "horn": "",
+    "road": "",
+    "skid": "",
+    "gear_shift": ""
+  },
+  "wheel": {"radius": 0.05, "roll_radius": 0.05, "contact": 0.3, "half_width": 0.05, "solid": false},
+  "wheels": [
+    {"bone": "keel_f", "pos": [0, 0.05, 1.0], "label": "part.slimvehicle.keel"},
+    {"bone": "keel_r", "pos": [0, 0.05, -1.2], "label": "part.slimvehicle.keel"}
+  ],
+  "rider": {"scale": 0.7},
+  "seats": [
+    {"pos": [0, 0.9, -0.15], "label": "seat.slimvehicle.driver", "click": {"center": [0, 0.95, -0.15], "half": [0.3, 0.2, 0.35]}},
+    {"pos": [0, 0.85, -0.8], "label": "seat.slimvehicle.rear_passenger", "click": {"center": [0, 0.98, -0.8], "half": [0.3, 0.2, 0.3]}}
+  ],
+  "hull": {
+    "boxes": [
+      {"center": [0, 0.12, -0.1], "half": [0.38, 0.12, 1.45]},
+      {"center": [0, 0.42, -0.15], "half": [0.6, 0.2, 1.45]},
+      {"center": [0, 0.5, 1.4], "half": [0.4, 0.2, 0.25]},
+      {"center": [0, 0.82, -0.5], "half": [0.22, 0.13, 0.75]}
+    ]
+  },
+  "damage": {
+    "half_width": 0.6,
+    "half_length": 1.7,
+    "roof": 1.2,
+    "fuel_tank": [0, 0.4, 0.4],
+    "zones": [
+      {"id": "bow", "side": "front", "engine": 0.4},
+      {"id": "stern", "side": "rear", "engine": 1.0}
+    ]
+  },
+  "fire": [{"pos": [0, 0.5, -0.4], "spread": [0.2, 0.1, 0.4]}],
+  "render": {"chassis": "chassis", "shadow": [0.6, 1.6], "speedometer": 120}
+}

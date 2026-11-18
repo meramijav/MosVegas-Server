@@ -9,6 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class SlimItems {
+    public static final AItemBase SPRAY_GUN = new AItemBase(SlimCore.id("spray_gun"), 1);
+    public static final AItemBase ZONE_MARKER = new AItemBase(SlimCore.id("zone_marker"), 1);
+    public static final AItemBase PAINT_STAND = new AItemBase(SlimCore.id("paint_stand"), 1);
     public static final ItemKey KEY = new ItemKey();
     public static final AItemBase FUEL_CAN = new AItemBase(SlimCore.id("fuel_can"), 1);
     public static final AItemBase REPAIR_KIT = new AItemBase(SlimCore.id("repair_kit"), 16);

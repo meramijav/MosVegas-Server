@@ -3,10 +3,16 @@ package studio.merami.slimcore.jsondefs;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import studio.merami.slimcore.baseclasses.Point3D;
+import studio.merami.slimcore.paint.PaintJob;
 import studio.merami.slimcore.physics.DrivePhysics;
+import studio.merami.slimcore.rendering.ModelGeometry;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public class JSONVehicle extends AJSONMultipart {
@@ -14,18 +20,22 @@ public class JSONVehicle extends AJSONMultipart {
     public static final double DEFAULT_MUFFLE = .85;
     public static final String TAIL_GLOW = "tail";
     public static final String BRAKE_GLOW = "brake";
+    public static final double DEFAULT_TAIL_LEVEL = .45;
+    public static final String LENS_RED = "red";
+    public static final String LENS_WHITE = "white";
     public static final String DRIVE_REAR = "rear";
     public static final String DRIVE_FRONT = "front";
     public static final String DRIVE_ALL = "all";
     public static final String HEADLIGHT_HALOGEN = "halogen";
     public static final String HEADLIGHT_LED = "led";
+    public static final List<String> PLATE_STYLES = List.of("standard", "police");
+    private static final String ALL_FACES = "all";
     private static final double CABIN_SIDE = .55;
     private static final double CABIN_LENGTH = .6;
     private static final double CABIN_HEAD = 1.3;
 
     public boolean emergency;
     public boolean tyreMarks = true;
-    public boolean vibration = true;
     public double maxStep = .625;
     public double bodyPivot = .6;
     public double windowDrop = .575;
@@ -46,9 +56,19 @@ public class JSONVehicle extends AJSONMultipart {
     public Driver driver;
     public Wipers wipers;
     public Render render = new Render();
+    public Plates plates = new Plates();
+    public JSONCraft craft;
 
     public transient DrivePhysics.Tune tune;
     public transient Set<String> paintBones;
+    public transient Set<String> interiorPaintBones;
+    public transient Set<String> paintKeepBones;
+    public transient Map<String, int[]> paintKeepFaces;
+    public transient Map<String, int[]> paintFaces;
+    public transient Map<String, PaintJob.Area> paintAreaBones;
+    public transient Map<String, ModelGeometry.Face> plateFaces;
+    public transient int interiorColor;
+    public transient int bodyColor;
     public transient Set<String> interiorBones;
     public transient Set<String> dentBones;
     public transient double shadowHalfWidth;
@@ -59,6 +79,11 @@ public class JSONVehicle extends AJSONMultipart {
     public transient double cabinMuffle;
 
     public record Tailpipe(Point3D pos, Point3D direction) {}
+
+    public static class Plates {
+        public String style = PLATE_STYLES.get(0);
+        public Map<String, String> bones = new LinkedHashMap<>();
+    }
 
     public static class ExhaustEffects {
         public double smoke = 1;
@@ -114,7 +139,6 @@ public class JSONVehicle extends AJSONMultipart {
         public double revRpm = 600;
         public double redlineRpm = 6000;
         public double keepRunning = 120;
-        public boolean electric;
     }
 
     public static class Lamps {
@@ -126,6 +150,7 @@ public class JSONVehicle extends AJSONMultipart {
         public LampBone headlightBone;
         public LampBone taillightBone;
         public List<Glow> glow = new ArrayList<>();
+        public List<Sequential> sequential = new ArrayList<>();
         public String headlightType = HEADLIGHT_HALOGEN;
 
         public String headlightBoneName() {
@@ -140,9 +165,32 @@ public class JSONVehicle extends AJSONMultipart {
     public static class Glow {
         public String bone;
         public String when = TAIL_GLOW;
+        public double tail = DEFAULT_TAIL_LEVEL;
 
         public boolean brakeOnly() {
             return BRAKE_GLOW.equals(when);
+        }
+    }
+
+    public static class Sequential {
+        public List<String> bones = new ArrayList<>();
+        public String lens = LENS_RED;
+        public Point3D min;
+        public Point3D max;
+        public int segments = 7;
+
+        public boolean white() {
+            return LENS_WHITE.equals(lens);
+        }
+
+        public boolean rear() {
+            return min.z + max.z < 0;
+        }
+
+        public int segment(double x, double y, double z) {
+            double side = Math.abs(x);
+            if (side < min.x || side > max.x || y < min.y || y > max.y || z < min.z || z > max.z) return -1;
+            return Math.min(segments - 1, (int) ((side - min.x) / (max.x - min.x) * segments));
         }
     }
 
@@ -210,6 +258,15 @@ public class JSONVehicle extends AJSONMultipart {
         public List<String> paint = new ArrayList<>();
         public List<String> dent = new ArrayList<>();
         public List<String> interior = new ArrayList<>();
+        public List<String> interiorPaint = new ArrayList<>();
+        public List<String> paintKeep = new ArrayList<>();
+        public Map<String, Map<String, List<Integer>>> paintKeepFaces = new LinkedHashMap<>();
+        public Map<String, Map<String, List<Integer>>> paintFaces = new LinkedHashMap<>();
+        public Map<String, List<String>> paintAreas = new LinkedHashMap<>();
+        public double paintDark = .3;
+        public double paintChroma = .25;
+        public String interiorColor = "ffffff";
+        public String bodyColor = "ffffff";
         public double[] shadow;
         public double speedometer = Double.NaN;
     }
@@ -220,18 +277,31 @@ public class JSONVehicle extends AJSONMultipart {
         if (driver != null && driver.steering == null) driver = null;
         if (lamps != null) {
             bakeLampBone(lamps.headlightBone);
+        if (craft != null) craft.bake();
             bakeLampBone(lamps.taillightBone);
             if (!HEADLIGHT_HALOGEN.equals(lamps.headlightType) && !HEADLIGHT_LED.equals(lamps.headlightType)) {
                 throw new IllegalArgumentException("lamps \"headlight_type\" is \"" + HEADLIGHT_HALOGEN + "\" or \"" + HEADLIGHT_LED + "\", not \"" + lamps.headlightType + "\"");
             }
             for (Glow glow : lamps.glow) {
                 if (glow.bone == null) throw new IllegalArgumentException("lamps \"glow\" needs a \"bone\"");
+                if (!(glow.tail >= 0 && glow.tail <= 1)) throw new IllegalArgumentException("lamps \"glow\" \"tail\" is a brightness from 0 to 1, not " + glow.tail);
                 if (!TAIL_GLOW.equals(glow.when) && !BRAKE_GLOW.equals(glow.when)) {
                     throw new IllegalArgumentException("lamps \"glow\" \"when\" is \"" + TAIL_GLOW + "\" or \"" + BRAKE_GLOW + "\", not \"" + glow.when + "\"");
                 }
             }
+            for (Sequential strip : lamps.sequential) bakeSequential(strip);
         }
         paintBones = Set.copyOf(render.paint);
+        interiorPaintBones = Set.copyOf(render.interiorPaint);
+        paintKeepBones = Set.copyOf(render.paintKeep);
+        paintKeepFaces = faceMasks(render.paintKeepFaces, "paint_keep_faces");
+        paintFaces = faceMasks(render.paintFaces, "paint_faces");
+        paintAreaBones = paintAreas();
+        if (render.paintDark < 0 || render.paintDark > 1) throw new IllegalArgumentException("render \"paint_dark\" is a brightness from 0 to 1, not " + render.paintDark);
+        if (render.paintChroma < 0 || render.paintChroma > 1) throw new IllegalArgumentException("render \"paint_chroma\" is a saturation from 0 to 1, not " + render.paintChroma);
+        interiorColor = hexColor(render.interiorColor, "interior_color");
+        bodyColor = hexColor(render.bodyColor, "body_color");
+        plateFaces = plateFaces();
         interiorBones = Set.copyOf(render.interior);
         dentBones = Set.copyOf(render.dent);
         shadowHalfWidth = render.shadow == null ? size.halfWidth : render.shadow[0];
@@ -244,8 +314,73 @@ public class JSONVehicle extends AJSONMultipart {
         }
         tune = new DrivePhysics.Tune(physics.maxSpeedKmh / 72, acceleration(), physics.brake, physics.grip,
                 (Double.isNaN(physics.wheelbase) ? axleSpan : physics.wheelbase) * scale, fuel.perTick, gearbox(),
-                new DrivePhysics.Revs(engine.idleRpm, engine.limitRpm, engine.maxRpm, engine.revRpm), massRatio, DRIVE_ALL.equals(physics.drive), transmission.automatic,
-                engine.electric);
+                new DrivePhysics.Revs(engine.idleRpm, engine.limitRpm, engine.maxRpm, engine.revRpm), massRatio, DRIVE_ALL.equals(physics.drive), transmission.automatic);
+    }
+
+    private Map<String, ModelGeometry.Face> plateFaces() {
+        if (!PLATE_STYLES.contains(plates.style)) throw new IllegalArgumentException("plates \"style\" is one of " + PLATE_STYLES + ", not \"" + plates.style + "\"");
+        Map<String, ModelGeometry.Face> faces = new LinkedHashMap<>();
+        for (Map.Entry<String, String> bone : plates.bones.entrySet()) {
+            ModelGeometry.Face found = null;
+            for (ModelGeometry.Face face : ModelGeometry.Face.values()) {
+                if (face.name().toLowerCase(Locale.ROOT).equals(bone.getValue())) found = face;
+            }
+            if (found == null) throw new IllegalArgumentException("plates \"bones\" face of \"" + bone.getKey() + "\" is north, south, east, west, up or down, not \"" + bone.getValue() + "\"");
+            faces.put(bone.getKey(), found);
+        }
+        return Map.copyOf(faces);
+    }
+
+    private static int hexColor(String value, String key) {
+        try {
+            return Integer.parseInt(value.replace("#", ""), 16) & 0xffffff;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("render \"" + key + "\" is a hex colour like \"ffffff\", not \"" + value + "\"");
+        }
+    }
+
+    private Map<String, PaintJob.Area> paintAreas() {
+        Map<String, PaintJob.Area> areas = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : render.paintAreas.entrySet()) {
+            PaintJob.Area area = null;
+            for (PaintJob.Area side : PaintJob.Area.values()) {
+                if (side != PaintJob.Area.INTERIOR && side.name().toLowerCase(Locale.ROOT).equals(entry.getKey())) area = side;
+            }
+            if (area == null) throw new IllegalArgumentException("render \"paint_areas\" are \"front\", \"rear\", \"left\", \"right\" or \"top\", not \"" + entry.getKey() + "\"");
+            for (String bone : entry.getValue()) {
+                if (!paintBones.contains(bone)) throw new IllegalArgumentException("render \"paint_areas\" bone \"" + bone + "\" is not in \"paint\"");
+                areas.put(bone, area);
+            }
+        }
+        return Map.copyOf(areas);
+    }
+
+    private static Map<String, int[]> faceMasks(Map<String, Map<String, List<Integer>>> faces, String key) {
+        Map<String, int[]> masks = new HashMap<>();
+        for (Map.Entry<String, Map<String, List<Integer>>> bone : faces.entrySet()) {
+            int count = 0;
+            for (List<Integer> cubes : bone.getValue().values()) {
+                for (int cube : cubes) {
+                    if (cube < 0) throw new IllegalArgumentException("render \"" + key + "\" cube " + cube + " of \"" + bone.getKey() + "\" is not an index");
+                    count = Math.max(count, cube + 1);
+                }
+            }
+            int[] mask = new int[count];
+            for (Map.Entry<String, List<Integer>> face : bone.getValue().entrySet()) {
+                int bits = faceBits(face.getKey(), key);
+                for (int cube : face.getValue()) mask[cube] |= bits;
+            }
+            masks.put(bone.getKey(), mask);
+        }
+        return Map.copyOf(masks);
+    }
+
+    private static int faceBits(String face, String key) {
+        if (ALL_FACES.equals(face)) return (1 << ModelGeometry.Face.values().length) - 1;
+        for (ModelGeometry.Face value : ModelGeometry.Face.values()) {
+            if (value.name().toLowerCase(Locale.ROOT).equals(face)) return 1 << value.ordinal();
+        }
+        throw new IllegalArgumentException("render \"" + key + "\" face is north, south, east, west, up, down or all, not \"" + face + "\"");
     }
 
     private void bakeCabin() {
@@ -296,6 +431,17 @@ public class JSONVehicle extends AJSONMultipart {
             if (exhaustMirror) pipes.add(new Tailpipe(new Point3D(-pos.x, pos.y, pos.z), new Point3D(-direction.x, direction.y, direction.z)));
         }
         return List.copyOf(pipes);
+    }
+
+    private static void bakeSequential(Sequential strip) {
+        if (strip.bones.isEmpty()) throw new IllegalArgumentException("lamps \"sequential\" needs \"bones\"");
+        if (!LENS_RED.equals(strip.lens) && !LENS_WHITE.equals(strip.lens)) {
+            throw new IllegalArgumentException("lamps \"sequential\" \"lens\" is \"" + LENS_RED + "\" or \"" + LENS_WHITE + "\", not \"" + strip.lens + "\"");
+        }
+        if (strip.min == null || strip.max == null || strip.min.x < 0 || strip.min.x >= strip.max.x || strip.min.y > strip.max.y || strip.min.z > strip.max.z) {
+            throw new IllegalArgumentException("lamps \"sequential\" needs \"min\" below \"max\" on the left side (x >= 0)");
+        }
+        if (strip.segments < 1) throw new IllegalArgumentException("lamps \"sequential\" \"segments\" is at least 1, not " + strip.segments);
     }
 
     private static void bakeLampBone(LampBone bone) {

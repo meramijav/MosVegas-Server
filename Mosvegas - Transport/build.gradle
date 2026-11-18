@@ -11,6 +11,7 @@ base { archivesName = 'slimvehicle-1.20.4' }
 def zoneTests = project.hasProperty('zoneTests')
 def gameTests = zoneTests ? ['studio.merami.sliminterfacefabric.gametest.ZoneGameTests'] : [
     'studio.merami.sliminterfacefabric.gametest.DrivingGameTests',
+    'studio.merami.sliminterfacefabric.gametest.CraftGameTests',
     'studio.merami.sliminterfacefabric.gametest.CollisionGameTests',
     'studio.merami.sliminterfacefabric.gametest.DamageGameTests',
     'studio.merami.sliminterfacefabric.gametest.InteractionGameTests',

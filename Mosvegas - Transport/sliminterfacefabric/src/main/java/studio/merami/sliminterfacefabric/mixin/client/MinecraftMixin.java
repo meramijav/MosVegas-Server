@@ -9,24 +9,30 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import studio.merami.slimcore.items.SlimItems;
 import studio.merami.slimcore.systems.SeatedInteractions;
 import studio.merami.sliminterfacefabric.client.VehicleControls;
 import studio.merami.sliminterfacefabric.compat.TaczCompat;
 import studio.merami.sliminterfacefabric.entity.BuilderVehicle;
+import studio.merami.sliminterfacefabric.registry.ItemRegistry;
 import studio.merami.sliminterfacefabric.wrapper.WrapperPlayer;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
+    private static boolean slimvehicle$holdsGun(Minecraft mc) {
+        return mc.player.getMainHandItem().is(ItemRegistry.item(SlimItems.SPRAY_GUN));
+    }
+
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
     private void slimvehicle$noAttack(CallbackInfoReturnable<Boolean> cir) {
         Minecraft mc = (Minecraft) (Object) this;
-        if (mc.player != null && SeatedInteractions.seated(WrapperPlayer.of(mc.player))) cir.setReturnValue(false);
+        if (mc.player != null && (SeatedInteractions.seated(WrapperPlayer.of(mc.player)) || slimvehicle$holdsGun(mc))) cir.setReturnValue(false);
     }
 
     @Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
     private void slimvehicle$noMining(boolean held, CallbackInfo ci) {
         Minecraft mc = (Minecraft) (Object) this;
-        if (mc.player == null || !SeatedInteractions.seated(WrapperPlayer.of(mc.player))) return;
+        if (mc.player == null || !SeatedInteractions.seated(WrapperPlayer.of(mc.player)) && !slimvehicle$holdsGun(mc)) return;
         if (mc.gameMode != null) mc.gameMode.stopDestroyBlock();
         ci.cancel();
     }

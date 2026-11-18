@@ -38,7 +38,7 @@ final class DentMesh {
         return new Point3D(-x, y, -z);
     }
 
-    void renderCube(PoseStack pose, ModelGeometry.Cube cube, VertexConsumer buffer, int light, int overlay, float red, float green, float blue, float alpha) {
+    void renderCube(PoseStack pose, ModelGeometry.Cube cube, VertexConsumer buffer, int light, int overlay, float red, float green, float blue, float alpha, VehicleRenderer.FaceTint faces) {
         Matrix4f bone = pose.last().pose();
         Matrix3f boneNormal = pose.last().normal();
         Matrix4f rotation = rotations.computeIfAbsent(cube, DentMesh::cubeRotation);
@@ -48,13 +48,18 @@ final class DentMesh {
         Vector3f n = new Vector3f();
         for (ModelGeometry.Quad quad : cube.quads()) {
             if (quad == null) continue;
+            boolean own = faces != null && faces.covers(quad.face());
+            float r = own ? faces.red() : red;
+            float g = own ? faces.green() : green;
+            float b = own ? faces.blue() : blue;
+            int l = own ? faces.light() : light;
             Patch patch = patches.computeIfAbsent(quad, q -> build(cube, q, rotation));
             if (patch == PLAIN) {
                 fullNormal.transform(n.set(quad.nx(), quad.ny(), quad.nz()));
                 VehicleRenderer.fixInvertedFlatCube(cube, n);
                 for (ModelGeometry.Vertex v : quad.vertices()) {
                     full.transform(p.set(v.x(), v.y(), v.z(), 1));
-                    buffer.vertex(p.x(), p.y(), p.z(), red, green, blue, alpha, v.u(), v.v(), overlay, light, n.x(), n.y(), n.z());
+                    buffer.vertex(p.x(), p.y(), p.z(), r, g, b, alpha, v.u(), v.v(), overlay, l, n.x(), n.y(), n.z());
                 }
                 continue;
             }
@@ -67,7 +72,7 @@ final class DentMesh {
                         int i = (row + (corner >= 2 ? 1 : 0)) * stride + col + (corner == 1 || corner == 2 ? 1 : 0);
                         bone.transform(p.set(patch.position[i * 3], patch.position[i * 3 + 1], patch.position[i * 3 + 2], 1));
                         float shade = patch.shade[i];
-                        buffer.vertex(p.x(), p.y(), p.z(), red * shade, green * shade, blue * shade, alpha, patch.uv[i * 2], patch.uv[i * 2 + 1], overlay, light, n.x(), n.y(), n.z());
+                        buffer.vertex(p.x(), p.y(), p.z(), r * shade, g * shade, b * shade, alpha, patch.uv[i * 2], patch.uv[i * 2 + 1], overlay, l, n.x(), n.y(), n.z());
                     }
                 }
             }

@@ -61,27 +61,25 @@ class VehicleDefinitionTest {
     }
 
     @Test
-    void l9IsAnElectricSixSeater() {
-        JSONVehicle l9 = TestPacks.vehicle("l9");
-        assertTrue(l9.engine.electric && l9.tune.electric() && l9.gears() == 1 && l9.transmission.automatic, "One-speed electric drive with an R-N-D selector");
-        assertTrue(l9.tailpipes.isEmpty(), "No exhaust");
-        assertEquals(6, l9.seats.size());
-        assertEquals(10, l9.glass.size());
-        assertEquals("part.slimvehicle.charge_port", l9.opening("fuel").label);
-        assertEquals("slimvehicle:l9_charge", l9.sounds.refuel);
-        assertEquals("minecraft:item.bottle.empty", TestPacks.vehicle("volga").sounds.refuel, "Petrol cars still pour fuel");
-        ModelGeometry model = ModelGeometry.load(l9.modelLocation);
-        for (String bone : List.of("chassis", "steering_spin", "wiper_left", "wiper_right", "headlights", "indicator_front_left", "indicator_front_right",
-                "tail_bar", "tail_corners", "mirror_fl", "mirror_fr", "fuel_flap", "glovebox")) {
-            assertNotNull(model.bone(bone), "The model has " + bone);
+    void changanTailBarGlowsBrighterAndIndicatorsSweep() {
+        JSONVehicle changan = TestPacks.vehicle("changan_univ");
+        assertTrue(changan.lamps.glow.stream().allMatch(g -> g.tail > JSONVehicle.DEFAULT_TAIL_LEVEL), "The LED bar glows brighter than a plain tail lamp");
+        assertEquals(JSONVehicle.DEFAULT_TAIL_LEVEL, TestPacks.vehicle("g63").lamps.glow.get(0).tail);
+        List<JSONVehicle.Sequential> strips = changan.lamps.sequential;
+        assertEquals(2, strips.size());
+        JSONVehicle.Sequential front = strips.stream().filter(s -> !s.rear()).findFirst().orElseThrow();
+        JSONVehicle.Sequential rear = strips.stream().filter(JSONVehicle.Sequential::rear).findFirst().orElseThrow();
+        assertTrue(front.white() && !rear.white(), "The front sweep runs over the white running light, the rear one over the red bar");
+        assertEquals(0, rear.segment(0.56, 1.08, -2.84), "The sweep starts at the inner end");
+        assertEquals(rear.segments - 1, rear.segment(-1.07, 1.06, -2.5), "The mirrored right side ends on the corner");
+        assertEquals(-1, rear.segment(0.3, 1.08, -2.84), "The middle of the bar stays red");
+        ModelGeometry model = ModelGeometry.load(changan.modelLocation);
+        for (JSONVehicle.Sequential strip : strips) {
+            for (String bone : strip.bones) assertNotNull(model.bone(bone), bone);
         }
-        for (AJSONMultipart.Glass pane : l9.glass) assertNotNull(model.bone(pane.bone), "The model has the pane " + pane.bone);
-        for (AJSONMultipart.Opening opening : l9.openingList) assertNotNull(model.bone(opening.bone), "The model has the opening " + opening.bone);
-        for (String side : List.of("fl", "fr", "rl", "rr")) {
-            for (String part : List.of("steer_", "roll_", "tyre_")) assertNotNull(model.bone(part + side), "The model has " + part + side);
-        }
-        assertEquals(l9.lamps.headlightBone.cubes.size(), model.bone("headlights").cubes.size(), "Every headlight cube has its side");
-        assertEquals("trunk", model.bone("tail_bar").parent.name, "The tail light bar swings with the tailgate");
+        JsonObject json = TestPacks.builtIn("changan_univ");
+        json.getAsJsonObject("lamps").getAsJsonArray("sequential").get(0).getAsJsonObject().addProperty("lens", "amber");
+        assertThrows(IllegalArgumentException.class, () -> TestPacks.define("bad_lens", json));
     }
 
     @Test

@@ -9,7 +9,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -107,6 +110,20 @@ public final class WrapperWorld implements IWrapperWorld {
     }
 
     @Override
+    public double waterSurface(double x, double z, double minY, double maxY) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int bx = Mth.floor(x);
+        int bz = Mth.floor(z);
+        for (int y = Mth.floor(maxY); y >= Mth.floor(minY); y--) {
+            pos.set(bx, y, bz);
+            if (!level.isLoaded(pos)) return Double.NaN;
+            FluidState fluid = level.getFluidState(pos);
+            if (fluid.is(FluidTags.WATER)) return y + fluid.getHeight(level, pos);
+        }
+        return Double.NaN;
+    }
+
+    @Override
     public BlockHit raycastBlocks(Point3D from, Point3D to, IWrapperEntity entity) {
         BlockHitResult hit = level.clip(new ClipContext(Convert.vec(from), Convert.vec(to), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, WrapperEntity.unwrap(entity)));
         return new BlockHit(hit.getType() == HitResult.Type.BLOCK, hit.getDirection() == Direction.UP, Convert.point(hit.getLocation()));
@@ -152,6 +169,7 @@ public final class WrapperWorld implements IWrapperWorld {
             case SMOKE -> ParticleTypes.SMOKE;
             case LARGE_SMOKE -> ParticleTypes.LARGE_SMOKE;
             case SPARK -> ParticleTypes.ELECTRIC_SPARK;
+            case SPLASH -> ParticleTypes.SPLASH;
         };
         server.sendParticles(options, at.x, at.y, at.z, count, spreadX, spreadY, spreadZ, speed);
     }

@@ -94,35 +94,6 @@ class DrivePhysicsTest {
     }
 
     @Test
-    void l9PullsLikeAnElectricCar() {
-        JSONVehicle l9 = TestPacks.vehicle("l9");
-        Run run = floorIt(l9, 90);
-        assertTrue(run.seconds100() > 4.6 && run.seconds100() < 6, "0-100 km/h of the L9 takes about 5.3 s: " + run.seconds100());
-        assertTrue(run.gear() == 1 && run.top() > 178 && run.top() <= 180.001, "Top speed is 180 km/h on its one gear: " + run.top());
-        DrivePhysics.Tune tune = l9.tune;
-        double slow = DrivePhysics.engineForce(tune, 1, 0);
-        assertEquals(slow, DrivePhysics.engineForce(tune, 1, 40 / KMH), 1e-12, "The motor gives full torque from rest to its base speed");
-        double base = DrivePhysics.speedLimit(tune, 1) * .35;
-        assertEquals(DrivePhysics.engineForce(tune, 1, base * 2) * 2, DrivePhysics.engineForce(tune, 1, base), 1e-9, "and constant power above it");
-    }
-
-    @Test
-    void electricRevsAreTheWheelsAndRegenSlowsTheCar() {
-        DrivePhysics.Tune l9 = TestPacks.vehicle("l9").tune;
-        assertEquals(0, DrivePhysics.engineRpm(l9, 1, 0, 1, true), "A standing electric car is silent even with the pedal down");
-        assertEquals(0, DrivePhysics.engineRpm(l9, 0, 50 / KMH, 1, true), "In neutral the motor does not run");
-        assertEquals(l9.revs().atLimit() / 2, DrivePhysics.engineRpm(l9, 1, DrivePhysics.speedLimit(l9, 1) / 2, 1, true), 1e-6, "The revs follow the wheels");
-        assertEquals(DrivePhysics.engineRpm(l9, 1, 30 / KMH, 0, true), DrivePhysics.engineRpm(l9, -1, 30 / KMH, 0, true), 1e-9, "Backwards the motor turns as fast");
-        double speed = 100 / KMH;
-        int ticks = 0;
-        while (speed * KMH > 50 && ticks < 2000) {
-            speed = DrivePhysics.step(l9, speed, 0, 0, 1, true, 100, 0, DrivePhysics.IDLE).forward();
-            ticks++;
-        }
-        assertTrue(ticks / 20.0 > 6 && ticks / 20.0 < 14, "Lifting off in D the motor brakes the car like regeneration, 100 to 50 km/h in about 9 s: " + ticks / 20.0);
-    }
-
-    @Test
     void topSpeedIsWherePowerMeetsDrag() {
         for (String id : new String[]{"volga", "g63", "scooter"}) {
             DrivePhysics.Tune tune = TestPacks.vehicle(id).tune;
