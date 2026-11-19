@@ -30,6 +30,11 @@ public final class RpPlayback {
         return entity == null ? null : ACTIVE.get(entity.getId());
     }
 
+    public static boolean mobile(Entry entry) {
+        RpKind kind = entry == null ? null : RpKind.byId(entry.item());
+        return kind != null && kind.mobile && entry.role() == RpServer.ROLE_ACTOR;
+    }
+
     public static boolean acting(Entity entity) {
         Entry entry = of(entity);
         return entry != null && entry.role() == RpServer.ROLE_ACTOR;
@@ -107,7 +112,7 @@ public final class RpPlayback {
                 it.remove();
                 continue;
             }
-            if (entity instanceof LivingEntity living && !entry.hold()) {
+            if (entity instanceof LivingEntity living && !entry.hold() && !mobile(entry)) {
                 living.bodyYaw = entry.yaw();
                 living.prevBodyYaw = entry.yaw();
                 if (living != client.player) {

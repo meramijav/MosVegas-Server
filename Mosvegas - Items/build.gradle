@@ -70,6 +70,7 @@ tasks.register('launchClient', JavaExec) {
         workingDir = file(loom.runs.client.runDir)
         workingDir.mkdirs()
         args original.args
+        if (project.hasProperty('quickPlay')) args '--quickPlaySingleplayer', project.property('quickPlay')
         jvmArgs original.jvmArgs
         systemProperties original.systemProperties
         jvmArgs '@' + argumentFile.absolutePath

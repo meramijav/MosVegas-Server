@@ -132,7 +132,7 @@
   "item.mosvegas_items.pills": "Таблетки",
   "item.mosvegas_items.pills.description": "+2 сердца и регенерация",
   "item.mosvegas_items.medkit": "Аптечка",
-  "item.mosvegas_items.medkit.description": "Полное лечение, снимает отрицательные эффекты",
+  "item.mosvegas_items.medkit.description": "Открыть: бинт или упаковка таблеток",
   "item.mosvegas_items.defibrillator": "Дефибриллятор",
   "item.mosvegas_items.defibrillator.description": "ПКМ по игроку — реанимировать",
   "itemGroup.mosvegas_items.rp": "MosVegas: RP",

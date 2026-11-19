@@ -132,7 +132,7 @@
   "item.mosvegas_items.pills": "Pills",
   "item.mosvegas_items.pills.description": "Heals 2 hearts and regenerates",
   "item.mosvegas_items.medkit": "First aid kit",
-  "item.mosvegas_items.medkit.description": "Full heal, clears bad effects",
+  "item.mosvegas_items.medkit.description": "Open: a bandage or a pack of pills",
   "item.mosvegas_items.defibrillator": "Defibrillator",
   "item.mosvegas_items.defibrillator.description": "Use on a player to revive",
   "itemGroup.mosvegas_items.rp": "MosVegas: RP",

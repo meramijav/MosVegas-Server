@@ -61,8 +61,10 @@ public final class RpServer {
     public static final int ROLE_ACTOR = 0, ROLE_TARGET = 1;
     private static final double REACH = 3.5;
     private static final int STUN_TICKS = 60;
+    static final String MEDKIT_PILLS = "animation.medkit.unpack_pills_3p";
+    static final String UNCUFF_SCENE = "handcuffs_uncuff", UNCUFF = "animation.handcuffs.uncuff";
 
-    record Playback(RpKind kind, String animation, int role, long start, boolean hold, float yaw, int partner) {}
+    record Playback(String scene, RpKind kind, String animation, int role, long start, boolean hold, float yaw, int partner) {}
 
     record State(RpKind kind, UUID by, long until) {}
 
@@ -185,19 +187,22 @@ public final class RpServer {
         int ticks = Math.max(1, MathHelper.ceil(length * 20));
         long now = server.getTicks();
         float yaw = actor.getHeadYaw();
-        actor.setBodyYaw(yaw);
+        boolean pills = kind.effect == RpKind.Effect.UNPACK && actor.getRandom().nextBoolean();
+        String animation = pills ? MEDKIT_PILLS : kind.animation;
+        boolean mobile = kind.mobile && target == null;
+        if (!mobile) actor.setBodyYaw(yaw);
         if (target != null) place(actor, target, kind, yaw);
         BUSY.put(actor.getUuid(), now + ticks);
 
-        actor.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ticks, 6, false, false, false));
-        broadcast(actor, new Playback(kind, kind.animation, ROLE_ACTOR, now, false, yaw, target == null ? -1 : target.getId()));
+        if (!mobile) actor.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ticks, 6, false, false, false));
+        broadcast(actor, new Playback(kind.id, kind, animation, ROLE_ACTOR, now, false, yaw, target == null ? -1 : target.getId()));
         if (target != null) {
             BUSY.put(target.getUuid(), now + ticks);
             target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ticks, 6, false, false, false));
-            broadcast(target, new Playback(kind, kind.animation, ROLE_TARGET, now, effects && holdsTarget(kind), yaw + kind.targetYaw, actor.getId()));
+            broadcast(target, new Playback(kind.id, kind, kind.animation, ROLE_TARGET, now, effects && holdsTarget(kind), yaw + kind.targetYaw, actor.getId()));
         }
         sound(world, actor, kind, 0);
-        TASKS.add(new Task(now + ticks, () -> finish(actor, kind, target, effects)));
+        TASKS.add(new Task(now + ticks, () -> finish(actor, kind, target, effects, pills)));
     }
 
     private static boolean holdsTarget(RpKind kind) {
@@ -219,7 +224,7 @@ public final class RpServer {
         target.setHeadYaw(targetYaw);
     }
 
-    private static void finish(LivingEntity actor, RpKind kind, LivingEntity target, boolean effects) {
+    private static void finish(LivingEntity actor, RpKind kind, LivingEntity target, boolean effects, boolean pills) {
         PLAYING.remove(actor.getId());
         if (target != null && !(effects && holdsTarget(kind))) PLAYING.remove(target.getId());
         if (!actor.isAlive()) return;
@@ -239,10 +244,10 @@ public final class RpServer {
                 actor.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 200, 0));
                 consume(actor, held, effects);
             }
-            case HEAL_FULL -> {
-                if (effects && !hasItem) return;
-                actor.heal(actor.getMaxHealth());
-                clearBad(actor);
+            case UNPACK -> {
+                if (!effects || !hasItem) return;
+                consume(actor, held, true);
+                give(actor, new ItemStack(RpItems.item(pills ? RpKind.PILLS : RpKind.BANDAGE)));
             }
             case CUFF, TIE -> {
                 if (target == null || !target.isAlive()) return;
@@ -266,6 +271,14 @@ public final class RpServer {
         }
     }
 
+    private static void give(LivingEntity actor, ItemStack stack) {
+        if (actor instanceof PlayerEntity player) {
+            if (!player.getInventory().insertStack(stack)) player.dropItem(stack, false);
+        } else {
+            actor.dropStack(stack);
+        }
+    }
+
     private static void consume(LivingEntity actor, ItemStack stack, boolean effects) {
         if (!effects || actor instanceof PlayerEntity player && player.getAbilities().creativeMode) return;
         stack.decrement(1);
@@ -281,6 +294,40 @@ public final class RpServer {
     }
 
     public static void release(Entity target, ServerPlayerEntity releaser) {
+        State state = STATES.get(target.getUuid());
+        if (releaser != null && state != null && state.kind() == RpKind.HANDCUFFS && target instanceof LivingEntity bound
+                && LENGTHS.containsKey(UNCUFF) && server != null) {
+            if (busy(releaser) || BUSY.containsKey(target.getUuid())) return;
+            uncuff(releaser, bound);
+            return;
+        }
+        free(target, releaser);
+    }
+
+    private static void uncuff(ServerPlayerEntity actor, LivingEntity target) {
+        int ticks = Math.max(1, MathHelper.ceil(LENGTHS.get(UNCUFF) * 20));
+        long now = server.getTicks();
+        float yaw = actor.getHeadYaw();
+        actor.setBodyYaw(yaw);
+        target.stopRiding();
+        MOUNTED.remove(target.getUuid());
+        place(actor, target, RpKind.HANDCUFFS, yaw);
+        BUSY.put(actor.getUuid(), now + ticks);
+        BUSY.put(target.getUuid(), now + ticks);
+        actor.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ticks, 6, false, false, false));
+        target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ticks, 6, false, false, false));
+        broadcast(actor, new Playback(UNCUFF_SCENE, RpKind.HANDCUFFS, UNCUFF, ROLE_ACTOR, now, false, yaw, target.getId()));
+        broadcast(target, new Playback(UNCUFF_SCENE, RpKind.HANDCUFFS, UNCUFF, ROLE_TARGET, now, false, yaw + RpKind.HANDCUFFS.targetYaw, actor.getId()));
+        if (actor.getWorld() instanceof ServerWorld world) {
+            world.playSound(null, target.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_CHAIN, SoundCategory.PLAYERS, 0.8f, 1);
+        }
+        TASKS.add(new Task(now + ticks, () -> {
+            PLAYING.remove(actor.getId());
+            if (STATES.containsKey(target.getUuid())) free(target, actor.isAlive() ? actor : null);
+        }));
+    }
+
+    private static void free(Entity target, ServerPlayerEntity releaser) {
         State state = STATES.remove(target.getUuid());
         MOUNTED.remove(target.getUuid());
         PLAYING.remove(target.getId());
@@ -326,7 +373,7 @@ public final class RpServer {
             State state = entry.getValue();
             if (state.until() <= now) {
                 it.remove();
-                if (entity != null) release(entity, null);
+                if (entity != null) free(entity, null);
                 continue;
             }
             if (entity instanceof LivingEntity living && now % 20 == 0) {
@@ -450,7 +497,7 @@ public final class RpServer {
     private static void send(ServerPlayerEntity player, Entity entity, Playback playback) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(entity.getId());
-        buf.writeString(playback.kind().id);
+        buf.writeString(playback.scene());
         buf.writeString(playback.animation());
         buf.writeByte(playback.role());
         buf.writeVarInt(server == null ? 0 : (int) Math.max(0, server.getTicks() - playback.start()));
@@ -466,7 +513,8 @@ public final class RpServer {
             case TIE -> SoundEvents.ITEM_ARMOR_EQUIP_LEATHER;
             case STUN -> moment == 1 ? SoundEvents.ENTITY_PLAYER_HURT : SoundEvents.BLOCK_BEEHIVE_WORK;
             case REVIVE -> moment == 1 ? SoundEvents.BLOCK_BEACON_ACTIVATE : SoundEvents.ITEM_ARMOR_EQUIP_GENERIC;
-            case HEAL_SMALL, HEAL_PILLS, HEAL_FULL -> moment == 1 ? SoundEvents.ENTITY_PLAYER_LEVELUP : SoundEvents.ITEM_ARMOR_EQUIP_LEATHER;
+            case UNPACK -> moment == 1 ? SoundEvents.ENTITY_ITEM_PICKUP : SoundEvents.ITEM_ARMOR_EQUIP_LEATHER;
+            case HEAL_SMALL, HEAL_PILLS -> moment == 1 ? SoundEvents.ENTITY_PLAYER_LEVELUP : SoundEvents.ITEM_ARMOR_EQUIP_LEATHER;
             default -> moment == 0 ? SoundEvents.ITEM_BOOK_PAGE_TURN : null;
         };
         if (sound == null) return;
@@ -479,9 +527,11 @@ public final class RpServer {
     }
 
     private static void loadLengths() {
-        for (RpKind kind : RpKind.values()) {
-            if (kind.animation == null) continue;
-            String path = "/assets/mosvegas_items/rp/anim/" + kind.scene() + ".animation.json";
+        java.util.Set<String> scenes = new java.util.LinkedHashSet<>();
+        for (RpKind kind : RpKind.values()) if (kind.animation != null) scenes.add(kind.scene());
+        scenes.add(UNCUFF_SCENE);
+        for (String scene : scenes) {
+            String path = "/assets/mosvegas_items/rp/anim/" + scene + ".animation.json";
             try (InputStream in = RpServer.class.getResourceAsStream(path)) {
                 if (in == null) continue;
                 var root = JsonParser.parseReader(new JsonReader(new InputStreamReader(in, StandardCharsets.UTF_8))).getAsJsonObject();

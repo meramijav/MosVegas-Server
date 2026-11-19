@@ -7,22 +7,22 @@ public enum RpKind {
     MILITARY_ID("military_id", 1, Action.SHOW, "animation.military_id.show"),
     PASSPORT("passport", 1, Action.SHOW, "animation.passport.show"),
     BANK_CARD("bank_card", 1, Action.SHOW, "animation.bank_card.count"),
-    CASH_500("cash_500", 64, Action.SHOW, "animation.cash.count"),
-    CASH_1000("cash_1000", 64, Action.SHOW, "animation.cash.count"),
-    CASH_5000("cash_5000", 64, Action.SHOW, "animation.cash.count"),
+    CASH_500("cash_500", 64, Action.SHOW, "animation.cash.move_3p"),
+    CASH_1000("cash_1000", 64, Action.SHOW, "animation.cash.move_3p"),
+    CASH_5000("cash_5000", 64, Action.SHOW, "animation.cash.move_3p"),
     KNUCKLES("knuckles", 1, Action.WEAPON, null),
-    RADIO("radio", 1, Action.SELF, "animation.radio.use_3p"),
+    RADIO("radio", 1, Action.SELF, "animation.radio.move_3p"),
     HANDCUFFS("handcuffs", 4, Action.TARGET, "animation.handcuffs.use", -9.3f, 0, Effect.CUFF),
     ROPE("rope", 16, Action.TARGET, "animation.rope.use", -16, 180, Effect.TIE),
     STUN_GUN("stun_gun", 1, Action.TARGET, "animation.stun_gun.use_3p", -16, 180, Effect.STUN),
-    BANDAGE("bandage", 16, Action.SELF, "animation.bandage.use_3p", Effect.HEAL_SMALL),
-    PILLS("pills", 10, Action.SELF, "animation.pills.use_3p", Effect.HEAL_PILLS),
-    MEDKIT("medkit", 1, Action.SELF, "animation.medkit.preview_3p", Effect.HEAL_FULL),
+    BANDAGE("bandage", 16, Action.SELF, "animation.bandage.move_3p", Effect.HEAL_SMALL),
+    PILLS("pills", 10, Action.SELF, "animation.pills.move_3p", Effect.HEAL_PILLS),
+    MEDKIT("medkit", 1, Action.SELF, "animation.medkit.unpack_3p", Effect.UNPACK),
     DEFIBRILLATOR("defibrillator", 1, Action.TARGET, "animation.defibrillator.use_3p", 0, 0, Effect.REVIVE);
 
     public enum Action { SHOW, SELF, TARGET, WEAPON }
 
-    public enum Effect { NONE, CUFF, TIE, STUN, HEAL_SMALL, HEAL_PILLS, HEAL_FULL, REVIVE }
+    public enum Effect { NONE, CUFF, TIE, STUN, HEAL_SMALL, HEAL_PILLS, UNPACK, REVIVE }
 
     public final String id;
     public final int stackSize;
@@ -31,6 +31,7 @@ public enum RpKind {
     public final float offsetZ;
     public final float targetYaw;
     public final Effect effect;
+    public final boolean mobile;
 
     RpKind(String id, int stackSize, Action action, String animation) {
         this(id, stackSize, action, animation, 0, 0, Effect.NONE);
@@ -48,6 +49,7 @@ public enum RpKind {
         this.offsetZ = offsetZ;
         this.targetYaw = targetYaw;
         this.effect = effect;
+        this.mobile = action == Action.SHOW || action == Action.SELF;
     }
 
     public String scene() {

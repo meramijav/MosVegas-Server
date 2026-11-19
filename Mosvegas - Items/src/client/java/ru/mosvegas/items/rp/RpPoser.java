@@ -37,13 +37,18 @@ public final class RpPoser {
         if (scene == null) return;
         RpAnim anim = RpPlayback.animation(entity, entry, scene);
         if (anim == null) return;
-        Matrix4f[] world = scene.geo().pose(anim, RpPlayback.time(entry, anim, tickDelta));
+        float t = RpPlayback.time(entry, anim, tickDelta);
+        boolean mobile = RpPlayback.mobile(entry);
+        boolean first = RpPlayback.firstPerson(entity);
+        Matrix4f[] world = scene.geo().pose(anim, t);
         String prefix = entry.role() == RpServer.ROLE_TARGET ? "t_" : "";
-        Matrix4f base = RpPlayback.base(entity, scene, entry, tickDelta);
+        Matrix4f base = mobile && first ? view(entity, anim, t, tickDelta) : RpPlayback.base(entity, scene, entry, tickDelta);
         float[] offset = RpPlayback.offset(scene, entry);
         ModelPart[] parts = {model.head, model.body, model.rightArm, model.leftArm, model.rightLeg, model.leftLeg};
         for (int i = 0; i < PARTS.length; i++) {
-            if (entry.hold() && parts[i] != model.rightArm && parts[i] != model.leftArm) continue;
+            boolean arm = parts[i] == model.rightArm || parts[i] == model.leftArm;
+            if (entry.hold() && !arm) continue;
+            if (mobile && !arm && (first || parts[i] != model.head)) continue;
             RpGeo.Bone bone = scene.geo().byName.get(prefix + PARTS[i]);
             if (bone == null) continue;
             Matrix4f raw = new Matrix4f(base).mul(world[bone.index]).translate(offset[0], offset[1], offset[2]);
@@ -56,7 +61,7 @@ public final class RpPoser {
             player.rightSleeve.copyTransform(model.rightArm);
             player.leftPants.copyTransform(model.leftLeg);
             player.rightPants.copyTransform(model.rightLeg);
-            if (RpPlayback.firstPerson(entity)) {
+            if (first) {
                 model.head.visible = model.hat.visible = model.body.visible = false;
                 model.rightLeg.visible = model.leftLeg.visible = false;
                 player.jacket.visible = player.leftPants.visible = player.rightPants.visible = false;
@@ -96,6 +101,31 @@ public final class RpPoser {
 
     public record Shot(Vec3d position, float yaw, float pitch) {}
 
+    private static Vector3f eye(RpAnim anim, float t) {
+        float[] eye = anim.sample("cam_eye", RpAnim.POSITION, t, new float[3]);
+        if (eye != null) return new Vector3f(eye[0], eye[1], eye[2]);
+        Vector3f standard = new Vector3f(0, 28, 0);
+        float[] root = anim.sample("player", RpAnim.POSITION, t, new float[3]);
+        if (root != null) standard.add(root[0], root[1], root[2]);
+        return standard;
+    }
+
+    private static float scenePitch(RpAnim anim, float t) {
+        float[] cam = anim.sample("cam", RpAnim.ROTATION, t, new float[3]);
+        if (cam != null) return cam[0];
+        float[] head = anim.sample("head", RpAnim.ROTATION, t, new float[3]);
+        return LOOK_DOWN + (head != null ? head[0] : 0);
+    }
+
+    static Matrix4f view(LivingEntity entity, RpAnim anim, float t, float tickDelta) {
+        float bodyYaw = MathHelper.lerpAngleDegrees(tickDelta, entity.prevBodyYaw, entity.bodyYaw);
+        float turn = MathHelper.wrapDegrees(entity.getYaw(tickDelta) - bodyYaw);
+        float pitch = scenePitch(anim, t) - entity.getPitch(tickDelta);
+        Vector3f eye = eye(anim, t);
+        return new Matrix4f().rotateY((float) Math.toRadians(turn))
+                .translate(eye).rotateX((float) Math.toRadians(pitch)).translate(-eye.x, -eye.y, -eye.z);
+    }
+
     public static Shot camera(Entity entity, float tickDelta) {
         if (!(entity instanceof LivingEntity living) || !RpPlayback.firstPerson(entity)) return null;
         RpPlayback.Entry entry = RpPlayback.of(entity);
@@ -103,25 +133,21 @@ public final class RpPoser {
         RpAnim anim = RpPlayback.animation(entity, entry, scene);
         if (anim == null) return null;
         float t = RpPlayback.time(entry, anim, tickDelta);
-        float[] tmp = new float[3];
-        Vector3f eye, look = null;
-        float pitch = 0;
-        float[] eyeBone = anim.sample("cam_eye", RpAnim.POSITION, t, new float[3]);
+        Vector3f eye = eye(anim, t), look = null;
+        if (RpPlayback.mobile(entry)) {
+            float yaw = living.getYaw(tickDelta);
+            Vector3f at = rawToWorld(living, yaw).transformPosition(eye);
+            return new Shot(living.getLerpedPos(tickDelta).add(at.x, at.y, at.z), yaw, living.getPitch(tickDelta));
+        }
+        float pitch = scenePitch(anim, t);
         float[] lookBone = anim.sample("cam_look", RpAnim.POSITION, t, new float[3]);
-        if (eyeBone != null && lookBone != null) {
-            eye = new Vector3f(eyeBone[0], eyeBone[1], eyeBone[2]);
+        float[] cam = anim.sample("cam", RpAnim.ROTATION, t, new float[3]);
+        boolean eyeBone = anim.sample("cam_eye", RpAnim.POSITION, t, new float[3]) != null;
+        if (eyeBone && lookBone != null) {
             look = new Vector3f(lookBone[0], lookBone[1], lookBone[2]);
-        } else {
-            eye = new Vector3f(0, 28, 0);
-            float[] root = anim.sample("player", RpAnim.POSITION, t, tmp);
-            if (root != null) eye.add(root[0], root[1], root[2]);
-            float[] cam = anim.sample("cam", RpAnim.ROTATION, t, new float[3]);
-            if (cam != null) {
-                pitch = cam[0];
-            } else {
-                float[] head = anim.sample("head", RpAnim.ROTATION, t, new float[3]);
-                pitch = LOOK_DOWN + (head != null ? head[0] : 0);
-            }
+        } else if (eyeBone && cam != null) {
+            double p = Math.toRadians(cam[0]), y = Math.toRadians(cam[1]);
+            look = new Vector3f(eye).add((float) (-Math.sin(y) * Math.cos(p)), (float) -Math.sin(p), (float) (-Math.cos(y) * Math.cos(p)));
         }
         float bodyYaw = MathHelper.lerpAngleDegrees(tickDelta, living.prevBodyYaw, living.bodyYaw);
         Matrix4f toWorld = rawToWorld(living, bodyYaw);
