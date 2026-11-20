@@ -51,7 +51,8 @@ final class ShopFiles {
             JsonObject root = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
             JsonObject plate = root.getAsJsonObject("plates");
             JsonObject colour = root.getAsJsonObject("paint");
-            return new Prices(new PlatePrices(amount(plate, "full"), amount(plate, "letters"), amount(plate, "digits"), plate.get("first_free").getAsBoolean()),
+            return new Prices(new PlatePrices(amount(plate, "full"), amount(plate, "letters"), amount(plate, "digits"), amount(plate, "letter", plates.letter()),
+                    amount(plate, "digit", plates.digit()), amount(plate, "region", plates.region()), plate.get("first_free").getAsBoolean()),
                     new PaintShop.Prices(amount(colour, "body"), amount(colour, "part"), amount(colour, "interior")));
         } catch (IOException | RuntimeException e) {
             SlimCore.LOGGER.error("Shop prices were not read from {}; the default prices are used", file, e);
@@ -63,11 +64,18 @@ final class ShopFiles {
         return Math.max(0, json.get(key).getAsLong());
     }
 
+    private static long amount(JsonObject json, String key, long fallback) {
+        return json.has(key) ? amount(json, key) : fallback;
+    }
+
     private static String defaults(PlatePrices plates, PaintShop.Prices paint) {
         JsonObject plate = new JsonObject();
         plate.addProperty("full", plates.full());
         plate.addProperty("letters", plates.letters());
         plate.addProperty("digits", plates.digits());
+        plate.addProperty("letter", plates.letter());
+        plate.addProperty("digit", plates.digit());
+        plate.addProperty("region", plates.region());
         plate.addProperty("first_free", plates.firstFree());
         JsonObject colour = new JsonObject();
         colour.addProperty("body", paint.body());

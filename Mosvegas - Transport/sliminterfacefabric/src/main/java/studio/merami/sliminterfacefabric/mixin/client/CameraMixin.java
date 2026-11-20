@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import studio.merami.sliminterfacefabric.client.CraftCamera;
 import studio.merami.sliminterfacefabric.client.DriverPose;
 import studio.merami.sliminterfacefabric.client.paint.PaintShopScreen;
 import studio.merami.sliminterfacefabric.entity.BuilderVehicle;
@@ -53,10 +52,6 @@ public abstract class CameraMixin {
     @Inject(method = "setup", at = @At("TAIL"))
     private void slimvehicle$driverNeck(BlockGetter area, Entity viewer, boolean detached, boolean mirrored, float partial, CallbackInfo ci) {
         if (!detached && viewer != null && DriverPose.firstPersonDriver(viewer)) setPosition(DriverPose.eye(viewer, partial));
-        else if (!detached && viewer != null) {
-            Vec3 craft = CraftCamera.eye(viewer, position, partial);
-            if (craft != null) setPosition(craft);
-        }
         double[] orbit = PaintShopScreen.camera(partial);
         if (orbit != null) {
             setRotation((float) orbit[3], (float) orbit[4]);

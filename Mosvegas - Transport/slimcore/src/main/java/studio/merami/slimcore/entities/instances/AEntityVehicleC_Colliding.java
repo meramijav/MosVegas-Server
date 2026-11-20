@@ -575,7 +575,6 @@ public abstract class AEntityVehicleC_Colliding extends AEntityF_Multipart<JSONV
     public boolean attack(IWrapperDamage source, float amount) {
         if (world().isClient()) return true;
         IWrapperPlayer attacker = source.attacker() == null ? null : source.attacker().asPlayer();
-        if (attacker != null && !attacker.isCreative() && attacker.isSneaking() && shove(attacker)) return true;
         if (!world().allows(attacker, IWrapperWorld.Access.DAMAGE, this)) return false;
         IWrapperEntity projectile = source.projectile();
         if (projectile != null) {
@@ -594,10 +593,6 @@ public abstract class AEntityVehicleC_Colliding extends AEntityF_Multipart<JSONV
             remove();
             return true;
         }
-        return false;
-    }
-
-    protected boolean shove(IWrapperPlayer player) {
         return false;
     }
 
@@ -622,7 +617,7 @@ public abstract class AEntityVehicleC_Colliding extends AEntityF_Multipart<JSONV
     protected Point3D tryStep(Hull before, Hull hull, Point3D travel, Point3D candidate, HullCollision.World world) {
         double maxStep = definition().maxStep;
         if (maxStep <= 0) return null;
-        if (!onGround() && definition().craft == null) {
+        if (!onGround()) {
             boolean supported = false;
             for (int i = 0; i < wheels().size(); i++) {
                 double gap = y() - sampleWheelGround(i);

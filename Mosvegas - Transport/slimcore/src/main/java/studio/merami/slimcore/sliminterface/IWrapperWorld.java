@@ -13,8 +13,7 @@ public interface IWrapperWorld {
         GLASS,
         SMOKE,
         LARGE_SMOKE,
-        SPARK,
-        SPLASH
+        SPARK
     }
 
     enum DamageKind {
@@ -44,8 +43,6 @@ public interface IWrapperWorld {
     boolean blockCollides(IWrapperEntity entity, BoundingBox query);
 
     boolean noCollision(IWrapperEntity entity, BoundingBox box);
-
-    double waterSurface(double x, double z, double minY, double maxY);
 
     BlockHit raycastBlocks(Point3D from, Point3D to, IWrapperEntity entity);
 

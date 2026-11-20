@@ -118,7 +118,7 @@ public final class PlateShop {
         menu(player, customer, "", false);
     }
 
-    public static void request(ServerPlayer player, int action, String region) {
+    public static void request(ServerPlayer player, int action, String region, int slot) {
         Customer customer = customer(player);
         if (action <= OPEN || action > SPINS.length) {
             if (customer.error == null) menu(player, customer, "", false);
@@ -138,7 +138,12 @@ public final class PlateShop {
             menu(player, customer, "message.slimvehicle.plates.need_number", false);
             return;
         }
-        String next = PlateNumber.spin(car.plate(), car.style(), region, spin, RANDOM, registry::taken);
+        if ((spin == PlateNumber.Spin.LETTER || spin == PlateNumber.Spin.DIGIT) && !PlateNumber.slotFits(car.style(), spin, slot)) {
+            menu(player, customer, "message.slimvehicle.plates.bad_slot", false);
+            return;
+        }
+        String target = spin == PlateNumber.Spin.REGION ? PlateNumber.region(car.plate()) : region;
+        String next = PlateNumber.spin(car.plate(), car.style(), target, spin, slot, RANDOM, registry::taken);
         if (next == null) {
             menu(player, customer, "message.slimvehicle.plates.exhausted", false);
             return;

@@ -28,7 +28,7 @@ public class LivingEntityRendererMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;setupRotations(Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;FFF)V", shift = At.Shift.AFTER))
     private void slimvehicle$seatedLean(LivingEntity entity, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light, CallbackInfo ci) {
         EntityVehicleF_Physics vehicle = slimvehicle$seat(entity);
-        if (vehicle != null) DriverPose.lean(pose, vehicle, partial, WrapperEntity.of(entity).equals(vehicle.controllingPassenger()));
+        if (vehicle != null) DriverPose.lean(pose, vehicle, partial);
     }
 
     @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",

@@ -18,11 +18,15 @@ import studio.merami.slimcore.baseclasses.BoundingBox;
 import studio.merami.slimcore.baseclasses.ChassisGeometry;
 import studio.merami.slimcore.baseclasses.DamageModel;
 import studio.merami.slimcore.baseclasses.Hull;
+import studio.merami.slimcore.baseclasses.InteractionZone;
 import studio.merami.slimcore.baseclasses.Point3D;
 import studio.merami.slimcore.entities.instances.EntityVehicleF_Physics;
 import studio.merami.slimcore.entities.instances.PartGroundDevice;
 import studio.merami.slimcore.entities.instances.PartOpening;
+import studio.merami.slimcore.entities.instances.PartSeat;
 import studio.merami.slimcore.entities.instances.VehicleAction;
+import studio.merami.slimcore.jsondefs.JSONVehicle;
+import studio.merami.slimcore.packloading.PackParser;
 import studio.merami.sliminterfacefabric.wrapper.WrapperWorld;
 
 import java.util.ArrayList;
@@ -62,6 +66,46 @@ public class CollisionGameTests implements FabricGameTest {
         Hull turned = car.hull();
         h.assertTrue(turned.boxes().get(1).center.distanceTo(hull.boxes().get(1).center) > .1, "Hull must rotate with car");
         car.remove();
+        h.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 60)
+    public void everySeatIsReachableThroughItsOpenDoor(GameTestHelper h) {
+        for (JSONVehicle definition : PackParser.vehicles()) {
+            EntityVehicleF_Physics car = car(h, 12, 12, 0, definition.id);
+            for (PartSeat seat : car.seats()) {
+                PartOpening door = seat.door();
+                if (door == null) continue;
+                car.setOpen(door, true);
+                door.progress = 1;
+                car.invalidateHull();
+                Point3D target = seat.definition.click.center;
+                double side = Math.signum(target.x == 0 ? door.definition.rotate.y * -1 : target.x);
+                Point3D eye = car.localToWorld(new Point3D(side * (definition.bodyHalfWidth + .7), 1.62, target.z));
+                Point3D aim = car.localToWorld(target);
+                Point3D end = eye.add(aim.subtract(eye).scale(1.6));
+                InteractionZone.Hit hit = car.targetAlong(eye, end).orElse(null);
+                boolean between = Math.abs(target.x) < seat.definition.click.half.x;
+                h.assertTrue(hit != null && (hit.zone().seat() == seat.index || between && hit.zone().seat() >= 0),
+                        definition.id + ": seat " + seat.index + " is not reachable through " + door.definition.id + ", the ray stops at " + (hit == null ? "the body" : hit.zone().label()));
+                car.setOpen(door, false);
+                door.progress = 0;
+                car.invalidateHull();
+            }
+            PartOpening trunk = car.openings().stream().filter(o -> "trunk".equals(o.definition.type) && o.definition.storage != null && o.definition.rotate.x != 0).findFirst().orElse(null);
+            if (trunk != null) {
+                car.setOpen(trunk, true);
+                trunk.progress = 1;
+                car.invalidateHull();
+                Point3D floor = trunk.definition.storage.center;
+                Point3D eye = car.localToWorld(new Point3D(floor.x, 1.62, -definition.bodyHalfLength - .5));
+                Point3D end = eye.add(car.localToWorld(floor).subtract(eye).scale(1.6));
+                InteractionZone.Hit hit = car.targetAlong(eye, end).orElse(null);
+                h.assertTrue(hit != null && hit.zone().storage() && hit.zone().part() == trunk,
+                        definition.id + ": the boot is not reachable from behind, the ray stops at " + (hit == null ? "the body" : hit.zone().label()));
+            }
+            car.remove();
+        }
         h.succeed();
     }
 

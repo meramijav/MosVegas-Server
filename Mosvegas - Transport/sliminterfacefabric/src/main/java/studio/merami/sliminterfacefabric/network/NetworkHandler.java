@@ -12,7 +12,7 @@ public final class NetworkHandler {
     public static void registerServer() {
         ServerPlayNetworking.registerGlobalReceiver(PacketVehicleInput.TYPE, (packet, player, sender) -> {
             if (player.serverLevel().getEntity(packet.vehicle()) instanceof BuilderVehicle vehicle) {
-                vehicle.vehicle().acceptInput(WrapperPlayer.of(player), packet.throttle(), packet.brake(), packet.steer(), packet.handbrake(), packet.lift());
+                vehicle.vehicle().acceptInput(WrapperPlayer.of(player), packet.throttle(), packet.brake(), packet.steer(), packet.handbrake());
                 vehicle.vehicle().hornInput(WrapperPlayer.of(player), packet.horn());
             }
         });

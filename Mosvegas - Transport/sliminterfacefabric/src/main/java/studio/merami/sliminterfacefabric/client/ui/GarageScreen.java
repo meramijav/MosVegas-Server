@@ -15,7 +15,7 @@ public abstract class GarageScreen extends Screen {
         super(title);
     }
 
-    private int scale() {
+    public final int pixelScale() {
         Window window = Minecraft.getInstance().getWindow();
         return Math.max(1, virtualScale(window.getWidth(), window.getHeight()));
     }
@@ -25,14 +25,14 @@ public abstract class GarageScreen extends Screen {
     }
 
     protected final double factor() {
-        return Minecraft.getInstance().getWindow().getGuiScale() / scale();
+        return Minecraft.getInstance().getWindow().getGuiScale() / pixelScale();
     }
 
     @Override
     protected void init() {
         Window window = Minecraft.getInstance().getWindow();
-        width = window.getWidth() / scale();
-        height = window.getHeight() / scale();
+        width = window.getWidth() / pixelScale();
+        height = window.getHeight() / pixelScale();
         layout();
     }
 

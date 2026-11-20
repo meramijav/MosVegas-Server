@@ -1,10 +1,7 @@
 package studio.merami.slimcore.entities.instances;
 
-import studio.merami.slimcore.baseclasses.DamageModel;
 import studio.merami.slimcore.baseclasses.SlimMath;
-import studio.merami.slimcore.jsondefs.JSONCraft;
 import studio.merami.slimcore.paint.PaintShop;
-import studio.merami.slimcore.physics.CraftPhysics;
 import studio.merami.slimcore.physics.DrivePhysics;
 import studio.merami.slimcore.plates.PlateNumber;
 import studio.merami.slimcore.sliminterface.IEntityData;
@@ -80,7 +77,7 @@ public class EntityVehicleF_Physics extends AEntityVehicleE_Powered {
     public int partColor(String bone) {
         int own = definition().interiorPaintBones.contains(bone) ? interiorColor() : partColors.getOrDefault(bone, color());
         PaintShop.Order preview = paintPreview;
-        return preview == null ? own : preview.colorOf(this, bone, own);
+        return definition().interiorShade(bone, preview == null ? own : preview.colorOf(this, bone, own));
     }
 
     public void setPartColor(String bone, int rgb) {
@@ -129,16 +126,11 @@ public class EntityVehicleF_Physics extends AEntityVehicleE_Powered {
         tickVisualMotion();
         tickWipers();
         if (world().isClient()) {
-            if (craft()) tickCraftClient();
-            else tickClientMotion();
+            tickClientMotion();
             return;
         }
         reconcileSeats();
         tickExits();
-        if (craft()) {
-            tickCraft();
-            return;
-        }
         DrivePhysics.Input applied = tickControls();
         tickHorn();
         tickEngine(applied);
@@ -151,34 +143,6 @@ public class EntityVehicleF_Physics extends AEntityVehicleE_Powered {
         double lastLateral = lateral;
         double yawDelta = driveStep(applied, steer);
         tickMotion(yawDelta, lastForward, lastLateral, lastY);
-        warnLowFuel();
-    }
-
-    private void tickCraft() {
-        JSONCraft craft = definition().craft;
-        CraftPhysics.Input controls = craftControls();
-        tickHorn();
-        tickEngine(DrivePhysics.IDLE);
-        tickParkedEngine();
-        if (!exiting() && (shouldShutOpenings() || !onGround())) closeMovingParts();
-        double power = DamageModel.power(engineHealth());
-        boolean running = flag(ENGINE) && fuel() > 0;
-        CraftPhysics.Result result;
-        if (craft.helicopter()) {
-            result = CraftPhysics.flight(craft, craftState(), controls, running, onGround(), power, craftClearance());
-        } else {
-            double depth = waterDepth();
-            boolean afloat = !Double.isNaN(depth) && depth > -.05;
-            double falling = motion().y;
-            boolean hop = craftHop(controls) && afloat && running;
-            result = CraftPhysics.water(craft, craftState(), controls, running, depth, onGround(), hop, power);
-            if (afloat && craftAirborne && falling < -.25) splash(-falling);
-            else if (hop) splash(.15);
-            craftAirborne = !afloat && !onGround();
-            setFlag(AIRBORNE, craftAirborne);
-        }
-        craftEngine(result);
-        tickCraftMotion(result);
         warnLowFuel();
     }
 

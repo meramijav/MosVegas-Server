@@ -69,7 +69,7 @@ public final class DriverPose {
 
     private static void place(PoseStack pose, EntityVehicleF_Physics vehicle, float partial) {
         pose.mulPose(Axis.YP.rotationDegrees(180 - Mth.rotLerp(partial, vehicle.prevYaw(), vehicle.yaw())));
-        lean(pose, vehicle, partial, true);
+        lean(pose, vehicle, partial);
     }
 
     public static Vec3 eye(Entity player, float partial) {
@@ -106,7 +106,6 @@ public final class DriverPose {
     }
 
     public static void arms(ModelPart left, ModelPart right, EntityVehicleF_Physics vehicle, float partial) {
-        if (CraftRiderPose.arms(left, right, vehicle, partial)) return;
         JSONVehicle.Driver driver = vehicle.definition().driver;
         if (driver == null) return;
         float steer = Mth.lerp(partial, vehicle.oldVisualSteer, vehicle.visualSteer);
@@ -137,13 +136,12 @@ public final class DriverPose {
         arm.yScale = (float) Mth.clamp(Math.sqrt(x * x + y * y + z * z) / 11, .65, 1.4);
     }
 
-    public static void lean(PoseStack pose, EntityVehicleF_Physics vehicle, float partial, boolean driver) {
+    public static void lean(PoseStack pose, EntityVehicleF_Physics vehicle, float partial) {
         double hip = ChassisGeometry.riderHipHeight(vehicle.definition());
         pose.translate(0, hip, 0);
         pose.mulPose(Axis.ZP.rotation(-Mth.lerp(partial, vehicle.oldBodyRoll, vehicle.bodyRoll)));
         pose.mulPose(Axis.XP.rotation(-Mth.lerp(partial, vehicle.oldBodyPitch, vehicle.bodyPitch)));
         pose.translate(0, -hip, 0);
-        if (driver) CraftRiderPose.lean(pose, vehicle, partial);
     }
 
     public static void renderFirstPerson(WorldRenderContext context) {

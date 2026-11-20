@@ -205,23 +205,32 @@ public class DrivingGameTests implements FabricGameTest {
         h.assertTrue(volga.pops() == before + 1, "Lifting off at high revs pops once, sound and flames from one event: " + volga.pops());
         player.stopRiding();
         volga.remove();
-        EntityVehicleF_Physics g63 = car(h, 7, 6, 0);
-        g63.setDefinition("g63");
-        g63.settleOnGround(1);
-        place(player, g63.position());
-        own(g63, player);
-        ride(player, g63);
-        g63.action(w(player), VehicleAction.ENGINE);
-        int shifts = 0;
-        int gear = g63.gear();
-        for (int tick = 0; tick < 90; tick++) {
-            g63.acceptInput(w(player), 1, 0, 0, false);
-            step(g63);
-            if (g63.gear() > Math.max(1, gear)) shifts++;
-            gear = g63.gear();
+        for (String id : new String[]{"g63", "changan_univ"}) {
+            EntityVehicleF_Physics shifter = car(h, 7, 6, 0);
+            shifter.setDefinition(id);
+            shifter.settleOnGround(1);
+            place(player, shifter.position());
+            own(shifter, player);
+            ride(player, shifter);
+            shifter.action(w(player), VehicleAction.ENGINE);
+            int shifts = 0;
+            int gear = shifter.gear();
+            for (int tick = 0; tick < 90; tick++) {
+                shifter.acceptInput(w(player), 1, 0, 0, false);
+                step(shifter);
+                if (shifter.gear() > Math.max(1, gear)) shifts++;
+                gear = shifter.gear();
+            }
+            for (int tick = 0; tick < 5; tick++) {
+                shifter.acceptInput(w(player), 0, 0, 0, false);
+                step(shifter);
+            }
+            boolean pops = shifter.definition().exhaustEffects.shift;
+            h.assertTrue(shifts > 0 && (pops ? shifter.pops() > 0 && shifter.pops() <= shifts + 1 : shifter.pops() == 0),
+                    id + (pops ? " pops on full-throttle upshifts: " : " never pops: ") + shifter.pops() + " pops in " + shifts + " shifts");
+            player.stopRiding();
+            shifter.remove();
         }
-        h.assertTrue(shifts > 0 && g63.pops() > 0 && g63.pops() <= shifts, "The AMG pops on full-throttle upshifts: " + g63.pops() + " pops in " + shifts + " shifts");
-        g63.remove();
         h.succeed();
     }
 

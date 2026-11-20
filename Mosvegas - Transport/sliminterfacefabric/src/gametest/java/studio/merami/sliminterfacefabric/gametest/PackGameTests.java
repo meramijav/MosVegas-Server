@@ -17,7 +17,6 @@ import studio.merami.slimcore.entities.instances.EntityVehicleF_Physics;
 import studio.merami.slimcore.entities.instances.PartOpening;
 import studio.merami.slimcore.entities.instances.VehicleAction;
 import studio.merami.slimcore.jsondefs.AJSONMultipart;
-import studio.merami.slimcore.jsondefs.JSONCraft;
 import studio.merami.slimcore.jsondefs.JSONSounds;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
 import studio.merami.slimcore.packloading.JSONParser;
@@ -82,13 +81,7 @@ public class PackGameTests implements FabricGameTest {
             for (AJSONMultipart.Glass pane : definition.glass) h.assertTrue(bones.contains(pane.bone), definition + ": no glass bone " + pane.bone);
             for (String bone : definition.dentBones) h.assertTrue(bones.contains(bone), definition + ": no dent bone " + bone);
             for (String bone : definition.paintBones) h.assertTrue(bones.contains(bone), definition + ": no paint bone " + bone);
-            if (definition.craft != null) {
-                for (JSONCraft.Rotor rotor : definition.craft.rotors) h.assertTrue(bones.contains(rotor.bone), definition + ": no rotor bone " + rotor.bone);
-                for (JSONCraft.Steer part : definition.craft.steer) h.assertTrue(bones.contains(part.bone), definition + ": no steer bone " + part.bone);
-                for (JSONCraft.Light lamp : definition.craft.lights) h.assertTrue(bones.contains(lamp.bone), definition + ": no light bone " + lamp.bone);
-            } else {
-                for (AJSONMultipart.Wheel wheel : definition.wheels) h.assertTrue(bones.contains("steer_" + wheel.bone) || bones.contains("roll_" + wheel.bone), definition + ": no wheel bones " + wheel.bone);
-            }
+            for (AJSONMultipart.Wheel wheel : definition.wheels) h.assertTrue(bones.contains("steer_" + wheel.bone) || bones.contains("roll_" + wheel.bone), definition + ": no wheel bones " + wheel.bone);
             if (definition.driver != null) h.assertTrue(bones.contains(definition.driver.steering.bone), definition + ": no steering bone");
             EntityVehicleF_Physics car = create(h);
             car.setDefinition(definition.id);

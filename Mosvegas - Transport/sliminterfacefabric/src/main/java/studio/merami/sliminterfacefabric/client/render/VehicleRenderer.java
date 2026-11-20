@@ -25,7 +25,6 @@ import studio.merami.slimcore.baseclasses.Point3D;
 import studio.merami.slimcore.baseclasses.ResourceId;
 import studio.merami.slimcore.entities.instances.EntityVehicleF_Physics;
 import studio.merami.slimcore.jsondefs.AJSONMultipart;
-import studio.merami.slimcore.jsondefs.JSONCraft;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
 import studio.merami.slimcore.paint.PaintJob;
 import studio.merami.slimcore.rendering.AnimationFile;
@@ -362,11 +361,6 @@ public class VehicleRenderer extends EntityRenderer<BuilderVehicle> {
             green = led ? .97f : .96f;
             blue = led ? 1 : .72f;
         }
-        if (definition.craft != null) {
-            for (JSONCraft.Light lamp : definition.craft.lights) {
-                if (lamp.bone.equals(name) && JSONCraft.lit(lamp, vehicle.flag(EntityVehicleF_Physics.LIGHTS), vehicle.flag(EntityVehicleF_Physics.ENGINE), vehicle.world().gameTime())) light = FULL_BRIGHT;
-            }
-        }
         if (lamps != null && name.equals(lamps.taillightBoneName()) && (vehicle.flag(EntityVehicleF_Physics.LIGHTS) || vehicle.flag(EntityVehicleF_Physics.BRAKING))) {
             light = FULL_BRIGHT;
             red = vehicle.flag(EntityVehicleF_Physics.BRAKING) ? 1 : .42f;
@@ -397,7 +391,7 @@ public class VehicleRenderer extends EntityRenderer<BuilderVehicle> {
             green *= paint(color, 8);
             blue *= paint(color, 0);
             boolean interior = definition.interiorPaintBones.contains(name);
-            int target = interior ? vehicle.paintInterior() : vehicle.paintBody();
+            int target = interior ? definition.interiorShade(name, vehicle.paintInterior()) : vehicle.paintBody();
             pass.spraying = pass.rootInverse != null && target >= 0;
             pass.sprayInterior = interior;
             pass.sprayFrom = color;

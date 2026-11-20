@@ -73,6 +73,58 @@ class PlateNumberTest {
     }
 
     @Test
+    void aSingleSymbolSpinChangesOnlyThatSymbol() {
+        Random random = new Random(17);
+        for (int i = 0; i < 300; i++) {
+            String letter = PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.LETTER, 4, random, number -> false);
+            assertEquals("A123", letter.substring(0, 4));
+            assertNotEquals('B', letter.charAt(4));
+            assertEquals("C77", letter.substring(5));
+            String digit = PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.DIGIT, 2, random, number -> false);
+            assertEquals("A1", digit.substring(0, 2));
+            assertNotEquals('2', digit.charAt(2));
+            assertEquals("3BC77", digit.substring(3));
+            String police = PlateNumber.spin(POLICE_CAR, PlateNumber.POLICE, "77", PlateNumber.Spin.DIGIT, 4, random, number -> false);
+            assertEquals("A123", police.substring(0, 4));
+            assertNotEquals('4', police.charAt(4));
+        }
+    }
+
+    @Test
+    void aSingleSymbolSpinNeedsASlotOfItsKind() {
+        Random random = new Random(1);
+        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.LETTER, 1, random, number -> false));
+        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.DIGIT, 0, random, number -> false));
+        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.DIGIT, 6, random, number -> false));
+        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.LETTER, -1, random, number -> false));
+    }
+
+    @Test
+    void aSingleDigitNeverZeroesTheNumber() {
+        Random random = new Random(19);
+        for (int i = 0; i < 500; i++) {
+            String next = PlateNumber.spin("A001BC77", PlateNumber.STANDARD, "77", PlateNumber.Spin.DIGIT, 3, random, number -> false);
+            assertNotEquals("000", next.substring(1, 4));
+        }
+    }
+
+    @Test
+    void aRegionSpinKeepsTheBodyAndPicksAnotherKnownRegion() {
+        Random random = new Random(23);
+        Set<String> seen = new HashSet<>();
+        for (int i = 0; i < 400; i++) {
+            String next = PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.REGION, random, number -> false);
+            assertEquals("A123BC", PlateNumber.body(next));
+            assertNotEquals("77", PlateNumber.region(next));
+            assertTrue(PlateRegions.known(PlateNumber.region(next)));
+            seen.add(PlateNumber.region(next));
+        }
+        assertEquals(PlateRegions.ALL.size() - 1, seen.size());
+        assertEquals("A123BC50", PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.REGION, random, number -> !number.endsWith("BC50")));
+        assertNull(PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.REGION, random, number -> true));
+    }
+
+    @Test
     void digitsAreNeverAllZero() {
         Random random = new Random(13);
         for (int i = 0; i < 5000; i++) {

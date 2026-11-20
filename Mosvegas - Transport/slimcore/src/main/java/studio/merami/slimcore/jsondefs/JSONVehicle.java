@@ -36,6 +36,7 @@ public class JSONVehicle extends AJSONMultipart {
 
     public boolean emergency;
     public boolean tyreMarks = true;
+    public boolean vibration = true;
     public double maxStep = .625;
     public double bodyPivot = .6;
     public double windowDrop = .575;
@@ -57,11 +58,11 @@ public class JSONVehicle extends AJSONMultipart {
     public Wipers wipers;
     public Render render = new Render();
     public Plates plates = new Plates();
-    public JSONCraft craft;
 
     public transient DrivePhysics.Tune tune;
     public transient Set<String> paintBones;
     public transient Set<String> interiorPaintBones;
+    public transient Set<String> interiorLightBones;
     public transient Set<String> paintKeepBones;
     public transient Map<String, int[]> paintKeepFaces;
     public transient Map<String, int[]> paintFaces;
@@ -259,6 +260,8 @@ public class JSONVehicle extends AJSONMultipart {
         public List<String> dent = new ArrayList<>();
         public List<String> interior = new ArrayList<>();
         public List<String> interiorPaint = new ArrayList<>();
+        public List<String> interiorLight = new ArrayList<>();
+        public double interiorLightMix = .4;
         public List<String> paintKeep = new ArrayList<>();
         public Map<String, Map<String, List<Integer>>> paintKeepFaces = new LinkedHashMap<>();
         public Map<String, Map<String, List<Integer>>> paintFaces = new LinkedHashMap<>();
@@ -277,7 +280,6 @@ public class JSONVehicle extends AJSONMultipart {
         if (driver != null && driver.steering == null) driver = null;
         if (lamps != null) {
             bakeLampBone(lamps.headlightBone);
-        if (craft != null) craft.bake();
             bakeLampBone(lamps.taillightBone);
             if (!HEADLIGHT_HALOGEN.equals(lamps.headlightType) && !HEADLIGHT_LED.equals(lamps.headlightType)) {
                 throw new IllegalArgumentException("lamps \"headlight_type\" is \"" + HEADLIGHT_HALOGEN + "\" or \"" + HEADLIGHT_LED + "\", not \"" + lamps.headlightType + "\"");
@@ -293,6 +295,11 @@ public class JSONVehicle extends AJSONMultipart {
         }
         paintBones = Set.copyOf(render.paint);
         interiorPaintBones = Set.copyOf(render.interiorPaint);
+        interiorLightBones = Set.copyOf(render.interiorLight);
+        for (String bone : interiorLightBones) {
+            if (!interiorPaintBones.contains(bone)) throw new IllegalArgumentException("render \"interior_light\" bone \"" + bone + "\" is not in \"interior_paint\"");
+        }
+        if (!(render.interiorLightMix >= 0 && render.interiorLightMix <= 1)) throw new IllegalArgumentException("render \"interior_light_mix\" is a share of white from 0 to 1, not " + render.interiorLightMix);
         paintKeepBones = Set.copyOf(render.paintKeep);
         paintKeepFaces = faceMasks(render.paintKeepFaces, "paint_keep_faces");
         paintFaces = faceMasks(render.paintFaces, "paint_faces");
@@ -329,6 +336,16 @@ public class JSONVehicle extends AJSONMultipart {
             faces.put(bone.getKey(), found);
         }
         return Map.copyOf(faces);
+    }
+
+    public int interiorShade(String bone, int rgb) {
+        if (rgb < 0 || !interiorLightBones.contains(bone)) return rgb;
+        int shaded = 0;
+        for (int shift = 16; shift >= 0; shift -= 8) {
+            int channel = rgb >> shift & 0xff;
+            shaded |= (int) Math.round(channel + (255 - channel) * render.interiorLightMix) << shift;
+        }
+        return shaded;
     }
 
     private static int hexColor(String value, String key) {

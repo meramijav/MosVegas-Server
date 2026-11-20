@@ -1,11 +1,13 @@
 package studio.merami.slimcore.plates;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public final class PlateRegions {
     public static final String DEFAULT = "77";
     public static final List<String> MOSCOW = List.of("77", "97", "99", "177", "197", "199", "777", "797", "799", "977");
     public static final List<String> OBLAST = List.of("50", "90", "150", "190", "750", "790");
+    public static final List<String> ALL = Stream.concat(MOSCOW.stream(), OBLAST.stream()).toList();
 
     private PlateRegions() {}
 

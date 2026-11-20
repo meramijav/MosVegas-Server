@@ -7,7 +7,6 @@ import studio.merami.slimcore.items.ItemKey;
 import studio.merami.slimcore.items.SlimItems;
 import studio.merami.slimcore.jsondefs.AJSONMultipart;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
-import studio.merami.slimcore.physics.CraftPhysics;
 import studio.merami.slimcore.physics.DrivePhysics;
 import studio.merami.slimcore.sliminterface.IEntityData;
 import studio.merami.slimcore.sliminterface.IWrapperEntity;
@@ -174,7 +173,7 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
         previousThrottle = applied.throttle();
         float leak = fuelLeak();
         if (leak > 0 && fuel() > 0) data.set(FUEL, Math.max(0, fuel() - leak));
-        if (fuel() <= 0 || host.inWater() && !(craft() && definition.craft.watercraft())) {
+        if (fuel() <= 0 || host.inWater()) {
             setFlag(ENGINE, false);
             data.set(GEAR, 0);
         }
@@ -225,15 +224,6 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
         data.set(RPM, (float) DrivePhysics.revsToward(rpm(), result.rpm()));
         setSlip((float) result.slip());
         return result.yawDelta();
-    }
-
-    protected void craftEngine(CraftPhysics.Result result) {
-        JSONVehicle definition = definition();
-        double load = flag(ENGINE) ? result.load() : 0;
-        double target = flag(ENGINE) ? definition.engine.idleRpm + (definition.engine.limitRpm - definition.engine.idleRpm) * load : 0;
-        data.set(RPM, (float) DrivePhysics.revsToward(rpm(), target));
-        if (flag(ENGINE)) data.set(FUEL, (float) Math.max(0, fuel() - definition.fuel.perTick * (.2 + .8 * load)));
-        setSlip(0);
     }
 
     protected boolean shouldShutOpenings() {
@@ -443,12 +433,8 @@ public abstract class AEntityVehicleE_Powered extends AEntityVehicleD_Moving {
                 else if (!flag(ENGINE) && !driveAllowed()) message(player, "message.slimvehicle.zone.use");
                 else toggleEngine(player);
             }
-            case GEAR_UP -> {
-                if (!craft()) shift(definition.transmission.automatic && gear() >= 1 ? gear() : gear() + 1, player);
-            }
-            case GEAR_DOWN -> {
-                if (!craft()) shift(definition.transmission.automatic && gear() >= 1 ? 0 : gear() - 1, player);
-            }
+            case GEAR_UP -> shift(definition.transmission.automatic && gear() >= 1 ? gear() : gear() + 1, player);
+            case GEAR_DOWN -> shift(definition.transmission.automatic && gear() >= 1 ? 0 : gear() - 1, player);
             case LIGHTS -> setFlag(LIGHTS, !flag(LIGHTS));
             case SIREN -> {
                 if (definition.emergency) setFlag(SIREN, !flag(SIREN));

@@ -75,7 +75,7 @@ public final class ShopEvents {
         ServerPlayNetworking.registerGlobalReceiver(PacketPaintOpen.TYPE, (packet, player, sender) -> vehicle(player, packet.vehicle(), PaintShopHandler::open));
         ServerPlayNetworking.registerGlobalReceiver(PacketPaintOrder.TYPE, (packet, player, sender) -> vehicle(player, packet.vehicle(), (who, target) -> PaintShopHandler.order(who, target, packet.order())));
         ServerPlayNetworking.registerGlobalReceiver(PacketPaintSpray.TYPE, (packet, player, sender) -> vehicle(player, packet.vehicle(), PaintJobs::spray));
-        ServerPlayNetworking.registerGlobalReceiver(PacketPlateRequest.TYPE, (packet, player, sender) -> PlateShop.request(player, packet.action(), packet.region()));
+        ServerPlayNetworking.registerGlobalReceiver(PacketPlateRequest.TYPE, (packet, player, sender) -> PlateShop.request(player, packet.action(), packet.region(), packet.slot()));
     }
 
     private static void vehicle(ServerPlayer player, int id, BiConsumer<ServerPlayer, EntityVehicleF_Physics> handler) {

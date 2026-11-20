@@ -1,5 +1,8 @@
 package studio.merami.slimcore.plates;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -8,7 +11,10 @@ public final class PlateNumber {
     public enum Spin {
         FULL,
         LETTERS,
-        DIGITS
+        DIGITS,
+        LETTER,
+        DIGIT,
+        REGION
     }
 
     public static final String NONE = "";
@@ -64,12 +70,52 @@ public final class PlateNumber {
     }
 
     public static String spin(String current, String style, String region, Spin spin, Random random, Predicate<String> taken) {
+        return spin(current, style, region, spin, -1, random, taken);
+    }
+
+    public static String spin(String current, String style, String region, Spin spin, int slot, Random random, Predicate<String> taken) {
         if (!PlateRegions.known(region)) throw new IllegalArgumentException("Unknown region " + region);
         boolean same = valid(current) && style(current).equals(style);
         if (spin != Spin.FULL && !same) throw new IllegalArgumentException("Only a full spin gives a car without a number its first one");
         String body = same ? body(current) : blank(style);
+        if (spin == Spin.REGION) return otherRegion(body, region(current), random, taken);
+        if (spin == Spin.LETTER || spin == Spin.DIGIT) {
+            if (!slotFits(style, spin, slot)) throw new IllegalArgumentException("Slot " + slot + " of a " + style + " number does not hold a " + (spin == Spin.LETTER ? "letter" : "digit"));
+            return symbol(current, body, style, region, slot, random, taken);
+        }
         for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
             String next = roll(body, style, spin, random) + region;
+            if (!next.equals(current) && !taken.test(next)) return next;
+        }
+        return null;
+    }
+
+    public static boolean slotFits(String style, Spin spin, int slot) {
+        return slot >= 0 && slot < bodyLength(style) && letterSlot(style, slot) == (spin == Spin.LETTER);
+    }
+
+    private static String otherRegion(String body, String current, Random random, Predicate<String> taken) {
+        List<String> codes = new ArrayList<>(PlateRegions.ALL);
+        codes.remove(current);
+        Collections.shuffle(codes, random);
+        for (String code : codes) {
+            if (!taken.test(body + code)) return body + code;
+        }
+        return null;
+    }
+
+    private static String symbol(String current, String body, String style, String region, int slot, Random random, Predicate<String> taken) {
+        String set = letterSlot(style, slot) ? LETTERS : DIGITS;
+        List<Character> options = new ArrayList<>();
+        for (char character : set.toCharArray()) {
+            if (character != body.charAt(slot)) options.add(character);
+        }
+        Collections.shuffle(options, random);
+        for (char character : options) {
+            char[] chars = body.toCharArray();
+            chars[slot] = character;
+            if (zeroDigits(chars, style)) continue;
+            String next = new String(chars) + region;
             if (!next.equals(current) && !taken.test(next)) return next;
         }
         return null;

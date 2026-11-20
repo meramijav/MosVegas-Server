@@ -40,6 +40,9 @@ const float HAZE_REACH = 0.4;
 const float HAZE_REACH_CAP = 6.0;
 const float HAZE_FORWARD = 0.55;
 const float HAZE_FORWARD_SHARE = 0.6;
+const float SEAM_REACH = 3.5;
+const float SEAM_GAP = 0.5;
+const float SEAM_FLOOR = 0.001;
 const ivec3 VOLUME = ivec3(96, 32, 96);
 const int TILES = 8;
 
@@ -175,6 +178,38 @@ vec3 normalAt(ivec2 pixel, vec3 p) {
     return n;
 }
 
+float distanceAt(ivec2 pixel) {
+    pixel = clamp(pixel, ivec2(0), ivec2(ScreenSize) - 1);
+    float depth = texelFetch(SceneDepth, pixel, 0).r;
+    return depth < 0.99999 ? length(positionAt(pixel, depth) - Eye) : 1e6;
+}
+
+bool nearLamp(vec3 p) {
+    for (int i = 0; i < LampCount; i++) if (length(p - lampData(i, 0).xyz) < SEAM_REACH) return true;
+    return false;
+}
+
+ivec2 seamCover(ivec2 pixel, float depth) {
+    float own = depth < 0.99999 ? length(positionAt(pixel, depth) - Eye) : 1e6;
+    float spread = 1.0 + SEAM_GAP * length(normalize(positionAt(pixel + ivec2(1, 0), 0.5) - Eye) - normalize(positionAt(pixel, 0.5) - Eye));
+    ivec2 best = pixel;
+    float bestDistance = own;
+    for (int axis = 0; axis < 2; axis++) {
+        ivec2 s = axis == 0 ? ivec2(1, 0) : ivec2(0, 1);
+        float a1 = distanceAt(pixel - s), a2 = distanceAt(pixel - 2 * s);
+        float b1 = distanceAt(pixel + s), b2 = distanceAt(pixel + 2 * s);
+        bool nearA1 = a1 * spread + SEAM_FLOOR < own, nearB1 = b1 * spread + SEAM_FLOOR < own;
+        bool nearA = nearA1 || a2 * spread + SEAM_FLOOR < own, nearB = nearB1 || b2 * spread + SEAM_FLOOR < own;
+        if (!nearA || !nearB) continue;
+        float a = nearA1 ? a1 : a2, b = nearB1 ? b1 : b2;
+        ivec2 pa = pixel - s * (nearA1 ? 1 : 2), pb = pixel + s * (nearB1 ? 1 : 2);
+        if (a < bestDistance) { best = pa; bestDistance = a; }
+        if (b < bestDistance) { best = pb; bestDistance = b; }
+    }
+    if (best == pixel || !nearLamp(positionAt(best))) return pixel;
+    return best;
+}
+
 float faceShade(vec3 n) {
     if (n.y > 0.9) return 1.0;
     if (n.y < -0.9) return 0.5;
@@ -273,12 +308,14 @@ float lensVisibility(vec3 origin, float dist) {
 
 void main() {
     ivec2 pixel = ivec2(gl_FragCoord.xy);
-    vec4 scene = texelFetch(SceneColor, pixel, 0);
     float depth = texelFetch(SceneDepth, pixel, 0).r;
+    ivec2 at = seamCover(pixel, depth);
+    if (at != pixel) depth = texelFetch(SceneDepth, at, 0).r;
+    vec4 scene = texelFetch(SceneColor, at, 0);
     vec4 far = InverseViewProjection * vec4(texCoord * 2.0 - 1.0, 1.0, 1.0);
     vec3 view = normalize(far.xyz / far.w - Eye);
     bool surface = depth < 0.99999;
-    vec3 p = surface ? positionAt(pixel, depth) : Eye + view * 1000.0;
+    vec3 p = surface ? positionAt(at, depth) : Eye + view * 1000.0;
     float sceneDistance = length(p - Eye);
     vec3 normal = vec3(0.0, 1.0, 0.0);
     bool normalReady = !surface;
@@ -301,7 +338,7 @@ void main() {
             float dist = length(delta);
             if (dist < range && dist > 0.05) {
                 if (!normalReady) {
-                    normal = normalAt(pixel, p);
+                    normal = normalAt(at, p);
                     normalReady = true;
                     surfaceKnown = surfaceLevels(p, normal, surfaceLight);
                 }

@@ -8,12 +8,9 @@ import studio.merami.slimcore.baseclasses.Point3D;
 import studio.merami.slimcore.baseclasses.SlimMath;
 import studio.merami.slimcore.jsondefs.AJSONInteractable;
 import studio.merami.slimcore.jsondefs.AJSONMultipart;
-import studio.merami.slimcore.jsondefs.JSONCraft;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
-import studio.merami.slimcore.physics.CraftPhysics;
 import studio.merami.slimcore.physics.DrivePhysics;
 import studio.merami.slimcore.physics.Suspension;
-import studio.merami.slimcore.sliminterface.BlockHit;
 import studio.merami.slimcore.sliminterface.IEntityData;
 import studio.merami.slimcore.sliminterface.IWrapperEntity;
 import studio.merami.slimcore.sliminterface.IWrapperPlayer;
@@ -28,9 +25,7 @@ public abstract class AEntityVehicleD_Moving extends AEntityVehicleC_Colliding {
     public static final int BRAKING = 8;
     public static final int TURN_LEFT = 64;
     public static final int TURN_RIGHT = 128;
-    public static final int AIRBORNE = 4096;
     private static final SyncedValue<Float> STEER = SyncedValue.decimal(AEntityVehicleD_Moving.class, 0f);
-    private static final SyncedValue<Float> CYCLIC = SyncedValue.decimal(AEntityVehicleD_Moving.class, 0f);
     private static final SyncedValue<Float> SPEED = SyncedValue.decimal(AEntityVehicleD_Moving.class, 0f);
     private static final SyncedValue<Float> SLIP = SyncedValue.decimal(AEntityVehicleD_Moving.class, 0f);
     private static final SyncedValue<Float> PITCH = SyncedValue.decimal(AEntityVehicleD_Moving.class, 0f);
@@ -45,28 +40,8 @@ public abstract class AEntityVehicleD_Moving extends AEntityVehicleC_Colliding {
         for (int i = 0; i < AJSONMultipart.MAX_WHEELS; i++) WHEEL_HEIGHTS.add(SyncedValue.decimal(AEntityVehicleD_Moving.class, 0f));
     }
 
-    private static final SyncedValue<Float> ROTOR = SyncedValue.decimal(AEntityVehicleD_Moving.class, 0f);
-    private static final float CRAFT_GROUND_PROBE = .04f;
-    private static final float CRAFT_BOB = .018f;
-    private static final int HOP_PAUSE = 16;
-    private static final int RIDER_JUMP_TICKS = 4;
-    private static final float RIDER_LANDING = .82f;
-    private static final double RIDER_IDLE_SPEED = .03;
-    private static final double EXIT_DROP = 3.5;
-    private static final double SWAY_PITCH = .012;
-    private static final double SWAY_ROLL = .016;
-    private static final double SHOVE = .18;
-    private static final double SHOVE_MAX = .32;
-
     protected DrivePhysics.Input input = DrivePhysics.IDLE;
-    protected float liftInput;
     protected int inputTick;
-    private int hopTick = -100;
-    private boolean hopHeld;
-    protected boolean craftAirborne;
-    private double craftTurn;
-    public float rotorAngle;
-    public float oldRotorAngle;
     protected float brakePressure;
     private boolean wasHandbrake;
     private final Suspension suspension = new Suspension();
@@ -90,15 +65,6 @@ public abstract class AEntityVehicleD_Moving extends AEntityVehicleC_Colliding {
     public float oldWheelRoll;
     public float visualSteer;
     public float oldVisualSteer;
-    public float visualCyclic;
-    public float oldVisualCyclic;
-    public float riderAir;
-    public float oldRiderAir;
-    public float riderLand;
-    public float oldRiderLand;
-    public float riderIdle;
-    public float oldRiderIdle;
-    private int riderAirTicks;
     private boolean visualsReady;
     private int restingTicks;
     private double restX;
@@ -127,175 +93,6 @@ public abstract class AEntityVehicleD_Moving extends AEntityVehicleC_Colliding {
         if (!driver(player) || !Float.isFinite(throttle) || !Float.isFinite(brake) || !Float.isFinite(steer)) return;
         input = new DrivePhysics.Input(SlimMath.clamp(throttle, 0, 1), SlimMath.clamp(brake, 0, 1), SlimMath.clamp(steer, -1, 1), handbrake);
         inputTick = ticks();
-    }
-
-    public void acceptInput(IWrapperPlayer player, float throttle, float brake, float steer, boolean handbrake, float lift) {
-        acceptInput(player, throttle, brake, steer, handbrake);
-        if (driver(player) && Float.isFinite(lift)) liftInput = SlimMath.clamp(lift, -1, 1);
-    }
-
-    public boolean craft() {
-        return definition().craft != null;
-    }
-
-    public float rotor() {
-        return data.get(ROTOR);
-    }
-
-    @Override
-    protected boolean exitBlocked() {
-        JSONCraft craft = definition().craft;
-        if (craft == null || !craft.helicopter() || onGround()) return false;
-        Point3D at = position();
-        if (!Double.isNaN(world().waterSurface(at.x, at.z, at.y - EXIT_DROP - 1, at.y))) return false;
-        return !world().raycastBlocks(at, at.add(0, -EXIT_DROP, 0), host).hit();
-    }
-
-    protected CraftPhysics.Input craftControls() {
-        if (controllingPassenger() == null || exiting() || ticks() - inputTick > 10) {
-            return new CraftPhysics.Input(0, 0, 0, definition().craft.helicopter() ? -.5 : 0);
-        }
-        if (!driveAllowed()) {
-            if (input.throttle() > .05 || input.steer() != 0 || liftInput != 0) zoneNotice();
-            return CraftPhysics.Input.IDLE;
-        }
-        return new CraftPhysics.Input(input.throttle(), input.brake(), input.steer(), liftInput);
-    }
-
-    protected CraftPhysics.State craftState() {
-        return new CraftPhysics.State(forward, lateral, motion().y, rotor(), craftTurn);
-    }
-
-    protected double craftClearance() {
-        Point3D at = position();
-        double probe = CraftPhysics.CUSHION_HEIGHT + 1;
-        BlockHit hit = world().raycastBlocks(at, at.add(0, -probe, 0), host);
-        double clearance = hit.hit() ? at.y - hit.location().y : Double.NaN;
-        double water = world().waterSurface(at.x, at.z, at.y - probe, at.y);
-        if (!Double.isNaN(water) && (Double.isNaN(clearance) || at.y - water < clearance)) clearance = at.y - water;
-        return clearance;
-    }
-
-    public double waterDepth() {
-        JSONCraft craft = definition().craft;
-        double surface = world().waterSurface(x(), z(), y() - 1, y() + craft.draft + 1);
-        return Double.isNaN(surface) ? Double.NaN : surface - craft.draft - y();
-    }
-
-    protected void tickCraftMotion(CraftPhysics.Result result) {
-        forward = result.forward();
-        lateral = result.lateral();
-        craftTurn = -result.yawDelta();
-        data.set(ROTOR, (float) result.rotor());
-        double sway = definition().craft.helicopter() && !onGround() ? result.rotor() : 0;
-        data.set(PITCH, (float) (result.pitch() + Math.sin(ticks() * .11) * SWAY_PITCH * sway));
-        data.set(ROLL, (float) (result.roll() + Math.sin(ticks() * .07 + 1.3) * SWAY_ROLL * sway));
-        float driven = controllingPassenger() == null ? 0 : 1;
-        data.set(STEER, SlimMath.approach(data.get(STEER), (float) (input.steer() * definition().physics.steerLock) * driven, .08f));
-        data.set(CYCLIC, SlimMath.approach(data.get(CYCLIC), (float) (input.throttle() - input.brake()) * driven, .12f));
-        setFlag(TURN_LEFT, false);
-        setFlag(TURN_RIGHT, false);
-        setFlag(BRAKING, false);
-        float oldYaw = yaw();
-        Point3D start = position();
-        boolean allowedBefore = driveAllowed();
-        float nextYaw = oldYaw + (float) result.yawDelta();
-        boolean turning = Math.abs(nextYaw - oldYaw) > 1e-5;
-        HullCollision.World world = turning || Math.abs(forward) + Math.abs(lateral) > 1e-6 ? surroundings(nextYaw) : null;
-        if (turning && !turn(nextYaw, world)) lateral = 0;
-        syncHeading();
-        Point3D horizontal = velocity();
-        double climbStart = y();
-        Point3D moved = world == null ? horizontal : slide(horizontal, world);
-        if (moved != horizontal) {
-            setVelocity(moved);
-            horizontal = moved;
-        }
-        double climbed = y() - climbStart;
-        double vy = result.vertical();
-        if (onGround() && vy <= 0) vy = -CRAFT_GROUND_PROBE;
-        boolean airborne = !onGround();
-        moveVertically(vy);
-        if (airborne && onGround() && vy < -.3) land(-vy);
-        double carried = climbed > 1e-3 ? Math.max(onGround() ? 0 : vy, climbed) : onGround() ? 0 : vy;
-        setMotion(horizontal.x, carried, horizontal.z);
-        data.set(SPEED, (float) forward);
-        host.refreshBounds();
-        if (allowedBefore && !driveAllowed()) {
-            stopAtZone(start, oldYaw);
-            horizontal = Point3D.ZERO;
-        }
-        boolean moving = Math.abs(forward) + Math.abs(lateral) > .02;
-        if (moving) strike(horizontal);
-        if (moving || ticks() % 5 == 0) {
-            for (IWrapperEntity entity : world().entities(host, bounds())) {
-                if (entity.isLiving() && entity.asPlayer() == null) pushOut(entity);
-            }
-        }
-        if (ticks() % 100 == 0) forgetStruck();
-        stampPose();
-        oldBodyPitch = bodyPitch;
-        oldBodyRoll = bodyRoll;
-        bodyPitch = (float) result.pitch();
-        bodyRoll = (float) result.roll();
-    }
-
-    @Override
-    protected boolean shove(IWrapperPlayer player) {
-        JSONCraft craft = definition().craft;
-        if (craft == null || !craft.watercraft() || controllingPassenger() != null) return false;
-        Point3D away = position().subtract(player.position());
-        double length = Math.hypot(away.x, away.z);
-        if (length < 1e-3) return false;
-        Point3D next = velocity().add(new Point3D(away.x / length * SHOVE, 0, away.z / length * SHOVE));
-        double speed = Math.hypot(next.x, next.z);
-        if (speed > SHOVE_MAX) next = next.scale(SHOVE_MAX / speed);
-        setVelocity(next);
-        world().playSound(position(), "minecraft:entity.player.attack.knockback", .7f, .8f);
-        return true;
-    }
-
-    protected boolean craftHop(CraftPhysics.Input controls) {
-        boolean pressed = controls.lift() > .5;
-        boolean fresh = pressed && !hopHeld && ticks() - hopTick > HOP_PAUSE;
-        hopHeld = pressed;
-        if (fresh) hopTick = ticks();
-        return fresh;
-    }
-
-    protected void splash(double strength) {
-        Point3D at = position().add(0, definition().craft.draft, 0);
-        world().spawnParticles(IWrapperWorld.Particle.SPLASH, at, (int) (20 + 60 * Math.min(1, strength)), .9, .15, .9, .25);
-        world().playSound(at, "minecraft:entity.generic.splash", (float) Math.min(1.5, .4 + strength), .85f + random.nextFloat() * .2f);
-    }
-
-    protected void tickCraftClient() {
-        replayServerPose();
-        oldBodyPitch = bodyPitch;
-        oldBodyRoll = bodyRoll;
-        oldBodyHeave = bodyHeave;
-        oldLeanPitch = leanPitch;
-        bodyPitch = SlimMath.lerp(.2f, bodyPitch, data.get(PITCH));
-        bodyRoll = SlimMath.lerp(.2f, bodyRoll, data.get(ROLL));
-        boolean bobbing = definition().craft.watercraft() && !Double.isNaN(waterDepth());
-        bodyHeave = bobbing ? (float) Math.sin(ticks() * .13) * CRAFT_BOB / (1 + Math.abs(speed()) * 4) : SlimMath.lerp(.3f, bodyHeave, 0);
-        if (definition().craft.riding != null) tickRider();
-        host.refreshBounds();
-    }
-
-    private void tickRider() {
-        oldRiderAir = riderAir;
-        oldRiderLand = riderLand;
-        oldRiderIdle = riderIdle;
-        riderLand *= RIDER_LANDING;
-        if (flag(AIRBORNE)) {
-            riderAirTicks++;
-        } else {
-            if (riderAirTicks >= RIDER_JUMP_TICKS) riderLand = 1;
-            riderAirTicks = 0;
-        }
-        riderAir = SlimMath.lerp(.3f, riderAir, riderAirTicks >= RIDER_JUMP_TICKS ? 1 : 0);
-        riderIdle = SlimMath.lerp(.06f, riderIdle, Math.abs(speed()) < RIDER_IDLE_SPEED ? 1 : 0);
     }
 
     public double steeringPull() {
@@ -335,16 +132,8 @@ public abstract class AEntityVehicleD_Moving extends AEntityVehicleC_Colliding {
     protected void tickVisualMotion() {
         oldVisualSteer = visualSteer;
         visualSteer = SlimMath.lerp(.30f, visualSteer, data.get(STEER));
-        oldVisualCyclic = visualCyclic;
-        visualCyclic = SlimMath.lerp(.30f, visualCyclic, data.get(CYCLIC));
         oldWheelRoll = wheelRoll;
         wheelRoll += speed() / (float) (wheel(0).definition.rollRadius * scale());
-        oldRotorAngle = rotorAngle;
-        rotorAngle += rotor();
-        if (rotorAngle > 1000) {
-            rotorAngle -= 1000;
-            oldRotorAngle -= 1000;
-        }
     }
 
     protected void tickClientMotion() {

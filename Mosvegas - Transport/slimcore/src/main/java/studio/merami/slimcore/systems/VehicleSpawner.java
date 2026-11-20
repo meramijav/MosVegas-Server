@@ -25,15 +25,13 @@ public final class VehicleSpawner {
         if (vehicle == null) return null;
         vehicle.setDefinition(definition.id);
         vehicle.setOwner(player.uuid());
-        double surface = definition.craft != null && definition.craft.watercraft() ? world.waterSurface(pos.x, pos.z, pos.y - 1, pos.y + 1) : Double.NaN;
-        boolean floating = !Double.isNaN(surface);
-        vehicle.moveTo(pos.x, floating ? surface - definition.craft.draft : pos.y, pos.z, player.yaw(), 0);
+        vehicle.moveTo(pos.x, pos.y, pos.z, player.yaw(), 0);
         vehicle.keepClearOf(player);
         if (!vehicle.canSpawnAtCurrentPosition()) {
             AEntityA_Base.message(player, "message.slimvehicle.no_room");
             return null;
         }
-        if (!floating) vehicle.settleOnGround(96);
+        vehicle.settleOnGround(96);
         Optional<Point3D> safe = vehicle.spawnClearance(player);
         if (safe.isEmpty()) {
             AEntityA_Base.message(player, "message.slimvehicle.no_room_for_player");

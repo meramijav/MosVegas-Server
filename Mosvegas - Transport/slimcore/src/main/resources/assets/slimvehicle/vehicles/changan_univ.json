@@ -75,7 +75,7 @@
     "door_rl": {"type": "door", "rotate": [0, -1.2, 0], "buckle": 0.06},
     "door_rr": {"type": "door", "rotate": [0, 1.2, 0], "buckle": 0.06},
     "bonnet": {"type": "bonnet", "rotate": [1.0, 0, 0], "buckle": 0.07},
-    "trunk": {"type": "trunk", "rotate": [-1.2, 0, 0], "buckle": 0.05,
+    "trunk": {"type": "trunk", "rotate": [-0.85, 0, 0], "buckle": 0.05,
       "storage": {"center": [0, 0.85, -2.3], "half": [0.7, 0.06, 0.42], "rows": 3}},
     "fuel": {"type": "fuel", "bone": "fuel_flap", "rotate": [0, -1.4, 0], "solid": false},
     "glovebox": {"type": "glovebox", "rotate": [0.9, 0, 0], "solid": false,
@@ -94,7 +94,12 @@
   ],
   "hull": {
     "boxes": [
-      {"center": [0, 0.775, -0.15], "half": [1.15, 0.535, 2.75]},
+      {"center": [0, 0.305, -0.15], "half": [1.15, 0.065, 2.75]},
+      {"center": [0, 0.775, 1.855], "half": [1.15, 0.535, 0.745]},
+      {"center": [0, 0.515, -2.145], "half": [1.15, 0.275, 0.755]},
+      {"center": [0, 1.05, -1.662], "half": [1.15, 0.26, 0.278]},
+      {"center": [0.965, 1.05, -2.42], "half": [0.185, 0.26, 0.48]},
+      {"center": [-0.965, 1.05, -2.42], "half": [0.185, 0.26, 0.48]},
       {"center": [0, 0.675, 2.76], "half": [0.85, 0.425, 0.16]},
       {"center": [0, 1.405, 1.18], "half": [1.0, 0.095, 0.31]},
       {"center": [0, 1.515, 0.55], "half": [0.95, 0.205, 0.33]},
@@ -121,6 +126,7 @@
   "exhaust": [0.578, 0.299, -2.89],
   "exhaust_pipes": [[0.672, 0.299, -2.89]],
   "exhaust_mirror": true,
+  "exhaust_effects": {"overrun": false, "start_flame": false},
   "fire": [
     {"pos": [0, 1.0, 1.9], "spread": [0.6, 0.05, 0.5]},
     {"pos": [0, 1.2, -0.4], "spread": [0.6, 0.12, 0.9]},
@@ -155,21 +161,22 @@
   "render": {
     "chassis": "chassis",
     "paint": ["body", "door_fl", "door_fr", "door_rl", "door_rr", "bonnet", "trunk", "fuel_flap", "tail_strips"],
-    "dent": ["body", "door_fl", "door_fr", "door_rl", "door_rr", "bonnet", "trunk", "fuel_flap", "tail_strips"],
+    "dent": ["body", "door_fl", "door_fr", "door_rl", "door_rr", "bonnet", "trunk", "fuel_flap", "tail_strips", "pillar_trim"],
     "interior": ["interior", "engine"],
-    "interior_paint": ["seat_fl", "seat_fr", "seat_rear", "door_fl_card", "door_fr_card", "door_rl_card", "door_rr_card"],
+    "interior_paint": ["seat_fl", "seat_fr", "seat_rear", "door_fl_card", "door_fr_card", "door_rl_card", "door_rr_card", "pillar_trim", "dash_trim", "glovebox", "console", "cabin_trim", "headliner"],
+    "interior_light": ["headliner"],
     "paint_keep_faces": {
-      "body": {"north": [2, 3, 6, 7, 146, 147, 148, 149, 150, 151, 152, 153, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 176, 177, 200, 227, 228, 239, 240],
-               "down": [36, 37, 136, 137, 142, 143, 148, 149, 150, 151, 180, 181, 227, 228],
-               "east": [40, 107, 132, 133, 140, 141, 144, 145, 227],
-               "west": [41, 106, 132, 133, 140, 141, 144, 145, 228],
-               "south": [48, 49, 148, 149, 150, 151, 154, 155, 197, 198, 227, 228],
-               "up": [48, 49, 136, 137, 142, 143, 176, 177, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228]},
+      "body": {"north": [2, 3, 6, 7],
+               "down": [36, 37, 136, 137, 142, 143, 148, 149, 150, 151],
+               "east": [132, 133, 144, 145],
+               "west": [132, 133, 144, 145],
+               "south": [148, 149, 150, 151, 154, 155],
+               "up": [136, 137, 142, 143, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222]},
       "trunk": {"down": [2, 3]},
-      "door_fl": {"north": [0, 1, 2, 3, 4, 5, 7, 8, 9, 10], "south": [6, 7, 8, 9], "down": [7, 8, 9], "up": [10]},
-      "door_fr": {"north": [0, 1, 2, 3, 4, 5, 7, 8, 9, 10], "south": [6, 7, 8, 9], "down": [7, 8, 9], "up": [10]},
-      "door_rl": {"north": [0, 1, 2, 3, 4, 8, 9, 10, 11, 12, 13, 14, 15], "south": [6, 9, 10, 11, 12], "down": [9, 10, 11, 15], "up": [15]},
-      "door_rr": {"north": [0, 1, 2, 3, 4, 8, 9, 10, 11, 12, 13, 14, 15], "south": [6, 9, 10, 11, 12], "down": [9, 10, 11, 15], "up": [15]}
+      "door_fl": {"south": [6, 7, 8, 9], "down": [7, 8, 9], "up": [10]},
+      "door_fr": {"south": [6, 7, 8, 9], "down": [7, 8, 9], "up": [10]},
+      "door_rl": {"south": [6, 9, 10, 11, 12], "down": [9, 10, 11]},
+      "door_rr": {"south": [6, 9, 10, 11, 12], "down": [9, 10, 11]}
     },
     "shadow": [1.2, 3.0]
   }

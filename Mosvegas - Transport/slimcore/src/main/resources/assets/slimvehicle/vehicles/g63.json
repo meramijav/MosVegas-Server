@@ -180,6 +180,7 @@
       {"id": "roof", "side": "top", "engine": 0.05, "glass": "glass_roof", "glass_at": 15}
     ]
   },
+  "plates": {"style": "standard", "bones": {"plate_front": "north", "plate_rear": "south"}},
   "render": {
     "chassis": "chassis",
     "paint": ["body", "door_fl", "door_fr", "door_rl", "door_rr", "bonnet", "trunk", "fuel_flap", "tail_strips"],

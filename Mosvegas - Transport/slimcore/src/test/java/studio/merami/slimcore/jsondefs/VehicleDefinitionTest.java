@@ -83,6 +83,26 @@ class VehicleDefinitionTest {
     }
 
     @Test
+    void changanPaintsTheWholeCabinWithALighterRoof() {
+        JSONVehicle changan = TestPacks.vehicle("changan_univ");
+        for (String bone : List.of("pillar_trim", "dash_trim", "glovebox", "console", "cabin_trim", "headliner")) {
+            assertTrue(changan.interiorPaintBones.contains(bone), bone);
+        }
+        assertEquals(0x666666, changan.interiorShade("headliner", 0x000000));
+        assertEquals(0xe59193, changan.interiorShade("headliner", 0xd4474b));
+        assertEquals(0xffffff, changan.interiorShade("headliner", 0xffffff), "An unpainted cabin keeps the roof as drawn");
+        assertEquals(0xd4474b, changan.interiorShade("seat_fl", 0xd4474b));
+        assertEquals(-1, changan.interiorShade("headliner", -1));
+        ModelGeometry model = ModelGeometry.load(changan.modelLocation);
+        for (String bone : changan.interiorPaintBones) assertNotNull(model.bone(bone), bone);
+        JsonObject json = TestPacks.builtIn("changan_univ");
+        JsonArray light = new JsonArray();
+        light.add("body");
+        json.getAsJsonObject("render").add("interior_light", light);
+        assertThrows(IllegalArgumentException.class, () -> TestPacks.define("bad_light", json));
+    }
+
+    @Test
     void wrongGlowIsRefused() {
         JsonObject json = TestPacks.builtIn("g63");
         JsonObject glow = new JsonObject();

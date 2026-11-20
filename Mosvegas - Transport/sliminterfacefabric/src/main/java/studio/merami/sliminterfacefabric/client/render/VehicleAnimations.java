@@ -7,9 +7,9 @@ import studio.merami.slimcore.entities.instances.PartGlass;
 import studio.merami.slimcore.entities.instances.PartGroundDevice;
 import studio.merami.slimcore.entities.instances.PartOpening;
 import studio.merami.slimcore.entities.instances.PartSeat;
-import studio.merami.slimcore.jsondefs.JSONCraft;
 import studio.merami.slimcore.jsondefs.JSONVehicle;
 import studio.merami.slimcore.rendering.Animator;
+import studio.merami.sliminterfacefabric.client.ClientConfig;
 
 import static studio.merami.slimcore.rendering.Animator.POSITION;
 import static studio.merami.slimcore.rendering.Animator.ROTATION;
@@ -21,9 +21,10 @@ final class VehicleAnimations {
     static void apply(EntityVehicleF_Physics vehicle, JSONVehicle definition, float partial, Animator.Pose pose) {
         float steer = Mth.lerp(partial, vehicle.oldVisualSteer, vehicle.visualSteer);
         float roll = Mth.lerp(partial, vehicle.oldWheelRoll, vehicle.wheelRoll);
+        boolean vibrate = ClientConfig.vibrations && definition.vibration;
         float age = vehicle.ticks() + partial;
-        float engineShake = vehicle.flag(EntityVehicleF_Physics.ENGINE) ? (float) Math.sin(age * (1.6 + vehicle.rpm() / 5000)) * .018f : 0;
-        float roadShake = (float) (Math.sin(age * 2.1) * Math.min(.025, Math.abs(vehicle.speed()) * .024));
+        float engineShake = vibrate && vehicle.flag(EntityVehicleF_Physics.ENGINE) ? (float) Math.sin(age * (1.6 + vehicle.rpm() / 5000)) * .018f : 0;
+        float roadShake = vibrate ? (float) (Math.sin(age * 2.1) * Math.min(.025, Math.abs(vehicle.speed()) * .024)) : 0;
         int chassis = pose.bone(definition.render.chassis);
         pose.set(chassis, ROTATION, -Mth.lerp(partial, vehicle.oldBodyPitch, vehicle.bodyPitch));
         pose.set(chassis, ROTATION + 2, -Mth.lerp(partial, vehicle.oldBodyRoll, vehicle.bodyRoll) + roadShake * .08f);
@@ -35,7 +36,6 @@ final class VehicleAnimations {
             pose.set(engine, POSITION, engineShake * .4f);
         }
         wipers(vehicle, definition, partial, pose);
-        craft(vehicle, definition, partial, steer, pose);
         for (PartGroundDevice wheel : vehicle.wheels()) {
             String name = wheel.definition.bone;
             int steering = pose.bone("steer_" + name);
@@ -65,24 +65,6 @@ final class VehicleAnimations {
             pose.setHidden(bone, window > .95f || pane.isBroken());
         }
         driver(vehicle, definition, steer, pose);
-    }
-
-    private static void craft(EntityVehicleF_Physics vehicle, JSONVehicle definition, float partial, float steer, Animator.Pose pose) {
-        JSONCraft craft = definition.craft;
-        if (craft == null) return;
-        float spin = Mth.lerp(partial, vehicle.oldRotorAngle, vehicle.rotorAngle);
-        for (JSONCraft.Rotor rotor : craft.rotors) {
-            int bone = pose.bone(rotor.bone);
-            float angle = (float) (spin * rotor.rate % Mth.TWO_PI);
-            pose.set(bone, JSONCraft.AXIS_X.equals(rotor.axis) ? ROTATION : ROTATION + 1, angle);
-        }
-        float share = definition.physics.steerLock > 0 ? Mth.clamp(steer / (float) definition.physics.steerLock, -1, 1) : 0;
-        float cyclic = Mth.lerp(partial, vehicle.oldVisualCyclic, vehicle.visualCyclic);
-        for (JSONCraft.Steer part : craft.steer) {
-            int bone = pose.bone(part.bone);
-            int component = JSONCraft.AXIS_X.equals(part.axis) ? ROTATION : JSONCraft.AXIS_Y.equals(part.axis) ? ROTATION + 1 : ROTATION + 2;
-            pose.set(bone, component, (JSONCraft.INPUT_CYCLIC.equals(part.input) ? cyclic : share) * (float) part.angle);
-        }
     }
 
     private static void wipers(EntityVehicleF_Physics vehicle, JSONVehicle definition, float partial, Animator.Pose pose) {

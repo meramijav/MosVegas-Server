@@ -32,6 +32,6 @@ public class PlayerRendererMixin {
     @Inject(method = "setupRotations(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;FFF)V", at = @At("TAIL"))
     private void slimvehicle$seatedLean(AbstractClientPlayer player, PoseStack pose, float age, float yaw, float partial, CallbackInfo ci) {
         EntityVehicleF_Physics vehicle = slimvehicle$seat(player);
-        if (vehicle != null) DriverPose.lean(pose, vehicle, partial, WrapperEntity.of(player).equals(vehicle.controllingPassenger()));
+        if (vehicle != null) DriverPose.lean(pose, vehicle, partial);
     }
 }

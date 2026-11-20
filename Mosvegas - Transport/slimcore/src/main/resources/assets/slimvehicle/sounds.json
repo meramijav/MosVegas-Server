@@ -349,40 +349,5 @@
     "sounds": [
       "slimvehicle:l9_inverter"
     ]
-  },
-  "heli_rotor": {
-    "sounds": [
-      "slimvehicle:heli_rotor"
-    ]
-  },
-  "heli_engine": {
-    "sounds": [
-      "slimvehicle:heli_engine"
-    ]
-  },
-  "heli_start": {
-    "sounds": [
-      "slimvehicle:heli_start"
-    ]
-  },
-  "heli_stop": {
-    "sounds": [
-      "slimvehicle:heli_stop"
-    ]
-  },
-  "jetski_engine": {
-    "sounds": [
-      "slimvehicle:jetski_engine"
-    ]
-  },
-  "jetski_water": {
-    "sounds": [
-      "slimvehicle:jetski_water"
-    ]
-  },
-  "jetski_start": {
-    "sounds": [
-      "slimvehicle:jetski_start"
-    ]
   }
 }

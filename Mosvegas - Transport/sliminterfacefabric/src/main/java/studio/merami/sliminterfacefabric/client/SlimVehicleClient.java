@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import studio.merami.slimcore.packloading.PackParser;
-import studio.merami.sliminterfacefabric.client.effects.CraftEffects;
 import studio.merami.sliminterfacefabric.client.effects.VehicleEffects;
 import studio.merami.sliminterfacefabric.client.effects.VehicleParticles;
 import studio.merami.sliminterfacefabric.client.hud.InteractionOverlay;
@@ -81,7 +80,6 @@ public class SlimVehicleClient implements ClientModInitializer {
         RadioStations.tick(mc);
         RadioDownloads.tick(mc);
         VehicleEffects.tick(mc);
-        CraftEffects.tick(mc);
         TaczClientCompat.tick(mc);
         InteractionOverlay.tick(mc);
         VehicleControls.tick(mc);

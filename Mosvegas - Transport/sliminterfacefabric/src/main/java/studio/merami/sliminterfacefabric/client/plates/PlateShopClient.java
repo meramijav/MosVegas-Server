@@ -10,7 +10,7 @@ import studio.merami.sliminterfacefabric.network.PacketPlateMenu;
 import studio.merami.sliminterfacefabric.network.PacketPlateRequest;
 
 public final class PlateShopClient {
-    private static final String[] SPINS = {"full", "letters", "digits"};
+    private static final String[] SPINS = {"full", "letters", "digits", "letter", "digit", "region"};
 
     public record Menu(String result, boolean ok, boolean hasCar, String style, String plate, boolean free, String balance, double balanceValue, long[] prices,
                        String[] priceTexts) {
@@ -25,8 +25,8 @@ public final class PlateShopClient {
         ClientPlayNetworking.registerGlobalReceiver(PacketPlateMenu.TYPE, (packet, player, sender) -> accept(packet.json()));
     }
 
-    public static void request(int action, String region) {
-        ClientPlayNetworking.send(new PacketPlateRequest(action, region));
+    public static void request(int action, String region, int slot) {
+        ClientPlayNetworking.send(new PacketPlateRequest(action, region, slot));
     }
 
     private static void accept(String json) {
