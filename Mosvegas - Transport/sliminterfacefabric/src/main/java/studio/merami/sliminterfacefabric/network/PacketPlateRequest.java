@@ -5,17 +5,16 @@ import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
 import studio.merami.sliminterfacefabric.SlimVehicle;
 
-public record PacketPlateRequest(int action, String region, int slot) implements FabricPacket {
-    private static final int MAX_REGION = 3;
+public record PacketPlateRequest(int action, int slot) implements FabricPacket {
     public static final PacketType<PacketPlateRequest> TYPE = PacketType.create(SlimVehicle.id("plate_request"), PacketPlateRequest::new);
 
     private PacketPlateRequest(FriendlyByteBuf buf) {
-        this(buf.readByte(), buf.readUtf(MAX_REGION), buf.readByte());
+        this(buf.readByte(), buf.readByte());
     }
 
     @Override
     public void write(FriendlyByteBuf buf) {
-        buf.writeByte(action).writeUtf(region, MAX_REGION).writeByte(slot);
+        buf.writeByte(action).writeByte(slot);
     }
 
     @Override

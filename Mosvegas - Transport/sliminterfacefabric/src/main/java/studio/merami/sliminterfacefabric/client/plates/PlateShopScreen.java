@@ -30,24 +30,18 @@ import java.util.List;
 import java.util.Random;
 
 public final class PlateShopScreen extends GarageScreen {
-    private static final int W = 592;
+    private static final int W = 420;
     private static final int H = 376;
     private static final int PAD = 14;
-    private static final int COLUMN = 186;
-    private static final int RIGHT_X = 204;
-    private static final int RIGHT_W = 374;
+    private static final int RIGHT_X = PAD;
+    private static final int RIGHT_W = W - 2 * RIGHT_X;
     private static final int WELL_Y = 68;
     private static final int WELL_H = 100;
     private static final int PLATE_W = 300;
     private static final int PLATE_TOP = 18;
-    private static final int CHIP_W = 50;
-    private static final int CHIP_H = 20;
-    private static final int CHIP_STEP_X = 54;
-    private static final int CHIP_STEP_Y = 25;
-    private static final int CHIPS_IN_ROW = 3;
-    private static final int MODE_W = 118;
+    private static final int MODE_W = 124;
     private static final int MODE_H = 56;
-    private static final int MODE_STEP = 128;
+    private static final int MODE_STEP = 134;
     private static final int MODE_STEP_Y = 62;
     private static final int MODE_Y = 196;
     private static final int MODES_IN_ROW = 3;
@@ -86,8 +80,6 @@ public final class PlateShopScreen extends GarageScreen {
 
     private record Star(float x, float y, float vx, float vy, float spin, long born, int life, float size) {}
 
-    private record RegionChip(String code, Area area) {}
-
     private record Line(String text, int color) {}
 
     private static final class Slot {
@@ -125,7 +117,6 @@ public final class PlateShopScreen extends GarageScreen {
     private final List<Star> stars = new ArrayList<>();
     private final Slot[] slots;
     private final Area[] modes = new Area[6];
-    private final List<RegionChip> chips = new ArrayList<>();
     private final String style;
     private final String template;
     private int landedCount;
@@ -141,7 +132,6 @@ public final class PlateShopScreen extends GarageScreen {
     private long regionSettleAt = -1;
     private String regionTarget;
     private long regionLandedAt = -10000;
-    private boolean hoverRegionLocked;
     private boolean spinning;
     private int spinAction;
     private long requestedAt;
@@ -160,10 +150,8 @@ public final class PlateShopScreen extends GarageScreen {
     private boolean hoverLocked;
     private int left;
     private int top;
-    private int oblastY;
     private Area panel = new Area(0, 0, 0, 0);
     private Area closeArea = new Area(0, 0, 0, 0);
-    private Area backArea = new Area(0, 0, 0, 0);
     private Area submitArea = new Area(0, 0, 0, 0);
 
     public PlateShopScreen(PlateShopClient.Menu menu) {
@@ -187,22 +175,9 @@ public final class PlateShopScreen extends GarageScreen {
         top = (height - H) / 2;
         panel = new Area(left, top, W, H);
         closeArea = new Area(left + W - PAD - 22, top + 13, 22, 22);
-        backArea = new Area(left + PAD, top + H - 40, COLUMN - 2 * PAD, 26);
         submitArea = new Area(left + W - PAD - BUTTON_W, top + H - 44, BUTTON_W, BUTTON_H);
         for (int i = 0; i < modes.length; i++) {
             modes[i] = new Area(left + RIGHT_X + i % MODES_IN_ROW * MODE_STEP, top + MODE_Y + i / MODES_IN_ROW * MODE_STEP_Y, MODE_W, MODE_H);
-        }
-        chips.clear();
-        int moscowY = top + 89;
-        placeChips(PlateRegions.MOSCOW, moscowY);
-        int rows = (PlateRegions.MOSCOW.size() + CHIPS_IN_ROW - 1) / CHIPS_IN_ROW;
-        oblastY = moscowY + rows * CHIP_STEP_Y + 7;
-        placeChips(PlateRegions.OBLAST, oblastY + 10);
-    }
-
-    private void placeChips(List<String> codes, int y) {
-        for (int i = 0; i < codes.size(); i++) {
-            chips.add(new RegionChip(codes.get(i), new Area(left + PAD + i % CHIPS_IN_ROW * CHIP_STEP_X, y + i / CHIPS_IN_ROW * CHIP_STEP_Y, CHIP_W, CHIP_H)));
         }
     }
 
@@ -305,7 +280,7 @@ public final class PlateShopScreen extends GarageScreen {
         answered = false;
         spinAction = selected;
         requestedAt = Util.getMillis();
-        regionRolling = selected == REGION;
+        regionRolling = selected == REGION || !menu.numbered();
         regionReel = 0;
         regionSettleAt = -1;
         landedCount = 0;
@@ -321,7 +296,7 @@ public final class PlateShopScreen extends GarageScreen {
         }
         play(SoundEvents.UI_BUTTON_CLICK.value(), 1.25f, .3f);
         later(60, SoundEvents.NOTE_BLOCK_BIT.value(), 1.5f, .25f);
-        PlateShopClient.request(selected, region, pick);
+        PlateShopClient.request(selected, pick);
     }
 
     private void updateReels(long now, double seconds) {
@@ -496,22 +471,8 @@ public final class PlateShopScreen extends GarageScreen {
             pick = -1;
             for (int slot = 0; slot < slots.length && pick < 0; slot++) if (pickable(action, slot)) pick = slot;
         }
-        if (action == REGION) region = PlateNumber.region(platePreview);
         status = "";
         play(SoundEvents.STONE_BUTTON_CLICK_ON, 1.5f, .25f);
-    }
-
-    private void chooseRegion(String code) {
-        if (spinning || selected == REGION || code.equals(region)) return;
-        region = code;
-        status = "";
-        play(SoundEvents.STONE_BUTTON_CLICK_ON, 1.3f, .25f);
-    }
-
-    private void stepRegion(int direction) {
-        int index = 0;
-        for (int i = 0; i < chips.size(); i++) if (chips.get(i).code.equals(region)) index = i;
-        chooseRegion(chips.get(Math.floorMod(index + direction, chips.size())).code);
     }
 
     @Override
@@ -540,7 +501,6 @@ public final class PlateShopScreen extends GarageScreen {
         BrandUi.box(gui, this, Box.PANEL, panel);
         BrandUi.hair(gui, this, panel);
         header(gui, now, mouseX, mouseY);
-        regions(gui, mouseX, mouseY);
         plateArea(gui, now, mouseX, mouseY);
         modeCards(gui, mouseX, mouseY);
         footer(gui, mouseX, mouseY, now);
@@ -580,29 +540,6 @@ public final class PlateShopScreen extends GarageScreen {
         BrandUi.text(gui, this, paid, Type.LABEL, x, y + 12 - 10 * t, BrandUi.alpha(BrandUi.RED_SOFT, 1 - t * t));
     }
 
-    private void regions(GuiGraphics gui, int mouseX, int mouseY) {
-        BrandUi.text(gui, this, I18n.get("gui.slimvehicle.plates.region"), Type.CAP, left + PAD, top + 66, BrandUi.MUTED);
-        BrandUi.text(gui, this, I18n.get("gui.slimvehicle.plates.moscow"), Type.SMALL, left + PAD, top + 79, BrandUi.TEXT);
-        BrandUi.text(gui, this, I18n.get("gui.slimvehicle.plates.oblast"), Type.SMALL, left + PAD, oblastY, BrandUi.TEXT);
-        boolean locked = spinning || selected == REGION;
-        hoverRegionLocked = false;
-        for (RegionChip chip : chips) {
-            boolean active = chip.code.equals(region) && !regionRolling;
-            boolean inside = chip.area.inside(mouseX, mouseY);
-            if (inside && selected == REGION) hoverRegionLocked = true;
-            boolean hover = !locked && inside;
-            Box box = active ? Box.CHIP_ON : hover ? Box.CHIP_HOVER : Box.CHIP;
-            BrandUi.box(gui, this, box, chip.area.x(), chip.area.y(), chip.area.w(), chip.area.h(), locked && !active ? .5f : 1);
-            int ink = active ? BrandUi.WHITE : locked ? BrandUi.MUTED : hover ? BrandUi.WHITE : BrandUi.SOFT;
-            BrandUi.centred(gui, this, chip.code, Type.LABEL, chip.area.x() + chip.area.w() / 2f, chip.area.y() + chip.area.h() / 2f, ink);
-        }
-        BrandUi.ghost(gui, this, backArea, I18n.get("gui.slimvehicle.plates.back"), "Esc", backArea.inside(mouseX, mouseY));
-        int x = left + COLUMN;
-        gui.fillGradient(x, top + 62, x + 1, top + 90, 0x00FFFFFF, BrandUi.LINE);
-        gui.fill(x, top + 90, x + 1, top + H - 44, BrandUi.LINE);
-        gui.fillGradient(x, top + H - 44, x + 1, top + H - 14, BrandUi.LINE, 0x00FFFFFF);
-    }
-
     private void plateArea(GuiGraphics gui, long now, int mouseX, int mouseY) {
         int x0 = left + RIGHT_X;
         BrandUi.box(gui, this, Box.WELL, x0, top + WELL_Y, RIGHT_W, WELL_H, 1);
@@ -631,10 +568,11 @@ public final class PlateShopScreen extends GarageScreen {
         float regionScale = scale * PlateTextures.REGION_SCALE;
         String code = regionRolling ? rollingRegion() : region;
         float regionHeat = (now - regionLandedAt) / (float) HEAT_MS;
+        float regionAlpha = menu.numbered() || spinning ? 1 : GHOST_ALPHA;
         for (int i = 0; i < code.length(); i++) {
             float gx = x + PlateTextures.regionX(code, i) * scale;
             float gy = y + PlateTextures.REGION_Y * scale;
-            glyph(gui, code.charAt(i), gx, gy, regionScale, ink, 1);
+            glyph(gui, code.charAt(i), gx, gy, regionScale, ink, regionAlpha);
             if (regionHeat >= 0 && regionHeat < 1) glyph(gui, code.charAt(i), gx, gy, regionScale, BrandUi.GOLD & 0xFFFFFF, (1 - regionHeat) * .9f);
         }
         for (int i = 0; i < slots.length; i++) {
@@ -715,7 +653,6 @@ public final class PlateShopScreen extends GarageScreen {
 
     private Line currentLine(long now) {
         if (hoverLocked) return new Line(I18n.get("gui.slimvehicle.plates.need_full"), BrandUi.GOLD_LIGHT);
-        if (hoverRegionLocked && !spinning) return new Line(I18n.get("gui.slimvehicle.plates.region_random"), BrandUi.GOLD_LIGHT);
         if (spinning) return null;
         if (!status.isEmpty()) return new Line(I18n.get(status), statusOk ? BrandUi.GREEN : BrandUi.RED_SOFT);
         if (allowed(selected) && !affordable(selected)) return new Line(I18n.get("gui.slimvehicle.plates.short", money(menu.prices()[selected - 1] - menu.balanceValue())), BrandUi.RED_SOFT);
@@ -810,7 +747,7 @@ public final class PlateShopScreen extends GarageScreen {
     @Override
     protected boolean clicked(double mouseX, double mouseY, int button) {
         if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT) return super.clicked(mouseX, mouseY, button);
-        if (backArea.inside(mouseX, mouseY) || closeArea.inside(mouseX, mouseY)) {
+        if (closeArea.inside(mouseX, mouseY)) {
             play(SoundEvents.STONE_BUTTON_CLICK_ON, 1, .4f);
             onClose();
             return true;
@@ -818,12 +755,6 @@ public final class PlateShopScreen extends GarageScreen {
         if (submitArea.inside(mouseX, mouseY)) {
             submit();
             return true;
-        }
-        for (RegionChip chip : chips) {
-            if (chip.area.inside(mouseX, mouseY)) {
-                chooseRegion(chip.code);
-                return true;
-            }
         }
         if (!spinning && PlateNumber.valid(platePreview)) {
             for (int slot = 0; slot < slots.length; slot++) {
@@ -860,7 +791,6 @@ public final class PlateShopScreen extends GarageScreen {
         if (key == GLFW.GLFW_KEY_LEFT || key == GLFW.GLFW_KEY_RIGHT) {
             int direction = key == GLFW.GLFW_KEY_LEFT ? -1 : 1;
             if (!spinning && (selected == LETTER || selected == DIGIT)) stepPick(direction);
-            else stepRegion(direction);
             return true;
         }
         return super.keyPressed(key, scan, modifiers);

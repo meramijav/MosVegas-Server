@@ -118,7 +118,7 @@ public final class PlateShop {
         menu(player, customer, "", false);
     }
 
-    public static void request(ServerPlayer player, int action, String region, int slot) {
+    public static void request(ServerPlayer player, int action, int slot) {
         Customer customer = customer(player);
         if (action <= OPEN || action > SPINS.length) {
             if (customer.error == null) menu(player, customer, "", false);
@@ -126,10 +126,6 @@ public final class PlateShop {
         }
         if (customer.error != null) {
             menu(player, customer, customer.error, false);
-            return;
-        }
-        if (!PlateRegions.known(region)) {
-            menu(player, customer, "message.slimvehicle.plates.bad_region", false);
             return;
         }
         PlateNumber.Spin spin = SPINS[action - 1];
@@ -142,7 +138,7 @@ public final class PlateShop {
             menu(player, customer, "message.slimvehicle.plates.bad_slot", false);
             return;
         }
-        String target = spin == PlateNumber.Spin.REGION ? PlateNumber.region(car.plate()) : region;
+        String target = car.numbered() ? PlateNumber.region(car.plate()) : PlateRegions.ALL.get(RANDOM.nextInt(PlateRegions.ALL.size()));
         String next = PlateNumber.spin(car.plate(), car.style(), target, spin, slot, RANDOM, registry::taken);
         if (next == null) {
             menu(player, customer, "message.slimvehicle.plates.exhausted", false);

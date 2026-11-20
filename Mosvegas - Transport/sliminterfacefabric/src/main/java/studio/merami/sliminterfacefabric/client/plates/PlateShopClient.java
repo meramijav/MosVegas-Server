@@ -25,8 +25,8 @@ public final class PlateShopClient {
         ClientPlayNetworking.registerGlobalReceiver(PacketPlateMenu.TYPE, (packet, player, sender) -> accept(packet.json()));
     }
 
-    public static void request(int action, String region, int slot) {
-        ClientPlayNetworking.send(new PacketPlateRequest(action, region, slot));
+    public static void request(int action, int slot) {
+        ClientPlayNetworking.send(new PacketPlateRequest(action, slot));
     }
 
     private static void accept(String json) {
