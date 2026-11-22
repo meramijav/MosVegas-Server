@@ -58,9 +58,9 @@
   ],
   "rider": {"scale": 0.75},
   "seats": [
-    {"pos": [0.515, 0.95, 0.15], "door": "door_fl", "label": "seat.slimvehicle.driver",
+    {"pos": [0.515, 1.03, 0.15], "door": "door_fl", "label": "seat.slimvehicle.driver",
      "click": {"center": [0.515, 1.15, 0.2], "half": [0.3, 0.2, 0.34]}},
-    {"pos": [-0.515, 0.95, 0.15], "door": "door_fr", "label": "seat.slimvehicle.front_passenger",
+    {"pos": [-0.515, 1.03, 0.15], "door": "door_fr", "label": "seat.slimvehicle.front_passenger",
      "click": {"center": [-0.515, 1.15, 0.2], "half": [0.3, 0.2, 0.34]}},
     {"pos": [0.47, 1.04, -0.85], "door": "door_rl", "label": "seat.slimvehicle.rear_passenger",
      "click": {"center": [0.47, 1.24, -0.95], "half": [0.28, 0.2, 0.3]}},
