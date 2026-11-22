@@ -35,7 +35,7 @@ public final class VehicleControls {
     private static final Map<String, String> SYMBOLS = Map.ofEntries(Map.entry("semicolon", ";"), Map.entry("apostrophe", "'"),
             Map.entry("comma", ","), Map.entry("period", "."), Map.entry("slash", "/"), Map.entry("backslash", "\\"),
             Map.entry("left.bracket", "["), Map.entry("right.bracket", "]"), Map.entry("grave.accent", "`"),
-            Map.entry("minus", "-"), Map.entry("equal", "="));
+            Map.entry("minus", "-"), Map.entry("equal", "="), Map.entry("left.alt", "Alt"), Map.entry("right.alt", "Alt"));
     private static KeyMapping engine;
     private static KeyMapping up;
     private static KeyMapping down;
@@ -52,6 +52,7 @@ public final class VehicleControls {
     private static KeyMapping interact;
     private static KeyMapping megaphone;
     private static KeyMapping vibrations;
+    private static KeyMapping hints;
     private static KeyMapping wipers;
     private static int interactionCooldown;
 
@@ -75,6 +76,7 @@ public final class VehicleControls {
         interact = key("interact", GLFW.GLFW_KEY_U);
         megaphone = key("megaphone", GLFW.GLFW_KEY_N);
         wipers = key("wipers", GLFW.GLFW_KEY_Y);
+        hints = key("hints", GLFW.GLFW_KEY_LEFT_ALT);
     }
 
     private static KeyMapping key(String id, int key) {
@@ -110,6 +112,10 @@ public final class VehicleControls {
         return label(vibrations);
     }
 
+    public static String hintsName() {
+        return label(hints);
+    }
+
     private static String label(KeyMapping key) {
         if (key == null) return "?";
         InputConstants.Key bound = KeyBindingHelper.getBoundKeyOf(key);
@@ -124,6 +130,10 @@ public final class VehicleControls {
 
     public static boolean handbrakeHeld() {
         return handbrake != null && Minecraft.getInstance().screen == null && isDown(handbrake);
+    }
+
+    public static boolean hintsHeld() {
+        return hints != null && Minecraft.getInstance().screen == null && isDown(hints);
     }
 
     static void tickSettings(Minecraft mc) {

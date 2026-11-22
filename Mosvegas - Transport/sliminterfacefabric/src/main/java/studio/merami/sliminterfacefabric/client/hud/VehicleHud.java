@@ -2,7 +2,6 @@ package studio.merami.sliminterfacefabric.client.hud;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.Util;
@@ -30,7 +29,6 @@ import studio.merami.sliminterfacefabric.wrapper.WrapperPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public final class VehicleHud {
     private static final ResourceLocation ICONS = SlimVehicle.id("textures/gui/hud_icons.png");
@@ -48,12 +46,23 @@ public final class VehicleHud {
     private static final int TURN_LEFT = 9;
     private static final int TURN_RIGHT = 10;
     private static final int KEY = 11;
-    private static final int DIAL = DialFace.SIZE;
-    private static final int MODULE_WIDTH = 84;
-    private static final int MODULE_HEIGHT = 104;
-    private static final int GAP = 4;
-    private static final int WIDTH = DIAL + GAP + MODULE_WIDTH + GAP + DIAL;
-    private static final int HEIGHT = DIAL + 4;
+    private static final int STRIP_WIDTH = 210;
+    private static final int STRIP_HEIGHT = 30;
+    private static final int FIT_WIDTH = 330;
+    private static final int STRIP_RIM = 0xff59636e;
+    private static final int SPEED_X = 17;
+    private static final int SPEED_FIELD = 34;
+    private static final int GEAR_X = 76;
+    private static final int GEAR_WIDTH = 22;
+    private static final int RPM_X = 103;
+    private static final int RPM_SEGMENTS = 18;
+    private static final int RPM_SEGMENT = 2;
+    private static final float REV_WARNING = .85f;
+    private static final int GAUGE_X = 161;
+    private static final int GAUGE_SEGMENTS = 5;
+    private static final int GAUGE_SEGMENT = 3;
+    private static final int GAUGE_BAR = 4;
+    private static final int LAMP_GAP = 2;
     private static final int PANEL = 0xe0181c21;
     private static final int RIM = 0xffe8ecef;
     private static final int INSET = 0xff262c33;
@@ -62,18 +71,11 @@ public final class VehicleHud {
     private static final int WHITE = 0xfff2f5f7;
     private static final int DIM = 0xff8a949c;
     private static final int UNLIT = 0xff3c444d;
-    private static final int NEEDLE = 0xffff5a2a;
-    private static final int NEEDLE_SHADOW = 0xff7a2410;
-    private static final int HUB = 0xff1b1f24;
     private static final int RED = 0xffe23b3b;
     private static final int DARK_RED = 0xff7a1d1d;
     private static final int AMBER = 0xffffb12a;
     private static final int GREEN = 0xff52d36a;
     private static final int BLUE = 0xff4aa3ff;
-    private static final int NEEDLE_LENGTH = 52;
-    private static final int NEEDLE_TAIL = 8;
-    private static final int SEGMENTS = 7;
-    private static final int SEGMENT = 4;
     private static final int STACK_GAP = 4;
     private static final int ABOVE_HOTBAR = 30;
     private static final int ABOVE_ACTION_BAR = 78;
@@ -87,9 +89,6 @@ public final class VehicleHud {
     private static final int HINT_ROW = 14;
     private static final int HINT_ON = 0xfff2f5f7;
     private static final int HINT_OFF = 0xffb4bcc3;
-    private static final int[] SPEED_STEPS = {5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100};
-    private static final int READOUT = 91;
-    private static final int UNIT = 108;
     private static final int RPM_STEP = 50;
     private static final int DAMAGE_PAD = 6;
     private static float shownSpeed;
@@ -117,7 +116,6 @@ public final class VehicleHud {
 
             @Override
             public void onResourceManagerReload(ResourceManager manager) {
-                DialFace.clear();
                 DamageDiagram.clear();
             }
         });
@@ -269,164 +267,118 @@ public final class VehicleHud {
 
     private static void dashboard(GuiGraphics gui, Font font, EntityVehicleF_Physics vehicle) {
         JSONVehicle definition = vehicle.definition();
-        float scale = Mth.clamp(Math.min(gui.guiWidth() / 600f, gui.guiHeight() / 330f), .45f, 1f);
+        float scale = Mth.clamp(gui.guiWidth() / (float) FIT_WIDTH, .6f, 1f);
         PoseStack pose = gui.pose();
         pose.pushPose();
-        pose.translate(Math.round(gui.guiWidth() / 2f - WIDTH * scale / 2), Math.round(gui.guiHeight() - 3 - HEIGHT * scale), 0);
+        pose.translate(Math.round(gui.guiWidth() / 2f - STRIP_WIDTH * scale / 2), Math.round(gui.guiHeight() - 3 - STRIP_HEIGHT * scale), 0);
         pose.scale(scale, scale, 1);
-        int top = HEIGHT - DIAL;
-        int speedStep = speedStep(definition.render.speedometer);
-        int rpmStep = Math.max(1, (int) Math.ceil(Math.ceil(definition.engine.maxRpm / 1000) / (DialFace.MAJOR.length - 1)));
-        float redline = (float) (definition.engine.redlineRpm / 1000);
-        ResourceLocation speedFace = DialFace.face(speedStep, -1);
-        ResourceLocation rpmFace = DialFace.face(rpmStep, redline);
-        if (speedFace != null) gui.blit(speedFace, 0, top, 0, 0, DIAL, DIAL, DIAL, DIAL);
-        if (rpmFace != null) gui.blit(rpmFace, WIDTH - DIAL, top, 0, 0, DIAL, DIAL, DIAL, DIAL);
         boolean blink = (vehicle.world().gameTime() % 16) < 8;
-        speedometer(gui, font, top, speedStep);
-        tachometer(gui, font, vehicle, WIDTH - DIAL, top, rpmStep);
-        int mx = DIAL + GAP;
-        int my = HEIGHT - MODULE_HEIGHT;
-        module(gui, font, vehicle, mx, my, blink);
+        strip(gui, font, vehicle, blink);
+        int above = -lamps(gui, vehicle, blink) - KEY_HEIGHT - 4;
         List<Segment> hint = hint(vehicle);
-        int above = -KEY_HEIGHT - 4;
         if (!hint.isEmpty()) {
-            segments(gui, font, hint, WIDTH / 2, above);
+            segments(gui, font, hint, STRIP_WIDTH / 2, above);
             above -= KEY_HEIGHT + 6;
         }
-        prompt(gui, font, WIDTH / 2, above + KEY_HEIGHT);
+        prompt(gui, font, STRIP_WIDTH / 2, above + KEY_HEIGHT);
         int shift = 0;
         if (ClientConfig.hints) {
-            List<Hint> left = driverLeft(vehicle);
-            List<Hint> right = driverRight(vehicle);
-            shift = hints(gui, font, left, -10, top + (DIAL - left.size() * HINT_ROW) / 2, true) + 10;
-            hints(gui, font, right, WIDTH + 10, top + (DIAL - right.size() * HINT_ROW) / 2, false);
+            if (VehicleControls.hintsHeld()) {
+                List<Hint> left = driverLeft(vehicle);
+                List<Hint> right = driverRight(vehicle);
+                shift = hints(gui, font, left, -10, STRIP_HEIGHT - left.size() * HINT_ROW, true) + 10;
+                hints(gui, font, right, STRIP_WIDTH + 10, STRIP_HEIGHT - right.size() * HINT_ROW, false);
+            } else {
+                hints(gui, font, List.of(new Hint(VehicleControls.hintsName(), I18n.get("hud.slimvehicle.keys.hints"), false)), STRIP_WIDTH + 8,
+                        (STRIP_HEIGHT - KEY_HEIGHT) / 2, false);
+            }
         }
         if (DamageDiagram.shown(vehicle)) {
             int width = DamageDiagram.width(definition) + 2 * DAMAGE_PAD;
             int height = DamageDiagram.height(definition) + 2 * DAMAGE_PAD;
             int x = -shift - 10 - width;
-            int y = top + (DIAL - height) / 2;
+            int y = STRIP_HEIGHT - height;
             framed(gui, x, y, x + width, y + height, PANEL, RIM);
             DamageDiagram.draw(gui, vehicle, x + DAMAGE_PAD, y + DAMAGE_PAD, blink);
         }
-        icons(gui, vehicle, mx, my, blink);
+        gui.setColor(1, 1, 1, 1);
         pose.popPose();
     }
 
-    private static int speedStep(double speedometer) {
-        for (int step : SPEED_STEPS) {
-            if (step * (DialFace.MAJOR.length - 1) >= speedometer - 1e-6) return step;
-        }
-        return SPEED_STEPS[SPEED_STEPS.length - 1];
-    }
-
-    private static void speedometer(GuiGraphics gui, Font font, int top, int step) {
-        readout(gui, font, Math.min(999, Math.round(shownSpeed)), 3, true, DIAL / 2, top + READOUT);
-        centered(gui, font, I18n.get("hud.slimvehicle.kmh"), DIAL / 2, top + UNIT, DIM);
-        needle(gui, DIAL / 2, top + DIAL / 2, DialFace.angle(shownSpeed, step));
-    }
-
-    private static void tachometer(GuiGraphics gui, Font font, EntityVehicleF_Physics vehicle, int left, int top, int step) {
-        int rpm = Math.min(9999, Math.round(shownRpm / RPM_STEP) * RPM_STEP);
-        readout(gui, font, rpm, 4, vehicle.flag(EntityVehicleF_Physics.ENGINE), left + DIAL / 2, top + READOUT);
-        centered(gui, font, I18n.get("hud.slimvehicle.rpm"), left + DIAL / 2, top + UNIT, DIM);
-        needle(gui, left + DIAL / 2, top + DIAL / 2, DialFace.angle(shownRpm / 1000, step));
-    }
-
-    private static void readout(GuiGraphics gui, Font font, int value, int count, boolean lit, int centre, int y) {
-        String digits = String.format(Locale.ROOT, "%0" + count + "d", value);
-        int lead = 0;
-        while (lead < count - 1 && digits.charAt(lead) == '0') lead++;
-        int width = font.width(digits) * 2 - 2;
-        PoseStack pose = gui.pose();
-        pose.pushPose();
-        pose.translate(centre - width / 2, y, 0);
-        pose.scale(2, 2, 1);
-        int x = 0;
-        for (int i = 0; i < digits.length(); i++) {
-            String digit = digits.substring(i, i + 1);
-            gui.drawString(font, digit, x, 0, lit && i >= lead ? WHITE : UNLIT, false);
-            x += font.width(digit);
-        }
-        pose.popPose();
-    }
-
-    private static void needle(GuiGraphics gui, int cx, int cy, float angle) {
-        PoseStack pose = gui.pose();
-        pose.pushPose();
-        pose.translate(cx, cy, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees(angle));
-        gui.fill(-1, -NEEDLE_LENGTH, 2, NEEDLE_TAIL, NEEDLE_SHADOW);
-        gui.fill(-1, -NEEDLE_LENGTH, 1, NEEDLE_TAIL, NEEDLE);
-        pose.popPose();
-        disc(gui, cx, cy, 5, HUB);
-        disc(gui, cx, cy, 2, NEEDLE);
-    }
-
-    private static void disc(GuiGraphics gui, int cx, int cy, int r, int color) {
-        for (int dy = -r; dy < r; dy++) {
-            int half = (int) Math.round(Math.sqrt(r * r - (dy + .5) * (dy + .5)));
-            gui.fill(cx - half, cy + dy, cx + half, cy + dy + 1, color);
-        }
-    }
-
-    private static void module(GuiGraphics gui, Font font, EntityVehicleF_Physics vehicle, int x, int y, boolean blink) {
+    private static void strip(GuiGraphics gui, Font font, EntityVehicleF_Physics vehicle, boolean blink) {
         JSONVehicle definition = vehicle.definition();
-        framed(gui, x, y, x + MODULE_WIDTH, y + MODULE_HEIGHT, PANEL, RIM);
+        framed(gui, 0, 0, STRIP_WIDTH, STRIP_HEIGHT, PANEL, STRIP_RIM);
+        int middle = (STRIP_HEIGHT - ICON) / 2;
+        icon(gui, TURN_LEFT, 4, middle, vehicle.flag(EntityVehicleF_Physics.TURN_LEFT) && blink ? GREEN : UNLIT);
+        icon(gui, TURN_RIGHT, STRIP_WIDTH - 4 - ICON, middle, vehicle.flag(EntityVehicleF_Physics.TURN_RIGHT) && blink ? GREEN : UNLIT);
+        gui.setColor(1, 1, 1, 1);
+        String speed = Integer.toString(Math.min(999, Math.round(shownSpeed)));
+        enlarged(gui, font, speed, SPEED_X + SPEED_FIELD - (font.width(speed) * 2 - 2), 7, 2, WHITE);
+        gui.drawString(font, I18n.get("hud.slimvehicle.kmh"), SPEED_X + SPEED_FIELD + 3, 15, DIM, false);
         int gear = vehicle.gear();
         String gearText = gear < 0 ? "R" : gear == 0 ? "N" : definition.transmission.automatic ? "D" + gear : Integer.toString(gear);
-        int boxX = x + (MODULE_WIDTH - 44) / 2;
-        int boxY = y + 19;
-        framed(gui, boxX, boxY, boxX + 44, boxY + 34, INSET, INSET_RIM);
-        PoseStack pose = gui.pose();
-        pose.pushPose();
-        pose.translate(boxX + 22 - (font.width(gearText) * 3 - 3) / 2, boxY + 7, 0);
-        pose.scale(3, 3, 1);
-        gui.drawString(font, gearText, 0, 0, gear < 0 ? AMBER : gear == 0 ? GREEN : WHITE, false);
-        pose.popPose();
+        framed(gui, GEAR_X, 5, GEAR_X + GEAR_WIDTH, STRIP_HEIGHT - 5, INSET, INSET_RIM);
+        centered(gui, font, gearText, GEAR_X + GEAR_WIDTH / 2, 11, gear < 0 ? AMBER : gear == 0 ? GREEN : WHITE);
+        boolean running = vehicle.flag(EntityVehicleF_Physics.ENGINE);
+        float maxRpm = (float) definition.engine.maxRpm;
+        float redline = (float) definition.engine.redlineRpm;
+        int lit = running ? Math.round(Mth.clamp(shownRpm / maxRpm, 0, 1) * RPM_SEGMENTS) : 0;
+        for (int i = 0; i < RPM_SEGMENTS; i++) {
+            float value = (i + 1) * maxRpm / RPM_SEGMENTS;
+            int color = i >= lit ? TROUGH : value > redline ? RED : value > redline * REV_WARNING ? AMBER : GREEN;
+            int left = RPM_X + i * (RPM_SEGMENT + 1);
+            gui.fill(left, 6, left + RPM_SEGMENT, 12, color);
+        }
+        int rpm = Math.min(9999, Math.round(shownRpm / RPM_STEP) * RPM_STEP);
+        gui.drawString(font, Integer.toString(rpm), RPM_X, 15, running ? DIM : UNLIT, false);
         float fuel = Mth.clamp(shownFuel, 0, 1);
         int fuelColor = fuel < .1f ? (blink ? RED : DARK_RED) : fuel < .25f ? AMBER : GREEN;
-        bar(gui, x + 16, y + 62, fuel, fuelColor);
-        gui.drawString(font, I18n.get("hud.slimvehicle.litres", String.format(Locale.ROOT, "%.0f", vehicle.fuel())), x + 16 + SEGMENTS * (SEGMENT + 1) + 3, y + 61, DIM, false);
+        icon(gui, FUEL, GAUGE_X, 4, fuel < .1f ? fuelColor : DIM);
         float health = Mth.clamp(vehicle.health() / DamageModel.FULL, 0, 1);
-        bar(gui, x + 16, y + 76, health, health > .6f ? GREEN : health > .3f ? AMBER : RED);
-        String condition = vehicle.wrecked() ? "0%" : Math.round(health * 100) + "%";
-        gui.drawString(font, condition, x + 16 + SEGMENTS * (SEGMENT + 1) + 3, y + 75, vehicle.wrecked() ? (blink ? RED : DARK_RED) : DIM, false);
+        icon(gui, BODY, GAUGE_X, STRIP_HEIGHT - 4 - ICON, vehicle.wrecked() ? (blink ? RED : DARK_RED) : DIM);
+        gui.setColor(1, 1, 1, 1);
+        bar(gui, GAUGE_X + ICON + 2, 6, fuel, fuelColor);
+        bar(gui, GAUGE_X + ICON + 2, STRIP_HEIGHT - 6 - GAUGE_BAR, health, health > .6f ? GREEN : health > .3f ? AMBER : RED);
+    }
+
+    private static void enlarged(GuiGraphics gui, Font font, String text, int x, int y, int scale, int color) {
+        PoseStack pose = gui.pose();
+        pose.pushPose();
+        pose.translate(x, y, 0);
+        pose.scale(scale, scale, 1);
+        gui.drawString(font, text, 0, 0, color, false);
+        pose.popPose();
     }
 
     private static void bar(GuiGraphics gui, int x, int y, float level, int color) {
-        int lit = level <= 0 ? 0 : Math.max(1, Math.round(level * SEGMENTS));
-        for (int i = 0; i < SEGMENTS; i++) {
-            int left = x + i * (SEGMENT + 1);
-            gui.fill(left, y, left + SEGMENT, y + 5, i < lit ? color : TROUGH);
+        int lit = level <= 0 ? 0 : Math.max(1, Math.round(level * GAUGE_SEGMENTS));
+        for (int i = 0; i < GAUGE_SEGMENTS; i++) {
+            int left = x + i * (GAUGE_SEGMENT + 1);
+            gui.fill(left, y, left + GAUGE_SEGMENT, y + GAUGE_BAR, i < lit ? color : TROUGH);
         }
     }
 
-    private static void icons(GuiGraphics gui, EntityVehicleF_Physics vehicle, int x, int y, boolean blink) {
+    private static int lamps(GuiGraphics gui, EntityVehicleF_Physics vehicle, boolean blink) {
         JSONVehicle definition = vehicle.definition();
-        icon(gui, TURN_LEFT, x + 6, y + 6, vehicle.flag(EntityVehicleF_Physics.TURN_LEFT) && blink ? GREEN : UNLIT);
-        icon(gui, TURN_RIGHT, x + MODULE_WIDTH - 6 - ICON, y + 6, vehicle.flag(EntityVehicleF_Physics.TURN_RIGHT) && blink ? GREEN : UNLIT);
-        icon(gui, HEADLIGHT, x + (MODULE_WIDTH - ICON) / 2, y + 6, vehicle.flag(EntityVehicleF_Physics.LIGHTS) ? BLUE : UNLIT);
-        float fuel = Mth.clamp(shownFuel, 0, 1);
-        icon(gui, FUEL, x + 5, y + 60, fuel < .1f ? (blink ? RED : DARK_RED) : DIM);
-        icon(gui, BODY, x + 5, y + 74, vehicle.wrecked() ? (blink ? RED : DARK_RED) : DIM);
         List<int[]> lamps = new ArrayList<>();
-        lamps.add(new int[]{HANDBRAKE, VehicleControls.handbrakeHeld() ? RED : UNLIT});
-        lamps.add(new int[]{LOCK, vehicle.flag(EntityVehicleF_Physics.LOCKED) ? AMBER : UNLIT});
-        if (definition.emergency) lamps.add(new int[]{SIREN, vehicle.flag(EntityVehicleF_Physics.SIREN) ? (blink ? RED : BLUE) : UNLIT});
-        lamps.add(new int[]{RADIO, vehicle.flag(EntityVehicleF_Physics.RADIO) ? BLUE : UNLIT});
-        if (definition.wipers != null) lamps.add(new int[]{WIPERS, vehicle.flag(EntityVehicleF_Physics.WIPERS) ? GREEN : UNLIT});
+        if (vehicle.flag(EntityVehicleF_Physics.LIGHTS)) lamps.add(new int[]{HEADLIGHT, BLUE});
+        if (VehicleControls.handbrakeHeld()) lamps.add(new int[]{HANDBRAKE, RED});
+        if (vehicle.flag(EntityVehicleF_Physics.LOCKED)) lamps.add(new int[]{LOCK, AMBER});
+        if (definition.emergency && vehicle.flag(EntityVehicleF_Physics.SIREN)) lamps.add(new int[]{SIREN, blink ? RED : BLUE});
+        if (vehicle.flag(EntityVehicleF_Physics.RADIO)) lamps.add(new int[]{RADIO, BLUE});
+        if (definition.wipers != null && vehicle.flag(EntityVehicleF_Physics.WIPERS)) lamps.add(new int[]{WIPERS, GREEN});
         float engine = vehicle.engineHealth();
-        lamps.add(new int[]{ENGINE, engine < 20 ? (blink ? RED : DARK_RED) : engine < 50 ? AMBER : UNLIT});
+        if (engine < 50) lamps.add(new int[]{ENGINE, engine < 20 ? (blink ? RED : DARK_RED) : AMBER});
         if (!VehicleControls.holdsKey(vehicle)) lamps.add(new int[]{KEY, blink ? AMBER : UNLIT});
-        int width = lamps.size() * (ICON + 2) - 2;
-        int lx = x + (MODULE_WIDTH - width) / 2;
+        if (lamps.isEmpty()) return 0;
+        int width = lamps.size() * (ICON + LAMP_GAP) - LAMP_GAP;
+        int x = (STRIP_WIDTH - width) / 2;
         for (int[] lamp : lamps) {
-            icon(gui, lamp[0], lx, y + 89, lamp[1]);
-            lx += ICON + 2;
+            icon(gui, lamp[0], x, -ICON - LAMP_GAP, lamp[1]);
+            x += ICON + LAMP_GAP;
         }
         gui.setColor(1, 1, 1, 1);
+        return ICON + LAMP_GAP;
     }
 
     private static void icon(GuiGraphics gui, int index, int x, int y, int color) {
