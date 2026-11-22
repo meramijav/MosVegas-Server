@@ -294,7 +294,7 @@ public final class HeldConsumableRenderer {
         return ((MosVegasConsumableItem) stack.getItem()).definition().useAction().equals("smoke");
     }
 
-    static boolean isSlim(LivingEntity entity) {
+    public static boolean isSlim(LivingEntity entity) {
         return entity instanceof AbstractClientPlayerEntity player && player.getSkinTextures().model() == SkinTextures.Model.SLIM;
     }
 
@@ -328,7 +328,7 @@ public final class HeldConsumableRenderer {
                 matrices, vertices, entity.getWorld(), light, OverlayTexture.DEFAULT_UV, entity.getId());
     }
 
-    private static void renderArm(AbstractClientPlayerEntity player, Arm arm, Pose pose,
+    public static void renderArm(AbstractClientPlayerEntity player, Arm arm, Pose pose,
                                   MatrixStack matrices, VertexConsumerProvider vertices, int light) {
         var renderer = (PlayerEntityRenderer) MinecraftClient.getInstance().getEntityRenderDispatcher().getRenderer(player);
         matrices.push();

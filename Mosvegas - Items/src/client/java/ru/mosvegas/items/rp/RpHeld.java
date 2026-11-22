@@ -1,17 +1,75 @@
 package ru.mosvegas.items.rp;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Arm;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import ru.mosvegas.items.HeldConsumableRenderer;
+import ru.mosvegas.items.Pose;
 
 public final class RpHeld {
     private RpHeld() {}
 
     public static boolean handles(ItemStack stack) {
         return stack.getItem() instanceof RpItem;
+    }
+
+    public static boolean heldInView(ItemStack stack) {
+        return stack.getItem() instanceof RpItem item && item.kind.action == RpKind.Action.SHOW;
+    }
+
+    public static void firstPersonArm(AbstractClientPlayerEntity player, ItemStack stack, Arm arm, float equip, float swing,
+                                      MatrixStack matrices, VertexConsumerProvider vertices, int light) {
+        if (player.isInvisible()) return;
+        RpScenes.Scene scene = scene(stack);
+        if (scene == null) return;
+        int side = arm == Arm.RIGHT ? 1 : -1;
+        Vector3f grip = bottomEdge(player, stack, scene, side, equip);
+        if (grip == null) return;
+        grip.add(0, 0, GRIP_BACK);
+        Pose rig = HeldConsumableRenderer.firstPersonRig(side, 0, swing);
+        Vector3f hand = new Vector3f(-side * (HeldConsumableRenderer.isSlim(player) ? 0.5f : 1f), 10.5f, -1f).div(16);
+        Pose pose = HeldConsumableRenderer.firstPersonArm(rig.transform(HeldConsumableRenderer.shoulder(side)), grip,
+                new Vector3f(0, 0.3f, -1), hand);
+        HeldConsumableRenderer.renderArm(player, arm, pose, matrices, vertices, light);
+    }
+
+    private static final float GRIP_DEPTH = 0.35f, GRIP_MIN = 0.03f, GRIP_MAX = 0.1f;
+    private static final float GRIP_BACK = -0.02f;
+
+    private static Vector3f bottomEdge(AbstractClientPlayerEntity player, ItemStack stack, RpScenes.Scene scene, int side, float equip) {
+        ModelTransformationMode mode = side == 1 ? ModelTransformationMode.FIRST_PERSON_RIGHT_HAND : ModelTransformationMode.FIRST_PERSON_LEFT_HAND;
+        RpGeo geo = scene.geo();
+        RpGeo.Bone spin = geo.byName.get("item_spin");
+        if (spin == null) return null;
+        Matrix4f[] world = idlePose(scene);
+        Matrix4f toItem = new Matrix4f().scale(-1, 1, 1)
+                .translate(-spin.pivot[0], -spin.pivot[1], -spin.pivot[2])
+                .mul(new Matrix4f(world[spin.index]).invert());
+        float[] b = bounds(geo, world, toItem);
+        if (b[0] > b[3]) return null;
+        MatrixStack view = new MatrixStack();
+        view.translate(side * 0.56f, -0.52f - 0.6f * equip, -0.72f);
+        MinecraftClient.getInstance().getItemRenderer().getModel(stack, player.getWorld(), player, player.getId())
+                .getTransformation().getTransformation(mode).apply(side == -1, view);
+        Matrix4f toView = new Matrix4f(view.peek().getPositionMatrix()).scale(1 / 16f);
+        Vector3f low = null, sum = new Vector3f();
+        float top = -Float.MAX_VALUE;
+        for (int i = 0; i < 8; i++) {
+            Vector3f c = toView.transformPosition(new Vector3f(b[(i & 1) * 3], b[1 + (i >> 1 & 1) * 3], b[2 + (i >> 2 & 1) * 3]));
+            sum.add(c);
+            if (low == null || c.y < low.y) low = c;
+            top = Math.max(top, c.y);
+        }
+        sum.div(8);
+        float lift = Math.max(GRIP_MIN, Math.min(GRIP_MAX, (top - low.y) * GRIP_DEPTH));
+        return new Vector3f(sum.x, low.y + lift, sum.z);
     }
 
     static RpScenes.Scene scene(ItemStack stack) {
