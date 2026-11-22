@@ -22,7 +22,11 @@ class PlateNumberTest {
         assertTrue(PlateNumber.valid(CAR));
         assertTrue(PlateNumber.valid("X999YX777"));
         assertTrue(PlateNumber.valid(POLICE_CAR));
-        assertFalse(PlateNumber.valid("A123BC55"));
+        assertTrue(PlateNumber.valid("A123BC05"));
+        assertFalse(PlateNumber.valid("A123BC00"));
+        assertFalse(PlateNumber.valid("A123BC555"));
+        assertFalse(PlateNumber.valid("A000BC77"));
+        assertFalse(PlateNumber.valid("A000077"));
         assertFalse(PlateNumber.valid("D123BC77"));
         assertFalse(PlateNumber.valid("AB-123-CD"));
         assertFalse(PlateNumber.valid("a123bc77"));
@@ -95,7 +99,8 @@ class PlateNumberTest {
         Random random = new Random(1);
         assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.LETTER, 1, random, number -> false));
         assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.DIGIT, 0, random, number -> false));
-        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.DIGIT, 6, random, number -> false));
+        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.DIGIT, 8, random, number -> false));
+        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.LETTER, 6, random, number -> false));
         assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.LETTER, -1, random, number -> false));
     }
 
@@ -112,16 +117,58 @@ class PlateNumberTest {
     void aRegionSpinKeepsTheBodyAndPicksAnotherKnownRegion() {
         Random random = new Random(23);
         Set<String> seen = new HashSet<>();
-        for (int i = 0; i < 400; i++) {
+        for (int i = 0; i < 4000; i++) {
             String next = PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.REGION, random, number -> false);
+            assertEquals(2, PlateNumber.region(next).length());
             assertEquals("A123BC", PlateNumber.body(next));
             assertNotEquals("77", PlateNumber.region(next));
             assertTrue(PlateRegions.known(PlateNumber.region(next)));
             seen.add(PlateNumber.region(next));
         }
-        assertEquals(PlateRegions.ALL.size() - 1, seen.size());
+        assertEquals(PlateRegions.CODES.size() - 1, seen.size());
+        assertFalse(seen.contains("00"));
         assertEquals("A123BC50", PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.REGION, random, number -> !number.endsWith("BC50")));
         assertNull(PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.REGION, random, number -> true));
+    }
+
+    @Test
+    void aRegionDigitSpinChangesOnlyThatDigit() {
+        Random random = new Random(29);
+        Set<Character> seen = new HashSet<>();
+        for (int i = 0; i < 500; i++) {
+            String first = PlateNumber.spin(CAR, PlateNumber.STANDARD, "77", PlateNumber.Spin.DIGIT, 6, random, number -> false);
+            assertEquals("A123BC", PlateNumber.body(first));
+            assertNotEquals('7', PlateNumber.region(first).charAt(0));
+            assertEquals('7', PlateNumber.region(first).charAt(1));
+            seen.add(PlateNumber.region(first).charAt(0));
+            String second = PlateNumber.spin(POLICE_CAR, PlateNumber.POLICE, "77", PlateNumber.Spin.DIGIT, 6, random, number -> false);
+            assertEquals("A12347", second.substring(0, 6));
+            assertNotEquals('7', second.charAt(6));
+        }
+        assertTrue(seen.contains('0'));
+        assertEquals(9, seen.size());
+    }
+
+    @Test
+    void aRegionNeverBecomesZero() {
+        Random random = new Random(31);
+        for (int i = 0; i < 500; i++) {
+            String next = PlateNumber.spin("A123BC07", PlateNumber.STANDARD, "07", PlateNumber.Spin.DIGIT, 7, random, number -> false);
+            assertNotEquals("00", PlateNumber.region(next));
+        }
+    }
+
+    @Test
+    void aThreeDigitRegionDropsToItsLastTwoDigits() {
+        Random random = new Random(37);
+        for (int i = 0; i < 200; i++) {
+            String next = PlateNumber.spin("A123BC177", PlateNumber.STANDARD, "177", PlateNumber.Spin.DIGIT, 6, random, number -> false);
+            assertEquals(2, PlateNumber.region(next).length());
+            assertEquals('7', PlateNumber.region(next).charAt(1));
+            assertNotEquals('7', PlateNumber.region(next).charAt(0));
+            String region = PlateNumber.region(PlateNumber.spin("A123BC177", PlateNumber.STANDARD, "177", PlateNumber.Spin.REGION, random, number -> false));
+            assertEquals(2, region.length());
+        }
     }
 
     @Test
@@ -153,6 +200,6 @@ class PlateNumberTest {
     @Test
     void partSpinsNeedANumber() {
         assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(PlateNumber.NONE, PlateNumber.STANDARD, "77", PlateNumber.Spin.LETTERS, new Random(1), number -> false));
-        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "55", PlateNumber.Spin.FULL, new Random(1), number -> false));
+        assertThrows(IllegalArgumentException.class, () -> PlateNumber.spin(CAR, PlateNumber.STANDARD, "00", PlateNumber.Spin.FULL, new Random(1), number -> false));
     }
 }

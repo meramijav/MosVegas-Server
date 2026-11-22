@@ -269,7 +269,7 @@
   "gui.slimvehicle.plates.letter": "One letter",
   "gui.slimvehicle.plates.letter_hint": "Click a letter\non the plate",
   "gui.slimvehicle.plates.digit": "One digit",
-  "gui.slimvehicle.plates.digit_hint": "Click a digit\non the plate",
+  "gui.slimvehicle.plates.digit_hint": "Click a digit of\nthe number or region",
   "gui.slimvehicle.plates.region_spin": "Region",
   "gui.slimvehicle.plates.region_spin_hint": "Letters and digits\nstay",
   "message.slimvehicle.plates.bad_slot": "Pick a letter or a digit on the plate",

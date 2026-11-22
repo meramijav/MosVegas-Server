@@ -269,7 +269,7 @@
   "gui.slimvehicle.plates.letter": "Одна буква",
   "gui.slimvehicle.plates.letter_hint": "Нажмите букву\nна номере",
   "gui.slimvehicle.plates.digit": "Одна цифра",
-  "gui.slimvehicle.plates.digit_hint": "Нажмите цифру\nна номере",
+  "gui.slimvehicle.plates.digit_hint": "Нажмите цифру\nномера или региона",
   "gui.slimvehicle.plates.region_spin": "Регион",
   "gui.slimvehicle.plates.region_spin_hint": "Буквы и цифры\nостаются",
   "message.slimvehicle.plates.bad_slot": "Выберите букву или цифру на номере",

@@ -138,7 +138,7 @@ public final class PlateShop {
             menu(player, customer, "message.slimvehicle.plates.bad_slot", false);
             return;
         }
-        String target = car.numbered() ? PlateNumber.region(car.plate()) : PlateRegions.ALL.get(RANDOM.nextInt(PlateRegions.ALL.size()));
+        String target = car.numbered() ? PlateNumber.region(car.plate()) : PlateRegions.FIRST.get(RANDOM.nextInt(PlateRegions.FIRST.size()));
         String next = PlateNumber.spin(car.plate(), car.style(), target, spin, slot, RANDOM, registry::taken);
         if (next == null) {
             menu(player, customer, "message.slimvehicle.plates.exhausted", false);

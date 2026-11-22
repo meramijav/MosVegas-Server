@@ -107,8 +107,11 @@ public final class PlateShopScreen extends GarageScreen {
         char at(long n) {
             if (n == land) return target;
             if (n == 0 && start != 0) return start;
-            String set = digit ? PlateNumber.DIGITS : PlateNumber.LETTERS;
-            return set.charAt((int) Math.floorMod(n * 7 + index * 5L, (long) set.length()));
+            if (digit) {
+                int from = start == 0 ? index * 3 : PlateNumber.DIGITS.indexOf(start);
+                return PlateNumber.DIGITS.charAt((int) Math.floorMod(from + n, (long) PlateNumber.DIGITS.length()));
+            }
+            return PlateNumber.LETTERS.charAt((int) Math.floorMod(n * 7 + index * 5L, (long) PlateNumber.LETTERS.length()));
         }
     }
 
@@ -128,6 +131,8 @@ public final class PlateShopScreen extends GarageScreen {
     private int selected = 1;
     private int pick = -1;
     private boolean regionRolling;
+    private int regionDigit = -1;
+    private char regionStart;
     private double regionReel;
     private long regionSettleAt = -1;
     private String regionTarget;
@@ -248,9 +253,13 @@ public final class PlateShopScreen extends GarageScreen {
         return (action == LETTER || action == DIGIT) && PlateNumber.slotFits(style, spin(action), slot);
     }
 
+    private int pickCount() {
+        return slots.length + PlateRegions.DIGITS;
+    }
+
     private void stepPick(int direction) {
-        for (int step = 1; step <= slots.length; step++) {
-            int slot = Math.floorMod(pick + direction * step, slots.length);
+        for (int step = 1; step <= pickCount(); step++) {
+            int slot = Math.floorMod(pick + direction * step, pickCount());
             if (pickable(selected, slot)) {
                 pickSlot(slot);
                 return;
@@ -260,7 +269,7 @@ public final class PlateShopScreen extends GarageScreen {
 
     private void pickSlot(int slot) {
         if (spinning || slot == pick && pickable(selected, slot)) return;
-        int action = PlateNumber.letterSlot(style, slot) ? LETTER : DIGIT;
+        int action = slot < slots.length && PlateNumber.letterSlot(style, slot) ? LETTER : DIGIT;
         if (!allowed(action)) return;
         selected = action;
         pick = slot;
@@ -280,7 +289,12 @@ public final class PlateShopScreen extends GarageScreen {
         answered = false;
         spinAction = selected;
         requestedAt = Util.getMillis();
-        regionRolling = selected == REGION || !menu.numbered();
+        regionDigit = selected == DIGIT && pick >= slots.length ? pick - slots.length : -1;
+        regionRolling = selected == REGION || !menu.numbered() || regionDigit >= 0;
+        if (regionDigit >= 0) {
+            region = PlateRegions.twoDigit(region);
+            regionStart = region.charAt(regionDigit);
+        }
         regionReel = 0;
         regionSettleAt = -1;
         landedCount = 0;
@@ -354,8 +368,14 @@ public final class PlateShopScreen extends GarageScreen {
     }
 
     private String rollingRegion() {
-        List<String> codes = PlateRegions.ALL;
-        return codes.get((int) Math.floorMod((long) Math.floor(regionReel) * 5 + 3, (long) codes.size()));
+        if (regionDigit >= 0) {
+            char[] code = region.toCharArray();
+            long step = PlateNumber.DIGITS.indexOf(regionStart) + (long) Math.floor(regionReel);
+            code[regionDigit] = PlateNumber.DIGITS.charAt((int) Math.floorMod(step, (long) PlateNumber.DIGITS.length()));
+            return new String(code);
+        }
+        List<String> codes = PlateRegions.CODES;
+        return codes.get((int) Math.floorMod((long) Math.floor(regionReel) * 37 + 76, (long) codes.size()));
     }
 
     private void landRegion(long now) {
@@ -469,7 +489,7 @@ public final class PlateShopScreen extends GarageScreen {
         selected = action;
         if ((action == LETTER || action == DIGIT) && !pickable(action, pick)) {
             pick = -1;
-            for (int slot = 0; slot < slots.length && pick < 0; slot++) if (pickable(action, slot)) pick = slot;
+            for (int slot = 0; slot < pickCount() && pick < 0; slot++) if (pickable(action, slot)) pick = slot;
         }
         status = "";
         play(SoundEvents.STONE_BUTTON_CLICK_ON, 1.5f, .25f);
@@ -616,18 +636,29 @@ public final class PlateShopScreen extends GarageScreen {
         return new Area(Math.round(x0), Math.round(y), Math.round(x1 - x0), Math.round(PlateTextures.CELL_HEIGHT * PlateTextures.REGION_SCALE * scale));
     }
 
+    private Area regionDigitArea(int index) {
+        float scale = plateScale();
+        int glyph = region.length() - PlateRegions.DIGITS + index;
+        float x = plateX() + PlateTextures.regionX(region, glyph) * scale;
+        float y = plateY() + PlateTextures.REGION_Y * scale;
+        return new Area(Math.round(x), Math.round(y), Math.round(PlateTextures.CELL_WIDTH * PlateTextures.REGION_SCALE * scale),
+                Math.round(PlateTextures.CELL_HEIGHT * PlateTextures.REGION_SCALE * scale));
+    }
+
+    private Area pickArea(int slot) {
+        return slot < slots.length ? slotArea(slot) : regionDigitArea(slot - slots.length);
+    }
+
     private void picks(GuiGraphics gui, int mouseX, int mouseY) {
         if (spinning || !PlateNumber.valid(platePreview)) return;
-        for (int slot = 0; slot < slots.length; slot++) {
-            Area area = slotArea(slot);
+        for (int slot = 0; slot < pickCount(); slot++) {
+            Area area = pickArea(slot);
             boolean hover = area.inside(mouseX, mouseY);
             if (slot == pick && pickable(selected, slot)) frame(gui, area, BrandUi.GOLD, 2);
             else if (hover) frame(gui, area, BrandUi.alpha(BrandUi.GOLD_LIGHT, .8f), 1);
             else if (pickable(selected, slot)) frame(gui, area, BrandUi.alpha(BrandUi.GOLD_LIGHT, .3f), 1);
         }
-        Area code = regionArea();
-        if (selected == REGION) frame(gui, code, BrandUi.GOLD, 2);
-        else if (code.inside(mouseX, mouseY)) frame(gui, code, BrandUi.alpha(BrandUi.GOLD_LIGHT, .8f), 1);
+        if (selected == REGION) frame(gui, regionArea(), BrandUi.GOLD, 2);
     }
 
     private static void frame(GuiGraphics gui, Area area, int color, int thickness) {
@@ -757,15 +788,11 @@ public final class PlateShopScreen extends GarageScreen {
             return true;
         }
         if (!spinning && PlateNumber.valid(platePreview)) {
-            for (int slot = 0; slot < slots.length; slot++) {
-                if (slotArea(slot).inside(mouseX, mouseY)) {
+            for (int slot = 0; slot < pickCount(); slot++) {
+                if (pickArea(slot).inside(mouseX, mouseY)) {
                     pickSlot(slot);
                     return true;
                 }
-            }
-            if (regionArea().inside(mouseX, mouseY)) {
-                choose(REGION);
-                return true;
             }
         }
         for (int i = 0; i < modes.length; i++) {

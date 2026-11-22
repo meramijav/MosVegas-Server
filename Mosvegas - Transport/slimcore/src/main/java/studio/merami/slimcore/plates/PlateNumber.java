@@ -32,7 +32,8 @@ public final class PlateNumber {
     private PlateNumber() {}
 
     public static boolean valid(String number) {
-        return number != null && (STANDARD_FORMAT.matcher(number).matches() || POLICE_FORMAT.matcher(number).matches()) && PlateRegions.known(region(number));
+        return number != null && (STANDARD_FORMAT.matcher(number).matches() || POLICE_FORMAT.matcher(number).matches()) && PlateRegions.known(region(number))
+                && !zeroDigits(body(number).toCharArray(), style(number));
     }
 
     public static String style(String number) {
@@ -78,9 +79,10 @@ public final class PlateNumber {
         boolean same = valid(current) && style(current).equals(style);
         if (spin != Spin.FULL && !same) throw new IllegalArgumentException("Only a full spin gives a car without a number its first one");
         String body = same ? body(current) : blank(style);
-        if (spin == Spin.REGION) return otherRegion(body, region(current), random, taken);
+        if (spin == Spin.REGION) return otherRegion(current, body, PlateRegions.twoDigit(region(current)), random, taken);
         if (spin == Spin.LETTER || spin == Spin.DIGIT) {
             if (!slotFits(style, spin, slot)) throw new IllegalArgumentException("Slot " + slot + " of a " + style + " number does not hold a " + (spin == Spin.LETTER ? "letter" : "digit"));
+            if (regionSlot(style, slot)) return regionDigit(current, body, PlateRegions.twoDigit(region(current)), slot - body.length(), random, taken);
             return symbol(current, body, style, region, slot, random, taken);
         }
         for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
@@ -91,15 +93,35 @@ public final class PlateNumber {
     }
 
     public static boolean slotFits(String style, Spin spin, int slot) {
+        if (regionSlot(style, slot)) return spin == Spin.DIGIT;
         return slot >= 0 && slot < bodyLength(style) && letterSlot(style, slot) == (spin == Spin.LETTER);
     }
 
-    private static String otherRegion(String body, String current, Random random, Predicate<String> taken) {
-        List<String> codes = new ArrayList<>(PlateRegions.ALL);
-        codes.remove(current);
+    public static boolean regionSlot(String style, int slot) {
+        return slot >= bodyLength(style) && slot < bodyLength(style) + PlateRegions.DIGITS;
+    }
+
+    private static String otherRegion(String current, String body, String code, Random random, Predicate<String> taken) {
+        List<String> codes = new ArrayList<>(PlateRegions.CODES);
+        codes.remove(code);
         Collections.shuffle(codes, random);
-        for (String code : codes) {
-            if (!taken.test(body + code)) return body + code;
+        for (String next : codes) {
+            if (!(body + next).equals(current) && !taken.test(body + next)) return body + next;
+        }
+        return null;
+    }
+
+    private static String regionDigit(String current, String body, String code, int index, Random random, Predicate<String> taken) {
+        List<Character> options = new ArrayList<>();
+        for (char character : DIGITS.toCharArray()) {
+            if (character != code.charAt(index)) options.add(character);
+        }
+        Collections.shuffle(options, random);
+        for (char character : options) {
+            char[] chars = code.toCharArray();
+            chars[index] = character;
+            String next = body + new String(chars);
+            if (PlateRegions.known(new String(chars)) && !next.equals(current) && !taken.test(next)) return next;
         }
         return null;
     }
