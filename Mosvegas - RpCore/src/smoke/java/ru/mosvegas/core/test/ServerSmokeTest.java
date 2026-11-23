@@ -41,6 +41,7 @@ public final class ServerSmokeTest implements ModInitializer {
         });
     }
     private static void test(MinecraftServer server) throws Exception {
+        DataStore.load(server);
         ServerWorld world = server.getOverworld();
         var player = player(server, "ZoneTester");
         var victim = player(server, "ZoneVictim");
@@ -55,6 +56,7 @@ public final class ServerSmokeTest implements ModInitializer {
         BlockPos pos = new BlockPos(1, 100, 1);
         no(ZoneService.can(player, world, pos, ZoneAction.BUILD), "global city build protection");
         yes(ZoneService.can(player, world, pos, ZoneAction.DOORS), "global doors open by default");
+        testBlockUseGuard(server, world);
         Permissions.grant(player.getUuid(), "mosvegas.admin.zones");
         command(server, player, "mosvegas zone world minecraft:overworld false");
         yes(ZoneService.can(player, world, pos, ZoneAction.BUILD), "namespaced world command disables protection");
@@ -310,6 +312,29 @@ public final class ServerSmokeTest implements ModInitializer {
         if (!(player.currentScreenHandler instanceof net.minecraft.screen.AnvilScreenHandler input)) throw new AssertionError("slot " + button + " opens text input");
         input.setNewItemName(text);
         input.onSlotClick(2, 0, net.minecraft.screen.slot.SlotActionType.PICKUP, player);
+    }
+    private static void testBlockUseGuard(MinecraftServer server, ServerWorld world) {
+        var guest = player(server, "GuardGuest");
+        BlockPos trapdoor = new BlockPos(5, 100, 5), sign = new BlockPos(6, 100, 5), lever = new BlockPos(7, 100, 5);
+        world.setBlockState(trapdoor.down(), net.minecraft.block.Blocks.STONE.getDefaultState());
+        world.setBlockState(trapdoor, net.minecraft.block.Blocks.OAK_TRAPDOOR.getDefaultState());
+        world.setBlockState(sign, net.minecraft.block.Blocks.OAK_SIGN.getDefaultState());
+        world.setBlockState(lever, net.minecraft.block.Blocks.LEVER.getDefaultState());
+        guest.setPosition(5, 100, 4);
+        no(useBlock(guest, world, trapdoor).isAccepted(), "player cannot use trapdoor");
+        no(world.getBlockState(trapdoor).get(net.minecraft.block.TrapdoorBlock.OPEN), "trapdoor stays closed for player");
+        yes(ru.mosvegas.core.util.BlockUseGuard.isBlocked(guest, net.minecraft.util.Hand.MAIN_HAND, sign), "player cannot use sign");
+        no(ru.mosvegas.core.util.BlockUseGuard.isBlocked(guest, net.minecraft.util.Hand.MAIN_HAND, lever), "lever stays usable");
+        Permissions.grant(guest.getUuid(), "mosvegas.admin.interact");
+        yes(useBlock(guest, world, trapdoor).isAccepted(), "admin uses trapdoor");
+        yes(world.getBlockState(trapdoor).get(net.minecraft.block.TrapdoorBlock.OPEN), "trapdoor opened by admin");
+        no(ru.mosvegas.core.util.BlockUseGuard.isBlocked(guest, net.minecraft.util.Hand.MAIN_HAND, sign), "admin uses sign");
+        Permissions.revoke(guest.getUuid(), "mosvegas.admin.interact");
+        for (BlockPos at : List.of(trapdoor.down(), trapdoor, sign, lever)) world.setBlockState(at, net.minecraft.block.Blocks.AIR.getDefaultState());
+    }
+    private static net.minecraft.util.ActionResult useBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+        var hit = new net.minecraft.util.hit.BlockHitResult(net.minecraft.util.math.Vec3d.ofCenter(pos), net.minecraft.util.math.Direction.UP, pos, false);
+        return player.interactionManager.interactBlock(player, world, ItemStack.EMPTY, net.minecraft.util.Hand.MAIN_HAND, hit);
     }
     private static ItemStack slot(ServerPlayerEntity player, int index) { return player.currentScreenHandler.getSlot(index).getStack(); }
     private static ServerPlayerEntity player(MinecraftServer server, String name) {

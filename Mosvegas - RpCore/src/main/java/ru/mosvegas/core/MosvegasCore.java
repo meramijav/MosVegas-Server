@@ -63,6 +63,7 @@ public final class MosvegasCore implements ModInitializer {
         UseBlockCallback.EVENT.register((player,world,hand,hit)->{
             if(world.isClient||!(player instanceof ServerPlayerEntity serverPlayer))return ActionResult.PASS;
             if(RpItems.isForeignFactionItem(serverPlayer,player.getStackInHand(hand)))return ActionResult.FAIL;
+            if(ru.mosvegas.core.util.BlockUseGuard.isBlocked(serverPlayer,hand,hit.getBlockPos()))return ActionResult.FAIL;
             if(PropertyService.isWand(player.getStackInHand(hand))&&PropertyService.selectSecond(serverPlayer,hit.getBlockPos()))return ActionResult.SUCCESS;
             if(PropertyService.offerAtDoor(serverPlayer,hand,hit.getBlockPos()))return ActionResult.FAIL;
             if(!ZoneService.useBlock(serverPlayer,hit.getBlockPos()))return ActionResult.FAIL;
