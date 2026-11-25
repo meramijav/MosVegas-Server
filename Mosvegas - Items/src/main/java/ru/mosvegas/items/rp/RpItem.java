@@ -45,6 +45,10 @@ public class RpItem extends Item {
 
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
+        if (kind == RpKind.BANDAGE) {
+            if (user instanceof ServerPlayerEntity player) RpServer.useBandageOn(player, entity);
+            return ActionResult.SUCCESS;
+        }
         if (kind.action != RpKind.Action.TARGET) return ActionResult.PASS;
         if (user instanceof ServerPlayerEntity player && !RpServer.busy(player)) {
             RpServer.useOnTarget(player, hand, kind, entity);

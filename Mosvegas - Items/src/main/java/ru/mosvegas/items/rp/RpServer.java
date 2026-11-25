@@ -63,6 +63,8 @@ public final class RpServer {
     private static final int STUN_TICKS = 60;
     static final String MEDKIT_PILLS = "animation.medkit.unpack_pills_3p";
     static final String UNCUFF_SCENE = "handcuffs_uncuff", UNCUFF = "animation.handcuffs.uncuff";
+    static final String BANDAGE_OTHER_SCENE = "bandage_other", BANDAGE_OTHER = "animation.bandage.other_3p";
+    private static final float BANDAGE_OTHER_OFFSET = -15, BANDAGE_OTHER_YAW = 180;
 
     record Playback(String scene, RpKind kind, String animation, int role, long start, boolean hold, float yaw, int partner) {}
 
@@ -142,6 +144,10 @@ public final class RpServer {
             source.sendError(Text.literal("Unknown RP item " + item));
             return 0;
         }
+        if (kind == RpKind.BANDAGE && target instanceof LivingEntity other && other != living) {
+            bandageOther(living, other, false);
+            return 1;
+        }
         if (kind.action == RpKind.Action.TARGET) {
             if (!(target instanceof LivingEntity other)) {
                 source.sendError(Text.literal("RP item " + item + " needs a target"));
@@ -210,10 +216,14 @@ public final class RpServer {
     }
 
     private static void place(LivingEntity actor, LivingEntity target, RpKind kind, float yaw) {
-        double distance = -kind.offsetZ / 16.0;
+        place(actor, target, kind.offsetZ, kind.targetYaw, yaw);
+    }
+
+    private static void place(LivingEntity actor, LivingEntity target, float offsetZ, float turn, float yaw) {
+        double distance = -offsetZ / 16.0;
         float rad = yaw * MathHelper.RADIANS_PER_DEGREE;
         Vec3d at = actor.getPos().add(-MathHelper.sin(rad) * distance, 0, MathHelper.cos(rad) * distance);
-        float targetYaw = MathHelper.wrapDegrees(yaw + kind.targetYaw);
+        float targetYaw = MathHelper.wrapDegrees(yaw + turn);
         if (target instanceof ServerPlayerEntity player) {
             player.teleport(player.getServerWorld(), at.x, actor.getY(), at.z, targetYaw, 0);
         } else {
@@ -291,6 +301,43 @@ public final class RpServer {
         entity.removeStatusEffect(StatusEffects.BLINDNESS);
         entity.removeStatusEffect(StatusEffects.WEAKNESS);
         entity.setFireTicks(0);
+    }
+
+    public static void useBandageOn(ServerPlayerEntity player, LivingEntity target) {
+        if (target == player || target.squaredDistanceTo(player) > REACH * REACH || busy(player)) return;
+        Long until = BUSY.get(target.getUuid());
+        if (until != null && server != null && server.getTicks() < until) return;
+        bandageOther(player, target, true);
+    }
+
+    static void bandageOther(LivingEntity actor, LivingEntity target, boolean effects) {
+        if (!(actor.getWorld() instanceof ServerWorld world) || server == null || !LENGTHS.containsKey(BANDAGE_OTHER)) return;
+        int ticks = Math.max(1, MathHelper.ceil(LENGTHS.get(BANDAGE_OTHER) * 20));
+        long now = server.getTicks();
+        float yaw = actor.getHeadYaw();
+        actor.setBodyYaw(yaw);
+        if (!STATES.containsKey(target.getUuid())) target.stopRiding();
+        place(actor, target, BANDAGE_OTHER_OFFSET, BANDAGE_OTHER_YAW, yaw);
+        BUSY.put(actor.getUuid(), now + ticks);
+        BUSY.put(target.getUuid(), now + ticks);
+        actor.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ticks, 6, false, false, false));
+        target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ticks, 6, false, false, false));
+        broadcast(actor, new Playback(BANDAGE_OTHER_SCENE, RpKind.BANDAGE, BANDAGE_OTHER, ROLE_ACTOR, now, false, yaw, target.getId()));
+        broadcast(target, new Playback(BANDAGE_OTHER_SCENE, RpKind.BANDAGE, BANDAGE_OTHER, ROLE_TARGET, now, false,
+                yaw + BANDAGE_OTHER_YAW, actor.getId()));
+        sound(world, target, RpKind.BANDAGE, 0);
+        TASKS.add(new Task(now + ticks, () -> {
+            PLAYING.remove(actor.getId());
+            PLAYING.remove(target.getId());
+            if (!actor.isAlive() || !target.isAlive()) return;
+            if (actor.getWorld() instanceof ServerWorld w) sound(w, target, RpKind.BANDAGE, 1);
+            if (!effects) return;
+            ItemStack held = actor.getMainHandStack().getItem() instanceof RpItem item && item.kind == RpKind.BANDAGE
+                    ? actor.getMainHandStack() : actor.getOffHandStack();
+            if (!(held.getItem() instanceof RpItem item && item.kind == RpKind.BANDAGE)) return;
+            target.heal(6);
+            consume(actor, held, true);
+        }));
     }
 
     public static void release(Entity target, ServerPlayerEntity releaser) {
@@ -530,6 +577,7 @@ public final class RpServer {
         java.util.Set<String> scenes = new java.util.LinkedHashSet<>();
         for (RpKind kind : RpKind.values()) if (kind.animation != null) scenes.add(kind.scene());
         scenes.add(UNCUFF_SCENE);
+        scenes.add(BANDAGE_OTHER_SCENE);
         for (String scene : scenes) {
             String path = "/assets/mosvegas_items/rp/anim/" + scene + ".animation.json";
             try (InputStream in = RpServer.class.getResourceAsStream(path)) {
